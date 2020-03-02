@@ -10,8 +10,8 @@ export interface IUser {
     UpId: number;
     PayClassID: number;
     Balance?: number;
-    CreateDate: string;
-    ModifyDate: string;
+    CreateTime: string;
+    ModifyTime: string;
     CDate?: Date;
 }
 

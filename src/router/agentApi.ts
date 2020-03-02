@@ -56,6 +56,7 @@ agentApi.get("/1", async (req: Request, res: Response) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Agent not found!!";
     }
+    conn.release();
     res.send(JSON.stringify(msg));
 });
 agentApi.get("/memberlogin", async (req: Request, res: Response) => {
@@ -73,6 +74,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Error: Member not found!!";
     }
+    conn.release();
     res.send(JSON.stringify(msg));
 });
 agentApi.get("/3", async (req: Request, res: Response) => {
@@ -104,6 +106,7 @@ async function CreditAC(req: Request, res: Response, ac: number) {
         data.status = 2;
     }
     msg.data = data;
+    conn.release();
     res.send(JSON.stringify(msg));
 }
 async function getAgent(id: string, conn: Connection) {

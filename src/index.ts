@@ -1,6 +1,5 @@
 import cors from "cors";
-import dotenv from "dotenv";
-import express, {request, response} from "express";
+import express, {Request, Response} from "express";
 import mariadb from "mariadb";
 import {getOddsData, getPayClass, getUsers} from "./API/MemberApi";
 import Zadic from "./class/Animals";
@@ -29,18 +28,20 @@ dbPool.getConnection().then((conn) => {
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cors());
-app.get("/", async (req, res) => {
+app.get("/", async (req: Request, res: Response) => {
         const conn = await dbPool.getConnection();
         let tmp: string = "";
         conn.query("select * from user").then((rows: IUser[]) => {
             rows.map((u: IUser) => {
                 if (u.Account) {
                     tmp += u.Account + ",";
-                    u.CDate = new Date(u.CreateDate);
-                    console.log("getTime", u.CDate.getFullYear() + "/" + u.CDate.getMonth() + "/" + u.CDate.getDate());
+                    u.CDate = new Date(u.CreateTime);
+                    console.log("getUserCrateTime",
+                        u.Account, u.CDate.getFullYear(), u.CDate.getMonth() + 1, u.CDate.getDate());
                 }
             });
             // const str: string = JSON.stringify(rows);
+            conn.release();
             res.send(tmp);
         }).catch((err) => {
             console.log("query error:", err);
@@ -55,12 +56,14 @@ app.get("/login", async (req, res) => {
         sql = `Select * from user where Account= ? and Password=Password(?)`;
         console.log(sql, params);
         conn.query(sql, params).then((rows) => {
+            console.log("login:", rows);
             let msg: string = "";
             if (rows.length > 0) {
                 let row: any;
                 row = rows.pop();
                 msg = JSON.stringify(row);
             }
+            conn.release();
             res.send(msg);
         }).catch((err) => {
             console.log(err);
@@ -83,6 +86,7 @@ app.get("/api/getGames", async (req, res) => {
         const conn = await dbPool.getConnection();
         const sql = "select id,name from Games order by id";
         conn.query(sql).then((v) => {
+            conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("saveGames", err);
@@ -95,6 +99,7 @@ app.post("/api/saveBtClass", async (req, res) => {
         const sql = "insert into betclass(GameID,BCname,BetTypes,ModifyID) values(?,?,?,?) on duplicate key update BetTypes=values(BetTypes),ModifyID=values(ModifyID)";
         conn.query(sql, params).then((v) => {
             console.log("saveBtClass", v);
+            conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("saveBtClass error", err);
@@ -106,6 +111,7 @@ app.get("/api/getBtClass", async (req, res) => {
         const params = [param.GameID];
         const sql = "select BCName,BetTypes from betclass where GameID = ?";
         conn.query(sql, params).then((v) => {
+            conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("etBtClass", err);
@@ -118,6 +124,7 @@ app.get("/api/getPayClass", async (req, res) => {
         const sql = "select id,PayClassName from payclass where GameID = ?";
         conn.query(sql, params).then((v) => {
             // console.log("getPayClass", v, params);
+            conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("getPayClass error", err);
@@ -141,6 +148,7 @@ app.post("/api/savePayClass", async (req, res) => {
             rlt = v;
         }).catch((err) => {
             console.log("savePayClass error", err);
+            conn.release();
             res.send(JSON.stringify(err));
         });
         let ans;
@@ -159,6 +167,7 @@ app.post("/api/savePayClass", async (req, res) => {
             ans = await setPayRate(p, conn);
         }
         console.log("savePayClass", ans);
+        conn.release();
         res.send(JSON.stringify(ans));
 
     });
@@ -169,6 +178,7 @@ app.get("/api/getBasePayRate", async (req, res) => {
         const sql = "select BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,PlusRate from basepayrate where GameID = ?";
         conn.query(sql, params).then((v) => {
             // console.log("getBasePayRate", v, params);
+            conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("getBasePayRate error", err);
@@ -182,6 +192,7 @@ app.get("/api/getPayRate", async (req, res) => {
             from  basepayrate b left join payrate p on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType where p.PayClassID=? and p.GameID = ?`;
         conn.query(sql, params).then((v) => {
             console.log("getPayRate", v, params);
+            conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("getPayRate error", err);
@@ -208,9 +219,11 @@ app.post("/api/batch/saveBasePayRate", async (req, res) => {
         sql += " ON DUPLICATE KEY UPDATE Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Probability=values(Probability),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),PlusRate=values(PlusRate),ModifyID=values(ModifyID)";
         conn.query(sql).then((v) => {
             // console.log("getPayRate", v, params);
+            conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("getPayRate error", err);
+            conn.release();
             res.send(JSON.stringify(err));
         });
     });
@@ -228,9 +241,11 @@ app.post("/api/batch/savePayRate", async (req, res) => {
         sql += valstr.join(",");
         sql += " ON DUPLICATE KEY UPDATE Rate=values(Rate)";
         conn.query(sql).then((v) => {
+            conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("savePayRate error", err);
+            conn.release();
             res.send(JSON.stringify(err));
         });
     });
@@ -300,6 +315,7 @@ app.post("/api/saveTerms", async (req, res) => {
                const codAns = await CreateOddsData(param.GameID, tid, conn);
                if (codAns.ErrNo !== 0) {
                     await conn.rollback();
+                    conn.release();
                     res.send(JSON.stringify(codAns));
                } else {
                    await conn.commit();
@@ -307,6 +323,7 @@ app.post("/api/saveTerms", async (req, res) => {
             } else {
                 await conn.rollback();
             }
+            conn.release();
             res.send(JSON.stringify(msg));
         }
     });
@@ -353,8 +370,10 @@ app.post("/api/createBetItems", async (req, res) => {
         sql = sql + val.join(",");
         console.log("sql:", sql);
         conn.query(sql).then((row) => {
+            conn.release();
             res.send(JSON.stringify(row));
         }).catch((err) => {
+            conn.release();
             res.send(JSON.stringify(err));
         });
 
@@ -364,6 +383,7 @@ app.get("/api/GameList", async (req, res) => {
         const jt: JTable<IGame> = new JTable(conn, "games");
         const games: IGame[] = await jt.List();
         // console.log("/api/GameList", JSON.stringify(games));
+        conn.release();
         res.send(JSON.stringify(games));
     });
 app.post("/api/UpdateGame", async (req, res) => {
@@ -372,6 +392,7 @@ app.post("/api/UpdateGame", async (req, res) => {
         const param: IGame = req.body;
         const ans = await jt.Update(param);
         console.log("UpdateGame", ans);
+        conn.release();
         res.send(JSON.stringify(ans));
     });
 app.get("/api/member/getAnimals", (req, res) => {
@@ -392,6 +413,7 @@ app.get("/api/member/wagerLotto", async (req, res) => {
         if (btlist) {
             msg.btLists = btlist;
         }
+        conn.release();
         res.send(JSON.stringify(msg));
     });
 app.get("/api/member/getOddsItems", async (req, res) => {
@@ -399,6 +421,7 @@ app.get("/api/member/getOddsItems", async (req, res) => {
         const param = req.query;
         // console.log("/api/member/getOddsItems", param);
         const ans = await getOddsData(param.GameID, param.PayClassID, param.maxOID, conn);
+        conn.release();
         res.send(JSON.stringify(ans));
     });
 app.post("/api/member/mwagermulti", async (req, res) => {
@@ -421,6 +444,7 @@ app.post("/api/member/mwagermulti", async (req, res) => {
             const rback = await conn.rollback();
             console.log("Rollback:", rback);
         }
+        conn.release();
         res.send(JSON.stringify(ans));
     });
 app.post("/api/member/mwagerjn", async (req, res) => {
@@ -443,6 +467,7 @@ app.post("/api/member/mwagerjn", async (req, res) => {
             const rback = await conn.rollback();
             console.log("Rollback:", rback);
         }
+        conn.release();
         res.send(JSON.stringify(ans));
     });
 app.get("/api/member/getWagerItems", async (req, res) => {
@@ -454,6 +479,7 @@ app.get("/api/member/getWagerItems", async (req, res) => {
             param.date = JDate.DateStr;
         }
         const msg: IMsg = await gets.getBetLists(param.UserID, param.date);
+        conn.release();
         res.send(JSON.stringify(msg));
     });
 app.post("/api/SaveUser", async (req, res) => {
@@ -467,6 +493,7 @@ app.post("/api/SaveUser", async (req, res) => {
         } else {
             ans = await jt.Insert(param);
         }
+        conn.release();
         res.send(JSON.stringify(ans));
     });
 app.get("/api/getUsers", async (req, res) => {
@@ -479,6 +506,7 @@ app.get("/api/getUsers", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Get Users Error!!";
         }
+        conn.release();
         res.send(JSON.stringify(msg));
     });
 app.get("/api/member/getPayClass", async (req, res) => {
@@ -497,6 +525,7 @@ app.get("/api/member/getPayClass", async (req, res) => {
                 msg.ErrCon = "Get Pay Class Error!!";
             }
         }
+        conn.release();
         res.send(JSON.stringify(msg));
     });
 app.post("/api/SaveNums", async (req, res) => {
@@ -516,6 +545,7 @@ app.post("/api/SaveNums", async (req, res) => {
             const Nums = SaveNums(param.tid, param.GameID, param.Nums, conn);
             msg.Data = Nums;
         }
+        conn.release();
         res.send(JSON.stringify(msg));
     });
 app.use("/agentApi", agentApi);
