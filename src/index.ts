@@ -29,6 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cors());
 app.get("/", async (req: Request, res: Response) => {
+        /*
         const conn = await dbPool.getConnection();
         let tmp: string = "";
         conn.query("select * from User").then((rows: IUser[]) => {
@@ -46,6 +47,8 @@ app.get("/", async (req: Request, res: Response) => {
         }).catch((err) => {
             console.log("query error:", err);
         });
+        */
+       res.send("ok");
     });
 app.get("/login", async (req, res) => {
         // console.log(req.query);
