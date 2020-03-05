@@ -52,6 +52,9 @@ agentApi.get("/1", async (req: Request, res: Response) => {
             } else {
                 msg.ErrNo = 9;
                 msg.ErrCon = "Member not found!!";
+                msg.param = param;
+                msg.params = param;
+                msg.Agent = Agent;
             }
         } else {
             msg.ErrCon = param;
