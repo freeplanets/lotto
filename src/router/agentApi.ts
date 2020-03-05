@@ -117,7 +117,7 @@ async function CreditAC(req: Request, res: Response, ac: number) {
     res.send(JSON.stringify(msg));
 }
 async function getAgent(id: string, conn: Connection) {
-    const sql: string = "select * from user where id=?";
+    const sql: string = "select * from User where id=?";
     console.log("getAgent:", sql);
     const row = await conn.query(sql, [id]);
     return row[0];
@@ -142,7 +142,7 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
     }
     const usr = getUser(param.userCode, AgentId, conn);
     if (usr) { return true; }
-    const sql = `Insert into user(Account,Password,Nickname,Types,UpId,PayClassID) values(
+    const sql = `Insert into User(Account,Password,Nickname,Types,UpId,PayClassID) values(
         '${param.userCode}',Password('${new Date().getTime()}'),'${param.nickName}',0,${AgentId},${PayClassID}
     )  on duplicate key`;
     const ans: IDbAns = await conn.query(sql);
@@ -159,7 +159,7 @@ async function addLoginInfo(uid: number, Account: string, AgentId: string, skey:
             return {logkey: act2.logkey};
         }
     }
-    const sql = `insert into logininfo(uid,Account,AgentID,logkey) values(
+    const sql = `insert into LoginInfo(uid,Account,AgentID,logkey) values(
         ${uid},'${Account}',${AgentId},'${skey}'
     )`;
     const ans: IDbAns = await conn.query(sql);
@@ -170,12 +170,12 @@ async function addLoginInfo(uid: number, Account: string, AgentId: string, skey:
 }
 async function getUser(Account: string, AgentId: string, conn: Connection ): Promise<IUser> {
     const param: {[key: number]: any} = [Account, AgentId];
-    const sql = "select * from user where Account=? and UpId=?";
+    const sql = "select * from User where Account=? and UpId=?";
     const rows: IUser[] = await conn.query(sql, param);
     return rows[0];
 }
 async function getUserLogin( Account: string, skey: string, conn: Connection) {
-    const sql = "select * from logininfo where Account=?  and logkey=? and isActive=1";
+    const sql = "select * from LoginInfo where Account=?  and logkey=? and isActive=1";
     const rows = await conn.query(sql, [Account, skey]);
     console.log("getUserLogin", rows, sql);
     if (rows[0]) {
@@ -185,7 +185,7 @@ async function getUserLogin( Account: string, skey: string, conn: Connection) {
     }
 }
 async function chkLogin(uid: number, conn: Connection) {
-    const sql = "select * from logininfo where uid=? and isActive=1";
+    const sql = "select * from LoginInfo where uid=? and isActive=1";
     const ans = await conn.query(sql, [uid]);
     // console.log("chkLogin", ans);
     if (ans.length > 0) { return ans[0]; }
@@ -194,13 +194,13 @@ async function chkLogin(uid: number, conn: Connection) {
 async function chkLoginAction(uid: number, conn: Connection) {
     /*
     const ts = new Date().getTime();
-    let sql: string = `select * from logininfo where uid=${uid} order by id desc limit 0,1`;
+    let sql: string = `select * from LoginInfo where uid=${uid} order by id desc limit 0,1`;
     const rows = await conn.query(sql);
     if (rows) {
         console.log(rows, ts, rows[0].timeproc - ts);
     }
     */
-    const sql = `update logininfo set isActive=0 where uid=${uid} and isActive=1 and CURRENT_TIMESTAMP-timeproc>${staytime}`;
+    const sql = `update LoginInfo set isActive=0 where uid=${uid} and isActive=1 and CURRENT_TIMESTAMP-timeproc>${staytime}`;
     const ans: IDbAns = await conn.query(sql);
     console.log("chkLoginAction", sql, ans);
     if (ans) { return true; }
@@ -218,7 +218,7 @@ async function getTicketDetail(req, res) {
     console.log("getTicketDetail param:", param);
     const sql = `select id,Account userCode,tid TermID,GameID,BetType,Num,Odds,Amt,WinLose,
         UNIX_TIMESTAMP(CreateTime) CreateTime,UNIX_TIMESTAMP(ModifyTime) ModifyTime
-        from bettable where UpId=${UpId} and isCancled=0 and
+        from BetTable where UpId=${UpId} and isCancled=0 and
         ModifyTime between from_unixtime(${param.startTime}) and from_unixtime(${param.endTime})`;
     await conn.query(sql).then((rows) => {
         data.list = rows;
@@ -235,13 +235,13 @@ async function getTicketDetail(req, res) {
 /*
 async function ModifyCredit(uid: number, Account: string,
                             AgentId: string, money: number, idenkey: string, conn: Connection) {
-    let sql = `select balance from usercredit where uid=? order by id desc limit 0,1`;
+    let sql = `select balance from UserCredit where uid=? order by id desc limit 0,1`;
     const ans = await conn.query(sql, [uid]);
     let balance: number = money;
     if (ans[0]) {
         balance = balance + ans[0].balance;
     }
-    sql = `insert into usercredit(uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;
+    sql = `insert into UserCredit(uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;
     const param = [uid, Account, AgentId, idenkey, money, balance];
     const dbans: IDbAns = await conn.query(sql, param);
     if (dbans.affectedRows > 0) {
@@ -254,7 +254,7 @@ async function ModifyCredit(uid: number, Account: string,
     return false;
 }
 async function ModifyUserCredit(uid: number, balance: number, conn: Connection) {
-    const sql = `update user set Balance=${balance} where id=${uid}`;
+    const sql = `update User set Balance=${balance} where id=${uid}`;
     const ans: IDbAns = await conn.query(sql);
     if (ans.affectedRows > 0) { return true; }
     return false;

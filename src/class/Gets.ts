@@ -28,7 +28,7 @@ export class Gets {
         const msg: IMsg = {
             ErrNo: 0
         };
-        const sql: string = `select * from betheader where UserID = ? and CreateTime > ?`;
+        const sql: string = `select * from BetHeader where UserID = ? and CreateTime > ?`;
         await this.conn.query(sql, [UserID, date]).then((rows) => {
             const items: IItems = {};
             const tolSum: ISum = {no: 0, gold: 0, end: 0 };

@@ -31,7 +31,7 @@ app.use(cors());
 app.get("/", async (req: Request, res: Response) => {
         const conn = await dbPool.getConnection();
         let tmp: string = "";
-        conn.query("select * from user").then((rows: IUser[]) => {
+        conn.query("select * from User").then((rows: IUser[]) => {
             rows.map((u: IUser) => {
                 if (u.Account) {
                     tmp += u.Account + ",";
@@ -53,7 +53,7 @@ app.get("/login", async (req, res) => {
         const param = req.query;
         let sql: string = "";
         const params = [param.Account, param.Password];
-        sql = `Select * from user where Account= ? and Password=Password(?)`;
+        sql = `Select * from User where Account= ? and Password=Password(?)`;
         console.log(sql, params);
         conn.query(sql, params).then((rows) => {
             console.log("login:", rows);
@@ -96,7 +96,7 @@ app.post("/api/saveBtClass", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.body;
         const params = [param.GameID, param.BCName, param.BetTypes, param.ModifyID];
-        const sql = "insert into betclass(GameID,BCname,BetTypes,ModifyID) values(?,?,?,?) on duplicate key update BetTypes=values(BetTypes),ModifyID=values(ModifyID)";
+        const sql = "insert into BetClass(GameID,BCname,BetTypes,ModifyID) values(?,?,?,?) on duplicate key update BetTypes=values(BetTypes),ModifyID=values(ModifyID)";
         conn.query(sql, params).then((v) => {
             console.log("saveBtClass", v);
             conn.release();
@@ -109,7 +109,7 @@ app.get("/api/getBtClass", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.query;
         const params = [param.GameID];
-        const sql = "select BCName,BetTypes from betclass where GameID = ?";
+        const sql = "select BCName,BetTypes from BetClass where GameID = ?";
         conn.query(sql, params).then((v) => {
             conn.release();
             res.send(JSON.stringify(v));
@@ -121,7 +121,7 @@ app.get("/api/getPayClass", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.query;
         const params = [param.GameID];
-        const sql = "select id,PayClassName from payclass where GameID = ?";
+        const sql = "select id,PayClassName from PayClass where GameID = ?";
         conn.query(sql, params).then((v) => {
             // console.log("getPayClass", v, params);
             conn.release();
@@ -136,7 +136,7 @@ app.post("/api/savePayClass", async (req, res) => {
         const param = req.body;
         console.log("param chk", param);
         const params = [param.GameID, param.PayClassName, param.ModifyID];
-        const sql = `insert into payclass(GameID,PayClassName,ModifyID) values(?,?,?) on duplicate key update PayClassName=values(PayClassName),ModifyID=values(ModifyID)`;
+        const sql = `insert into PayClass(GameID,PayClassName,ModifyID) values(?,?,?) on duplicate key update PayClassName=values(PayClassName),ModifyID=values(ModifyID)`;
         let rlt: IDBAns = {
             affectedRows: 0,
             insertId: 0,
@@ -155,7 +155,7 @@ app.post("/api/savePayClass", async (req, res) => {
         const cond = JSON.parse(param.condition);
         const p: IPayClassParam = {
             GameID: param.GameID,
-            payclassid : rlt.insertId,
+            PayClassID : rlt.insertId,
             ModifyID: param.ModifyID,
             RateType: cond.type
         };
@@ -175,7 +175,7 @@ app.get("/api/getBasePayRate", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.query;
         const params = [param.GameID];
-        const sql = "select BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,PlusRate from basepayrate where GameID = ?";
+        const sql = "select BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,PlusRate from BasePayRate where GameID = ?";
         conn.query(sql, params).then((v) => {
             // console.log("getBasePayRate", v, params);
             conn.release();
@@ -189,7 +189,7 @@ app.get("/api/getPayRate", async (req, res) => {
         const param = req.query;
         const params = [param.PayClassID, param.GameID];
         const sql = `select p.BetType,p.SubType,b.DfRate,p.Rate,b.Probability,b.Steps,b.OneHand
-            from  basepayrate b left join payrate p on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType where p.PayClassID=? and p.GameID = ?`;
+            from  BasePayRate b left join PayRate p on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType where p.PayClassID=? and p.GameID = ?`;
         conn.query(sql, params).then((v) => {
             console.log("getPayRate", v, params);
             conn.release();
@@ -214,7 +214,7 @@ app.post("/api/batch/saveBasePayRate", async (req, res) => {
             const tmp = `(${param.GameID},${itm.BetType},'${itm.Title}','${itm.SubTitle}',${itm.SubType},${itm.Profit},${itm.DfRate},${itm.TopRate},${itm.Probability},${itm.Steps},${itm.TopPay},${itm.OneHand},${itm.PlusRate},${param.ModifyID})`;
             valstr.push(tmp);
         });
-        let sql = "insert into basepayrate(GameID,BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,PlusRate,ModifyID) values";
+        let sql = "insert into BasePayRate(GameID,BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,PlusRate,ModifyID) values";
         sql += valstr.join(",");
         sql += " ON DUPLICATE KEY UPDATE Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Probability=values(Probability),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),PlusRate=values(PlusRate),ModifyID=values(ModifyID)";
         conn.query(sql).then((v) => {
@@ -237,7 +237,7 @@ app.post("/api/batch/savePayRate", async (req, res) => {
             const tmp = `(${param.PayClassID},${param.GameID},${itm.BetType},${itm.SubType},${itm.Rate})`;
             valstr.push(tmp);
         });
-        let sql: string = "insert into payrate(PayClassID,GameID,BetType,SubType,Rate) values";
+        let sql: string = "insert into PayRate(PayClassID,GameID,BetType,SubType,Rate) values";
         sql += valstr.join(",");
         sql += " ON DUPLICATE KEY UPDATE Rate=values(Rate)";
         conn.query(sql).then((v) => {
@@ -366,7 +366,7 @@ app.post("/api/createBetItems", async (req, res) => {
             msg.ErrCon = "No Data !!!";
             res.send(JSON.stringify(msg));
         }
-        let sql = "insert into dfoddsitems(GameID,BetType,Num,ModifyID) values";
+        let sql = "insert into dfOddsItems(GameID,BetType,Num,ModifyID) values";
         sql = sql + val.join(",");
         console.log("sql:", sql);
         conn.query(sql).then((row) => {
@@ -488,7 +488,7 @@ app.get("/api/member/getWagerItems", async (req, res) => {
     });
 app.post("/api/SaveUser", async (req, res) => {
         const conn = await dbPool.getConnection();
-        const jt: JTable<IUser> = new JTable(conn, "user");
+        const jt: JTable<IUser> = new JTable(conn, "User");
         const param: IUser = req.body;
         console.log("SaveUser", param);
         let ans;
@@ -572,9 +572,9 @@ async function setPayRate(param: IPayClassParam, conn: mariadb.PoolConnection) {
         diff = `Round(((1-${param.RateDiff})/Probability-DfRate)/Steps)*Steps`;
     }
 
-    const sql = `insert into payrate(PayClassID,GameID,BetType,SubType,Rate,ModifyID)
-        select ${param.payclassid},GameID,BetType,SubType,${diff},${param.ModifyID}
-        from basepayrate where GameID = ?
+    const sql = `insert into PayRate(PayClassID,GameID,BetType,SubType,Rate,ModifyID)
+        select ${param.PayClassID},GameID,BetType,SubType,${diff},${param.ModifyID}
+        from BasePayRate where GameID = ?
     `;
     let ans;
     console.log("sql:", sql);
@@ -606,9 +606,9 @@ async function CreateOddsData(GameID: string|number, tid: number, conn: mariadb.
         msg.debug =  sql + ">>" + params.join(",");
     });
     if (!isEmpty) {
-        sql = `insert into curoddsinfo(tid,OID,GameID,BetType,Num,Odds,MaxOdds,Steps)
+        sql = `insert into CurOddsInfo(tid,OID,GameID,BetType,Num,Odds,MaxOdds,Steps)
             SELECT ${tid} tid,1 OID,d.GameID,d.BetType,d.Num,(b.DfRate+b.PlusRate) Odds,(TopRate+b.PlusRate) MaxOdds,Steps
-        FROM dfoddsitems d left join basepayrate b on d.GameID=b.GameID and d.BetType = b.BetType and d.SubType = b.SubType
+        FROM dfOddsItems d left join BasePayRate b on d.GameID=b.GameID and d.BetType = b.BetType and d.SubType = b.SubType
         where d.GameID= ${GameID}
         `;
         await conn.query(sql).then((row) => {
@@ -637,7 +637,7 @@ async function chkTermIsSettled(GameID: string|number, conn: mariadb.PoolConnect
     return ans;
 }
 async function getGameList(conn: mariadb.PoolConnection) {
-    const sql: string = "select id,name from games where 1";
+    const sql: string = "select id,name from Games where 1";
     let ans;
     await conn.query(sql).then((rows) => {
        ans = rows;
@@ -647,7 +647,7 @@ async function getGameList(conn: mariadb.PoolConnection) {
     return ans;
 }
 async function getBtList(GameID: number|string, conn: mariadb.PoolConnection) {
-    const sql: string = "select BetType id,Title name,isParlay from basepayrate where GameID=?  and SubType=0";
+    const sql: string = "select BetType id,Title name,isParlay from BasePayRate where GameID=?  and SubType=0";
     let ans;
     await conn.query(sql, [GameID]).then((rows) => {
         ans = rows;
@@ -675,7 +675,7 @@ async function setBt15Odds(tid: number, GameID: number|string, conn: mariadb.Poo
 
 async function getGameParams(GameID: number|string, conn: mariadb.PoolConnection) {
     const msg: IMsg = {ErrNo: 0};
-    const sql = "select * from games where id=?";
+    const sql = "select * from Games where id=?";
     await conn.query(sql, [GameID]).then((rows) => {
         if (rows.length > 0) {
             msg.data = rows.pop();
@@ -694,7 +694,7 @@ async function updateCurOdds(tid: number, GameID: string|number, Bts: number[],
                              OddsPlus: number, conn: mariadb.PoolConnection) {
     let sql = `
         select CONCAT(BetType,Num) Num,(Odds + ${OddsPlus}) Odds, MaxOdds,Steps
-        from curoddsinfo where tid=${tid} and GameID = ${GameID} and BetType in (${Bts.join(",")})
+        from CurOddsInfo where tid=${tid} and GameID = ${GameID} and BetType in (${Bts.join(",")})
     `;
     const msg: IMsg = {ErrNo: 0};
     await conn.query(sql).then((rows) => {
@@ -713,7 +713,7 @@ async function updateCurOdds(tid: number, GameID: string|number, Bts: number[],
         data.push(`(${tid},${GameID},15,${itm.Num},${itm.Odds},${itm.MaxOdds},${itm.Steps})`);
     });
     sql = `
-    insert into  curoddsinfo(tid,GameID,BetType,Num,Odds,MaxOdds,Steps)
+    insert into  CurOddsInfo(tid,GameID,BetType,Num,Odds,MaxOdds,Steps)
     values${data.join(",")}
     on duplicate key update Odds=values(Odds),MaxOdds=values(MaxOdds),Steps=values(Steps)
 `;

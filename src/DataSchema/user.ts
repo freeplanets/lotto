@@ -70,7 +70,7 @@ export interface IPayRateItm {
 
 export interface IPayClassParam {
     GameID: number;
-    payclassid: number;
+    PayClassID: number;
     RateType: number;
     RateDiff?: string;
     RateCond?: number;

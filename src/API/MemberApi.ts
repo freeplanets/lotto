@@ -33,7 +33,7 @@ export async function getOddsData(GameID: number|string, PayClassID: number,
     return msg;
 }
 export async function getPayClass(GameID: number|string, conn: mariadb.PoolConnection) {
-    const sql: string = "select id,PayClassName from payclass where GameID=?";
+    const sql: string = "select id,PayClassName from PayClass where GameID=?";
     let ans;
     await conn.query(sql, [GameID]).then((rows) => {
         ans = rows;
@@ -44,7 +44,7 @@ export async function getPayClass(GameID: number|string, conn: mariadb.PoolConne
     return ans;
 }
 async function getGameInfo(GameID: number|string, conn: mariadb.PoolConnection) {
-    const sql: string = "select t.*,g.name from terms t left join games g on t.GameID=g.id where t.GameID=? order by t.id desc limit 0,1";
+    const sql: string = "select t.*,g.name from Terms t left join Games g on t.GameID=g.id where t.GameID=? order by t.id desc limit 0,1";
     let row;
     const gf: IGameInfo = {
         id: "",
@@ -75,7 +75,7 @@ async function getGameInfo(GameID: number|string, conn: mariadb.PoolConnection) 
     return gf;
 }
 function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConnection) {
-    const sql = "select * from terms where GameID=? and id < ? order by id desc limit 0,1";
+    const sql = "select * from Terms where GameID=? and id < ? order by id desc limit 0,1";
     const lg: ILastGame = {
         sno: "",
         nn: "",
@@ -98,7 +98,7 @@ function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConne
 async function getOddsItem(GameID: number|string, tid: string, isSettled: number, PayClassID: number,
                            MaxOddsID: number, conn: mariadb.PoolConnection) {
     const sql = `SELECT OID,c.BetType,Num,Odds+Rate Odds,isStop,Steps
-        FROM curoddsinfo c left join payrate p on c.GameID=p.GameID and c.BetType=p.BetType
+        FROM CurOddsInfo c left join payrate p on c.GameID=p.GameID and c.BetType=p.BetType
         WHERE c.GameID=? and tid=? and PayClassID=? and p.SubType=0 and OID > ?`;
     const gameOdds: IGameOdds = {};
     let MaxID: number = 0;
@@ -135,7 +135,7 @@ async function getOddsItem(GameID: number|string, tid: string, isSettled: number
 }
 
 export async function getUsers(conn: mariadb.PoolConnection) {
-    const sql = "select id,Account,Nickname,Types from user where 1";
+    const sql = "select id,Account,Nickname,Types from User where 1";
     let ans;
     await conn.query(sql).then((rows) => {
         // console.log("getUsers", rows);

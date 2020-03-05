@@ -4,7 +4,7 @@ const jstr = '{"ErrNo":0,"gameLists":[{"id":"1","name":"六合彩"},{"id":"2","n
 const wager = JSON.parse(jstr);
 export async function updateWager(conn: mariadb.PoolConnection) {
     const GameID: number = 1;
-    let sql = "insert into basepayrate(GameID,BetType,SubType,isParlay) values";
+    let sql = "insert into BasePayRate(GameID,BetType,SubType,isParlay) values";
     const bts: IBTItem[] = wager.btLists;
     const vals: string[] = [];
     bts.map((itm) => {

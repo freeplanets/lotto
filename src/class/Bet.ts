@@ -130,7 +130,7 @@ export class Bet implements IBet {
             return msg;
         }
         await this.conn.beginTransaction();
-        const jt: JTable<IBetHeader> = new JTable(this.conn, "betheader");
+        const jt: JTable<IBetHeader> = new JTable(this.conn, "BetHeader");
         const bh: IBetHeader = {
             id: 0,
             UserID: this.UserID,
@@ -155,7 +155,7 @@ export class Bet implements IBet {
             BetDetail.map((itm) => {
                 itm.betid = rlt.insertId;
             });
-            const jtd: JTable<IBetTable> = new JTable(this.conn, "bettable");
+            const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
             console.log("Save Detail:", rlt1);
             msg.data = rlt1;
@@ -233,7 +233,7 @@ export class Bet implements IBet {
             BNum = Odd.length;
         }
         const numsets = C(setsN, BNum);
-        const jt: JTable<IBetHeader> = new JTable(this.conn, "betheader");
+        const jt: JTable<IBetHeader> = new JTable(this.conn, "BetHeader");
         SNB.Sets = numsets.length;
         const bh: IBetHeader = {
             id: 0,
@@ -306,7 +306,7 @@ export class Bet implements IBet {
                 }
                 BetDetail.push(bd);
             });
-            const jtd: JTable<IBetTable> = new JTable(this.conn, "bettable");
+            const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
             console.log("Save Detail:", rlt1);
             msg.data = rlt1;
@@ -321,7 +321,7 @@ export class Bet implements IBet {
 
     }
     private async getOddsData(nums: INum) {
-        let sql: string = `select c.BetType,c.OID,c.Num,Odds+Rate Odds from curoddsinfo c left join payrate p
+        let sql: string = `select c.BetType,c.OID,c.Num,Odds+Rate Odds from CurOddsInfo c left join payrate p
         on c.GameID=p.GameID and c.BetType=p.BetType where p.SubType=0 and
         c.tid= ${this.tid} and c.GameID = ${this.GameID} and p.PayClassID= ${this.PayClassID} and `;
         const filters: string[] = [];

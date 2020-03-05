@@ -6,7 +6,7 @@ export async function ModifyCredit(uid: number, Account: string,
     let  balance: number = await getUserCredit(uid, conn);
     balance = balance + money;
     if (balance < 0) { return false; }
-    const sql = `insert into usercredit(uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;
+    const sql = `insert into UserCredit(uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;
     const param = [uid, Account, AgentId, idenkey, money, balance];
     const dbans: IDbAns = await conn.query(sql, param);
     if (dbans.affectedRows > 0) {
@@ -19,7 +19,7 @@ export async function ModifyCredit(uid: number, Account: string,
     return false;
 }
 async function ModifyUserCredit(uid: number, balance: number, conn: Connection) {
-    const sql = `update user set Balance=${balance} where id=${uid}`;
+    const sql = `update User set Balance=${balance} where id=${uid}`;
     const ans: IDbAns = await conn.query(sql);
     if (ans.affectedRows > 0) { return true; }
     return false;
@@ -27,7 +27,7 @@ async function ModifyUserCredit(uid: number, balance: number, conn: Connection) 
 
 export function getUserCredit(uid: number, conn: Connection) {
     return new Promise<number>(async (resolve) => {
-        const sql = `select balance from usercredit where uid=? order by id desc limit 0,1`;
+        const sql = `select balance from UserCredit where uid=? order by id desc limit 0,1`;
         const ans = await conn.query(sql, [uid]);
         let balance: number = 0;
         if (ans[0]) {
