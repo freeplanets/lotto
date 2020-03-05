@@ -35,6 +35,7 @@ agentApi.get("/1", async (req: Request, res: Response) => {
         const param = decParam(eds.Decrypted(params.param));
         console.log("agentApi/1 param:", param);
         const ans = await addUser(params.agentId, Agent.PayClassID, param, conn);
+        console.log("after addUser:", ans);
         if (ans) {
             msg.ErrCon = "ok!!";
             const usr: IUser | boolean = await getUser(param.userCode, params.agentId, conn);
@@ -139,11 +140,15 @@ function decParam(param: string): IGameAccessParams {
     return gap;
 }
 async function addUser(AgentId: string, PayClassID: number, param: IGameAccessParams, conn: Connection) {
-    if (!param.userCode) { return false; }
+    if (!param.userCode) {
+        console.log("addUser userCode", param, AgentId);
+        return false;
+    }
     if (!param.nickName) {
         param.nickName = param.userCode;
     }
     const usr = getUser(param.userCode, AgentId, conn);
+    console.log("addUser getUser:", usr);
     if (usr) { return true; }
     const sql = `Insert into User(Account,Password,Nickname,Types,UpId,PayClassID) values(
         '${param.userCode}',Password('${new Date().getTime()}'),'${param.nickName}',0,${AgentId},${PayClassID}
