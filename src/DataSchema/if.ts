@@ -25,6 +25,7 @@ export interface IGameInfo {
     isEnd: string;
     endSec: number;
     endSecSN: number;
+    isSettled: number;
 }
 export interface ILastGame {
     sno: string;
@@ -100,6 +101,8 @@ export interface IGameAccessParams {
     popGameLst?: string; // 是否需要显示游戏列表弹窗，1 为显示，0 为不显示，默认显示；
     // isShowLobby 为 0 时，配置才生效；isShowLobby 为 1 时，不显示游戏列表弹窗。
     showTrialRoom?: string; // 是否显示试玩场，1 为显示，0 为不显示，默认显示
+    startTime?: number;
+    endTime?: number;
   }
 
 export interface IDbAns  {

@@ -330,7 +330,7 @@ app.post("/api/saveTerms", async (req, res) => {
 app.get("/api/getTerms", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.query;
-        const sql = "select * from Terms where GameID=? and isSettled=0";
+        const sql = "select * from Terms where GameID=?";
         const msg: IMsg = {
             ErrNo: 0,
             ErrCon: ""
@@ -429,12 +429,14 @@ app.post("/api/member/mwagermulti", async (req, res) => {
         const param = req.body;
         console.log("/api/member/mwagermulti", param);
         const UserID = param.UserID;
+        const Account = param.Account;
         const tid = param.LNoID;
         const GameID = param.LottoID;
         const PayClassID = param.PayClassID;
+        const UpId = param.UpId;
         const btrans = await conn.beginTransaction();
         console.log("Begin:", btrans);
-        const snb: Bet = new Bet(UserID, tid, GameID, PayClassID, conn);
+        const snb: Bet = new Bet(UserID, Account, UpId , tid, GameID, PayClassID, conn);
         const ans: IMsg = await snb.AnaNum(param.WagerContent);
         // if (ans.warningStatus === 0) {
         if (ans.ErrNo === 0) {
@@ -452,12 +454,14 @@ app.post("/api/member/mwagerjn", async (req, res) => {
         const param = req.body;
         console.log("/api/member/mwagerjn", param);
         const UserID = param.UserID;
+        const Account = param.Account;
+        const UpId = param.UpId;
         const tid = param.LNoID;
         const GameID = param.LottoID;
         const PayClassID = param.PayClassID;
         const btrans = await conn.beginTransaction();
         console.log("Begin:", btrans);
-        const snb: Bet = new Bet(UserID, tid, GameID, PayClassID, conn);
+        const snb: Bet = new Bet(UserID, Account, UpId, tid, GameID, PayClassID, conn);
         const ans: IMsg = await snb.Parlay(param.wgtype, param.OddsID, param.JoinNumber, param.StakeMoney);
         // if (ans.warningStatus === 0) {
         if (ans.ErrNo === 0) {
@@ -474,7 +478,7 @@ app.get("/api/member/getWagerItems", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.query;
         const gets: Gets = new Gets(conn);
-        console.log("/api/member/getWagerItems", param);
+        // console.log("/api/member/getWagerItems", param);
         if (param.data === "") {
             param.date = JDate.DateStr;
         }
@@ -603,7 +607,7 @@ async function CreateOddsData(GameID: string|number, tid: number, conn: mariadb.
     });
     if (!isEmpty) {
         sql = `insert into curoddsinfo(tid,OID,GameID,BetType,Num,Odds,MaxOdds,Steps)
-            SELECT ${tid} tid,1 OID,d.GameID,d.BetType,d.Num,(b.DfRate+b.PlusRate) Odds,TopRate MaxOdds,Steps
+            SELECT ${tid} tid,1 OID,d.GameID,d.BetType,d.Num,(b.DfRate+b.PlusRate) Odds,(TopRate+b.PlusRate) MaxOdds,Steps
         FROM dfoddsitems d left join basepayrate b on d.GameID=b.GameID and d.BetType = b.BetType and d.SubType = b.SubType
         where d.GameID= ${GameID}
         `;

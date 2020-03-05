@@ -83,6 +83,9 @@ agentApi.get("/3", async (req: Request, res: Response) => {
 agentApi.get("/4", async (req: Request, res: Response) => {
     await CreditAC(req, res, 4);
 });
+agentApi.get("/logHandle", async (req: Request, res: Response) => {
+    await getTicketDetail(req, res);
+});
 async function CreditAC(req: Request, res: Response, ac: number) {
     const params = req.query;
     const conn = await dbPool.getConnection();
@@ -193,11 +196,37 @@ async function chkLoginAction(uid: number, conn: Connection) {
         console.log(rows, ts, rows[0].timeproc - ts);
     }
     */
-    const sql = `update logininfo set isActive=0 where uid=${uid} and  CURRENT_TIMESTAMP-timeproc>${staytime}`;
+    const sql = `update logininfo set isActive=0 where uid=${uid} and isActive=1 and CURRENT_TIMESTAMP-timeproc>${staytime}`;
     const ans: IDbAns = await conn.query(sql);
     console.log("chkLoginAction", sql, ans);
     if (ans) { return true; }
     return false;
+}
+async function getTicketDetail(req, res) {
+    const params = req.query;
+    console.log("getTicketDetail:", params);
+    const data: IAnsData = {code: 0};
+    const conn = await dbPool.getConnection();
+    const UpId = params.agentId;
+    const Agent: IUser = await getAgent(UpId, conn);
+    const eds = new EDS(Agent.DfKey);
+    const param = decParam(eds.Decrypted(params.param));
+    console.log("getTicketDetail param:", param);
+    const sql = `select id,Account userCode,tid TermID,GameID,BetType,Num,Odds,Amt,WinLose,
+        UNIX_TIMESTAMP(CreateTime) CreateTime,UNIX_TIMESTAMP(ModifyTime) ModifyTime
+        from bettable where UpId=${UpId} and isCancled=0 and
+        ModifyTime between from_unixtime(${param.startTime}) and from_unixtime(${param.endTime})`;
+    await conn.query(sql).then((rows) => {
+        data.list = rows;
+        console.log("getTicketDetail", sql);
+    }).catch((err) => {
+        data.code = 9;
+        data.error = err;
+        console.log("getTicketDetail error", data);
+        // res.send(JSON.stringify(data));
+    });
+    conn.release();
+    res.send(JSON.stringify(data));
 }
 /*
 async function ModifyCredit(uid: number, Account: string,

@@ -111,14 +111,28 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     let ans;
     let sql: string = "";
     let sqls: string[];
-    conn.beginTransaction();
+    await conn.beginTransaction();
     sql = `update bettable set WinLose=Amt*-1,OpNums=0,OpSP=0,isSettled=1 where tid=${tid} and GameID=${GameID} and isCancled=0`;
     await conn.query(sql).then((res) => {
-        console.log("WinLose=Amt*-1", res);
+        console.log("WinLose=Amt*-1", sql, res);
         ans = true;
-    }).catch((err) => {
-        console.log("WinLose=Amt*-1 err", err);
-        conn.rollback();
+    }).catch(async (err) => {
+        console.log("WinLose=Amt*-1 err 1", err);
+        await conn.rollback();
+        ans = false;
+    });
+    if (!ans) {
+        return imsr;
+    }
+
+    // winlose update check
+    sql = `select count(*) cnt from bettable where tid=${tid} and GameID=${GameID} and isCancled=0 and WinLose=0`;
+    await conn.query(sql).then((res) => {
+        console.log("WinLose=0", sql, res);
+        ans = true;
+    }).catch(async (err) => {
+        console.log("WinLose=0", err);
+        await conn.rollback();
         ans = false;
     });
     if (!ans) {
@@ -129,31 +143,36 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     let rtn;
     await conn.query(sql).then( (res) => {
         rtn = res;
-    }).catch((err) => {
-        console.log("WinLose=Amt*-1 err", err);
-        conn.rollback();
+    }).catch(async (err) => {
+        console.log("WinLose=Amt*-1 err 2", err);
+        await conn.rollback();
         ans = false;
     });
     if (rtn) {
         sqls = doBT(tid, GameID, imsr, rtn, conn);
-        sqls.map(async (itm) => {
+        await Promise.all(sqls.map(async (itm) => {
             ans = await doSql(itm, conn);
             if (!ans) {
-                conn.rollback();
+                console.log("err rollback 1");
+                await conn.rollback();
                 return imsr;
             }
-        });
+        }));
     }
+    console.log("batch:", ans);
     if (ans) {
         sql = `update terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=1 where id=${tid}`;
         ans = await doSql(sql, conn);
         if (ans) {
-            conn.commit();
+            console.log("commit 1");
+            await conn.commit();
         } else {
-            conn.rollback();
+            console.log("err rollback 2");
+            await conn.rollback();
         }
     } else {
-        conn.rollback();
+        console.log("err rollback 3");
+        await conn.rollback();
     }
     // console.log("SQL:", ans);
     return imsr;

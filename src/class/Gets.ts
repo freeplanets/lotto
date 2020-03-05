@@ -40,7 +40,7 @@ export class Gets {
                     id: itm.tid,
                     con: JSON.parse(itm.BetContent),
                     gold: itm.Total,
-                    end: itm.WinLose,
+                    end: parseFloat(itm.WinLose ? itm.WinLose.toFixed(2) : "0"),
                     time: itm.CreateTime
                 };
                 if (typeof subSum[itm.GameID] === "undefined") {

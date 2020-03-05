@@ -13,9 +13,11 @@ export async function getOddsData(GameID: number|string, PayClassID: number,
         ErrCon: "",
     };
     if (gInfo.id) {
+        // console.log("getOddsData", gInfo);
         msg.game = gInfo;
         msg.lastGame = await getLastGame(GameID, gInfo.id, conn);
-        const ans = await getOddsItem(GameID, gInfo.id, PayClassID, MaxOddsID, conn);
+        const ans = await getOddsItem(GameID, gInfo.id,
+            gInfo.isSettled, PayClassID, MaxOddsID, conn);
         // console.log("getOddsData", ans);
         if (ans.MaxOID) {
             msg.odds = ans.Odds;
@@ -50,7 +52,8 @@ async function getGameInfo(GameID: number|string, conn: mariadb.PoolConnection) 
         sNo: "",
         isEnd: "N",
         endSec: 0,
-        endSecSN: 0
+        endSecSN: 0,
+        isSettled: 0
     };
     await conn.query(sql, [GameID]).then((rows) => {
         if (rows) {
@@ -67,29 +70,32 @@ async function getGameInfo(GameID: number|string, conn: mariadb.PoolConnection) 
             gf.endSec = JDate.LeftSec(row.StopTime);
             gf.endSecSN = JDate.LeftSec(row.StopTimeS);
         }
+        gf.isSettled = row.isSettled;
     }
     return gf;
 }
-async function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConnection) {
+function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConnection) {
     const sql = "select * from terms where GameID=? and id < ? order by id desc limit 0,1";
     const lg: ILastGame = {
         sno: "",
         nn: "",
         ns: ""
     };
-    await conn.query(sql, [GameID, tid]).then((rows) => {
-        if (rows.length > 0) {
-            lg.sno = rows[0].TermID;
-            lg.nn = rows[0].Result;
-            lg.ns = rows[0].SpNo;
-        }
-    }).catch((err) => {
-        console.log("getLastGame:", err);
+    return new Promise((resolve) => {
+        conn.query(sql, [GameID, tid]).then((rows) => {
+            if (rows.length > 0) {
+                lg.sno = rows[0].TermID;
+                lg.nn = rows[0].Result;
+                lg.ns = rows[0].SpNo;
+            }
+            resolve(lg);
+        }).catch((err) => {
+            console.log("getLastGame:", err);
+        });
     });
-    return lg;
 }
 
-async function getOddsItem(GameID: number|string, tid: string, PayClassID: number,
+async function getOddsItem(GameID: number|string, tid: string, isSettled: number, PayClassID: number,
                            MaxOddsID: number, conn: mariadb.PoolConnection) {
     const sql = `SELECT OID,c.BetType,Num,Odds+Rate Odds,isStop,Steps
         FROM curoddsinfo c left join payrate p on c.GameID=p.GameID and c.BetType=p.BetType
@@ -98,7 +104,7 @@ async function getOddsItem(GameID: number|string, tid: string, PayClassID: numbe
     let MaxID: number = 0;
     const param = [GameID, tid, PayClassID, MaxOddsID];
     // const btOdds:IBtOdds = {}
-    // console.log("getOddsItem", sql, param);
+    // console.log("getOddsItem isSettled", isSettled);
     await conn.query(sql, param).then((rows) => {
         rows.map((itm) => {
             /*
@@ -109,7 +115,7 @@ async function getOddsItem(GameID: number|string, tid: string, PayClassID: numbe
             const tmp: IOdds = {
                 id: itm.OID,
                 o: itm.Odds,
-                s: itm.isStop,
+                s: itm.isStop || isSettled,
             };
             if (typeof(gameOdds[itm.BetType]) === "undefined") {
                 gameOdds[itm.BetType] = {};

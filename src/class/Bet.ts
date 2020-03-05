@@ -18,6 +18,8 @@ interface IBetTable {
     id: number;
     betid: number;
     UserID: number;
+    Account: string;
+    UpId: number;
     tid: number;
     GameID: number;
     BetType: number;
@@ -41,7 +43,8 @@ interface INumOdd {
  *
  */
 export class Bet implements IBet {
-    constructor(private UserID: number, private tid: number, private GameID: number,
+    constructor(private UserID: number, private Account: string, private UpId: number,
+                private tid: number, private GameID: number,
                 private PayClassID: number, private conn: mariadb.PoolConnection) {}
     public async AnaNum(nums: string) {
         // const SNB: ISingleNumBet[] = [];
@@ -97,6 +100,8 @@ export class Bet implements IBet {
                     id: 0,
                     betid: 0,
                     UserID: this.UserID,
+                    Account: this.Account,
+                    UpId: this.UpId,
                     tid: this.tid,
                     GameID: this.GameID,
                     BetType: itm.BetType as number,
@@ -283,6 +288,8 @@ export class Bet implements IBet {
                     betid: rlt.insertId,
                     tid: this.tid,
                     UserID: this.UserID,
+                    Account: this.Account,
+                    UpId: this.UpId,
                     GameID: this.GameID,
                     BetType,
                     Num: "x" + set.join("x") + "x",
