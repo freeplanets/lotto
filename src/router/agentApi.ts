@@ -147,7 +147,7 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
     if (!param.nickName) {
         param.nickName = param.userCode;
     }
-    const usr = getUser(param.userCode, AgentId, conn);
+    const usr = await getUser(param.userCode, AgentId, conn);
     console.log("addUser getUser:", usr);
     if (usr) { return true; }
     const sql = `Insert into User(Account,Password,Nickname,Types,UpId,PayClassID) values(
