@@ -15,7 +15,11 @@ interface IAnsData {
     freeMoney?: string;  // "100.56"
     [key: string]: string|number|object|undefined;
 }
-const memberUrl: string = "http://localhost:8080";
+let defaultUrl = "http://localhost:8080";
+if (process.env.NODE_ENV !== "development") {
+    defaultUrl = "http://lotocm.uuss.net";
+}
+const memberUrl: string = defaultUrl;
 const staytime: number = 3000;   // sec
 const agentApi: Router = express.Router();
 agentApi.get("/1", async (req: Request, res: Response) => {
