@@ -321,7 +321,7 @@ export class Bet implements IBet {
 
     }
     private async getOddsData(nums: INum) {
-        let sql: string = `select c.BetType,c.OID,c.Num,Odds+Rate Odds from CurOddsInfo c left join payrate p
+        let sql: string = `select c.BetType,c.OID,c.Num,Odds+Rate Odds from CurOddsInfo c left join PayRate p
         on c.GameID=p.GameID and c.BetType=p.BetType where p.SubType=0 and
         c.tid= ${this.tid} and c.GameID = ${this.GameID} and p.PayClassID= ${this.PayClassID} and `;
         const filters: string[] = [];

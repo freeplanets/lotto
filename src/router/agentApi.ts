@@ -36,7 +36,7 @@ agentApi.get("/1", async (req: Request, res: Response) => {
         const param = decParam(eds.Decrypted(params.param));
         console.log("agentApi/1 param:", param);
         const ans: boolean = await addUser(params.agentId, Agent.PayClassID, param, conn);
-        console.log("after addUser:", ans);
+        // console.log("after addUser:", ans);
         if (ans) {
             msg.ErrCon = "ok!!";
             const Ans: any = await getUser(param.userCode, params.agentId, conn);
@@ -159,13 +159,13 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
         param.nickName = param.userCode;
     }
     const usr: IUser | boolean = await getUser(param.userCode, AgentId, conn);
-    console.log("addUser getUser:", usr);
+    // console.log("addUser getUser:", usr);
     if (usr) { return true; }
     const sql = `Insert into User(Account,Password,Nickname,Types,UpId,PayClassID) values(
         '${param.userCode}',Password('${new Date().getTime()}'),'${param.nickName}',0,${AgentId},${PayClassID}
     )`;
     const ans: IDbAns = await conn.query(sql);
-    console.log("addUser", ans);
+    // console.log("addUser", ans);
     if (ans.affectedRows > 0) {
         return true;
     } else {
