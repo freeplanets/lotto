@@ -1,5 +1,6 @@
 import express, { Request, Response, Router } from "express";
 import {Connection} from "mariadb";
+import { userInfo } from "os";
 import EDS from "../class/EncDecString";
 import {IDbAns, IGameAccessParams, IMsg} from "../DataSchema/if";
 import {IUser} from "../DataSchema/user";
@@ -34,12 +35,13 @@ agentApi.get("/1", async (req: Request, res: Response) => {
         const eds = new EDS(Agent.DfKey);
         const param = decParam(eds.Decrypted(params.param));
         console.log("agentApi/1 param:", param);
-        const ans = await addUser(params.agentId, Agent.PayClassID, param, conn);
+        const ans: boolean = await addUser(params.agentId, Agent.PayClassID, param, conn);
         console.log("after addUser:", ans);
         if (ans) {
             msg.ErrCon = "ok!!";
-            const usr: IUser | boolean = await getUser(param.userCode, params.agentId, conn);
-            if (usr) {
+            const Ans: any = await getUser(param.userCode, params.agentId, conn);
+            if (Ans) {
+                const usr = Ans as IUser;
                 let skey: string = eds.KeyString;
                 const ans1 = await addLoginInfo(usr.id, usr.Account, params.agentId, skey, conn);
                 if (ans1) {
@@ -74,9 +76,9 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     const msg: IMsg = {ErrNo: 0};
     const login = await getUserLogin(param.Account, param.token, conn);
     if (login) {
-        const User: IUser = await getUser(param.Account, login.AgentID, conn);
+        const User: IUser | boolean = await getUser(param.Account, login.AgentID, conn);
         if (User) {
-            msg.data = User;
+            msg.data = User as IUser;
         }
     } else {
         msg.ErrNo = 9;
@@ -105,18 +107,27 @@ async function CreditAC(req: Request, res: Response, ac: number) {
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
     console.log("agentApi/1 param:", param);
-    const user: IUser = await getUser(param.userCode, params.agentId, conn);
-    const money: number = parseInt(param.money as string, 10);
-    const key: number = (ac === 3 ? 1 : -1);
-    const ans = await ModifyCredit(user.id, user.Account, params.agentId, money * key, param.orderId as string, conn);
-    if (ans) {
-        data.money = ans.balance + "";
-        data.freeMoney = ans.balance + "";
-        data.orderMoney = money + "";
+    const noUser: IUser | boolean = await getUser(param.userCode, params.agentId, conn) as IUser;
+    if (noUser) {
+        data.code = 9;
+        msg.data = data;
+        msg.ErrNo = 9;
+        msg.ErrCon = "No user found!!";
     } else {
-        data.status = 2;
+        const user = noUser as IUser;
+        const money: number = parseInt(param.money as string, 10);
+        const key: number = (ac === 3 ? 1 : -1);
+        const ans = await ModifyCredit(user.id, user.Account, params.agentId,
+            money * key, param.orderId as string, conn);
+        if (ans) {
+            data.money = ans.balance + "";
+            data.freeMoney = ans.balance + "";
+            data.orderMoney = money + "";
+        } else {
+            data.status = 2;
+        }
+        msg.data = data;
     }
-    msg.data = data;
     conn.release();
     res.send(JSON.stringify(msg));
 }
@@ -139,7 +150,7 @@ function decParam(param: string): IGameAccessParams {
     });
     return gap;
 }
-async function addUser(AgentId: string, PayClassID: number, param: IGameAccessParams, conn: Connection) {
+async function addUser(AgentId: string, PayClassID: number, param: IGameAccessParams, conn: Connection): Promise<boolean> {
     if (!param.userCode) {
         console.log("addUser userCode", param, AgentId);
         return false;
@@ -147,15 +158,19 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
     if (!param.nickName) {
         param.nickName = param.userCode;
     }
-    const usr = await getUser(param.userCode, AgentId, conn);
+    const usr: IUser | boolean = await getUser(param.userCode, AgentId, conn);
     console.log("addUser getUser:", usr);
     if (usr) { return true; }
     const sql = `Insert into User(Account,Password,Nickname,Types,UpId,PayClassID) values(
         '${param.userCode}',Password('${new Date().getTime()}'),'${param.nickName}',0,${AgentId},${PayClassID}
-    )  on duplicate key`;
+    )`;
     const ans: IDbAns = await conn.query(sql);
     console.log("addUser", ans);
-    return true;
+    if (ans.affectedRows > 0) {
+        return true;
+    } else {
+        return false;
+    }
 }
 async function addLoginInfo(uid: number, Account: string, AgentId: string, skey: string, conn: Connection) {
     const act1 = await chkLoginAction(uid, conn);
@@ -176,11 +191,21 @@ async function addLoginInfo(uid: number, Account: string, AgentId: string, skey:
     }
     return false;
 }
-async function getUser(Account: string, AgentId: string, conn: Connection ): Promise<IUser> {
-    const param: {[key: number]: any} = [Account, AgentId];
-    const sql = "select * from User where Account=? and UpId=?";
-    const rows: IUser[] = await conn.query(sql, param);
-    return rows[0];
+function getUser(Account: string, AgentId: string, conn: Connection ): Promise<IUser|boolean> {
+    return new Promise(async (resolve, reject) => {
+        const param: {[key: number]: any} = [Account, AgentId];
+        const sql = "select * from User where Account=? and UpId=?";
+        await conn.query(sql, param).then((rows) => {
+            console.log("getUser:", rows.length, sql, param);
+            if (rows.length === 0) {
+                resolve(false);
+            }
+            resolve(rows[0]);
+        }).catch((err) => {
+            console.log("getUser error", err);
+            reject(false);
+        });
+    });
 }
 async function getUserLogin( Account: string, skey: string, conn: Connection) {
     const sql = "select * from LoginInfo where Account=?  and logkey=? and isActive=1";
