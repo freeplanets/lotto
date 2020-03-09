@@ -107,14 +107,14 @@ async function CreditAC(req: Request, res: Response, ac: number) {
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
     console.log("agentApi/1 param:", param);
-    const noUser: IUser | boolean = await getUser(param.userCode, params.agentId, conn) as IUser;
-    if (noUser) {
+    const hasUser: IUser | boolean = await getUser(param.userCode, params.agentId, conn) as IUser;
+    if (!hasUser) {
         data.code = 9;
         msg.data = data;
         msg.ErrNo = 9;
         msg.ErrCon = "No user found!!";
     } else {
-        const user = noUser as IUser;
+        const user = hasUser as IUser;
         const money: number = parseInt(param.money as string, 10);
         const key: number = (ac === 3 ? 1 : -1);
         const ans = await ModifyCredit(user.id, user.Account, params.agentId,

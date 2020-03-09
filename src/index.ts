@@ -1,7 +1,7 @@
 import cors from "cors";
 import express, {Request, Response} from "express";
 import mariadb from "mariadb";
-import {getOddsData, getPayClass, getUsers} from "./API/MemberApi";
+import {getOddsData, getOpParams, getPayClass, getUsers} from "./API/MemberApi";
 import Zadic from "./class/Animals";
 import {Bet} from "./class/Bet";
 import { Gets } from "./class/Gets";
@@ -535,6 +535,26 @@ app.get("/api/member/getPayClass", async (req, res) => {
         conn.release();
         res.send(JSON.stringify(msg));
     });
+app.get("/api/getOpParams", async (req, res) => {
+    const conn = await dbPool.getConnection();
+    const param = req.query;
+    const msg: IMsg = {ErrNo: 0};
+    if (!param.GameID) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "GameID is missing!!";
+    } else {
+        const ans = getOpParams(param.GameID, conn);
+        if (ans) {
+            msg.data = ans;
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Get Pay Class Error!!";
+        }
+    }
+    conn.release();
+    res.send(JSON.stringify(msg));
+});
+
 app.post("/api/SaveNums", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.body.params;

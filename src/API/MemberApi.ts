@@ -43,6 +43,17 @@ export async function getPayClass(GameID: number|string, conn: mariadb.PoolConne
     });
     return ans;
 }
+export async function getOpParams(GameID: number|string, conn: mariadb.PoolConnection) {
+    const sql: string = "select * from OpenParams where GameID=?";
+    let ans;
+    await conn.query(sql, [GameID]).then((rows) => {
+        ans = rows;
+    }).catch((err) => {
+        console.log("getPayClass", ans);
+        ans = false;
+    });
+    return ans;
+}
 async function getGameInfo(GameID: number|string, conn: mariadb.PoolConnection) {
     const sql: string = "select t.*,g.name from Terms t left join Games g on t.GameID=g.id where t.GameID=? order by t.id desc limit 0,1";
     let row;
