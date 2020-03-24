@@ -50,7 +50,7 @@ export interface INumData {
     Num: number;
     OddsID: number;
     Odds?: string | number;
-    Amt?: number;
+    Amt: number;
     BetType?: number;
 }
 export interface IBetContent {
@@ -109,5 +109,53 @@ export interface IDbAns  {
     affectedRows: number;
     insertId: number;
     warningStatus: number;
+    [key: string]: number;
+}
+
+export interface IBetTable {
+    id: number;
+    betid: number;
+    UserID: number;
+    Account: string;
+    UpId: number;
+    tid: number;
+    GameID: number;
+    BetType: number;
+    Num: string;
+    Odds: number;
+    Odds1?: number;
+    OpPASS?: number;
+    Amt: number;
+    Payouts: number;
+    Payouts1?: number;
+    WinLose?: number;
+    isCancled?: number;
+    isSettled?: number;
+}
+
+export interface IOParam {
+    id: number;
+    GameID: number;
+    BetType: number;
+    TotalNums: number;
+    UseAvg: number;
+    SingleNum: number;
+    UnionNum: number;
+    MinHand: number;
+    MaxHand: number;
+    BetForChange: number;
+    Steps: number;
+}
+export interface ICurOddsData {
+    BetType: number;
+    OID: number;
+    Num: number;
+    Odds: number;
+    tolS: number;
+}
+/**
+ *  obj['aaa']=123;
+ */
+export interface IStrKeyNumer {
     [key: string]: number;
 }

@@ -5,10 +5,14 @@ export async function ModifyCredit(uid: number, Account: string,
                                    AgentId: string, money: number, idenkey: string, conn: Connection) {
     let  balance: number = await getUserCredit(uid, conn);
     balance = balance + money;
-    if (balance < 0) { return false; }
+    if (balance < 0) {
+        console.log("ModifyCredit chk balanace:", balance, "Money:", money);
+        return false;
+    }
     const sql = `insert into UserCredit(uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;
     const param = [uid, Account, AgentId, idenkey, money, balance];
     const dbans: IDbAns = await conn.query(sql, param);
+    console.log("ModifyCredit:", dbans);
     if (dbans.affectedRows > 0) {
     // return true;
         const bans =  await ModifyUserCredit(uid, balance, conn);

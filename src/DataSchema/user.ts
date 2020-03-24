@@ -109,4 +109,5 @@ export interface IGame {
     DelBeforeEnd: number;
     LowestBet: number;
     TopPay: number;
+    GType: string;
 }

@@ -8,7 +8,7 @@ import { Gets } from "./class/Gets";
 import JDate from "./class/JDate";
 import JTable from "./class/JTable";
 import {SaveNums} from "./class/Settlement";
-import {IBTItem, IGameItem, IMsg} from "./DataSchema/if";
+import {IBTItem, IGameItem, IMsg, IOParam} from "./DataSchema/if";
 import { IBasePayRateItm, IDBAns, IGame , IPayClassParam , IPayRateItm , ITerms, IUser} from "./DataSchema/user";
 import dbPool, {port} from "./db";
 import agentApi from "./router/agentApi";
@@ -58,8 +58,8 @@ app.get("/login", async (req, res) => {
         const params = [param.Account, param.Password];
         sql = `Select * from User where Account= ? and Password=Password(?)`;
         console.log(sql, params);
-        conn.query(sql, params).then((rows) => {
-            console.log("login:", rows);
+        await conn.query(sql, params).then((rows) => {
+            // console.log("login:", rows);
             let msg: string = "";
             if (rows.length > 0) {
                 let row: any;
@@ -70,6 +70,7 @@ app.get("/login", async (req, res) => {
             res.send(msg);
         }).catch((err) => {
             console.log(err);
+            res.send(err);
         });
     });
     // start the Express server
@@ -79,20 +80,22 @@ app.get("/saveGames", async (req, res) => {
         const params = [param.id, param.name];
         const sql = `insert into Games(id,name) values(?,?)`;
         console.log(sql, params);
-        conn.query(sql, params).then((v) => {
+        await conn.query(sql, params).then((v) => {
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("saveGames", err);
+            res.send(err);
         });
     });
 app.get("/api/getGames", async (req, res) => {
         const conn = await dbPool.getConnection();
-        const sql = "select id,name from Games order by id";
-        conn.query(sql).then((v) => {
+        const sql = "select id,name,GType from Games order by id";
+        await conn.query(sql).then((v) => {
             conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("saveGames", err);
+            res.send(err);
         });
     });
 app.post("/api/saveBtClass", async (req, res) => {
@@ -100,12 +103,13 @@ app.post("/api/saveBtClass", async (req, res) => {
         const param = req.body;
         const params = [param.GameID, param.BCName, param.BetTypes, param.ModifyID];
         const sql = "insert into BetClass(GameID,BCname,BetTypes,ModifyID) values(?,?,?,?) on duplicate key update BetTypes=values(BetTypes),ModifyID=values(ModifyID)";
-        conn.query(sql, params).then((v) => {
+        await conn.query(sql, params).then((v) => {
             console.log("saveBtClass", v);
             conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("saveBtClass error", err);
+            res.send(err);
         });
     });
 app.get("/api/getBtClass", async (req, res) => {
@@ -113,7 +117,7 @@ app.get("/api/getBtClass", async (req, res) => {
         const param = req.query;
         const params = [param.GameID];
         const sql = "select BCName,BetTypes from BetClass where GameID = ?";
-        conn.query(sql, params).then((v) => {
+        await conn.query(sql, params).then((v) => {
             conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
@@ -125,7 +129,7 @@ app.get("/api/getPayClass", async (req, res) => {
         const param = req.query;
         const params = [param.GameID];
         const sql = "select id,PayClassName from PayClass where GameID = ?";
-        conn.query(sql, params).then((v) => {
+        await conn.query(sql, params).then((v) => {
             // console.log("getPayClass", v, params);
             conn.release();
             res.send(JSON.stringify(v));
@@ -179,7 +183,7 @@ app.get("/api/getBasePayRate", async (req, res) => {
         const param = req.query;
         const params = [param.GameID];
         const sql = "select BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,PlusRate from BasePayRate where GameID = ?";
-        conn.query(sql, params).then((v) => {
+        await conn.query(sql, params).then((v) => {
             // console.log("getBasePayRate", v, params);
             conn.release();
             res.send(JSON.stringify(v));
@@ -193,7 +197,7 @@ app.get("/api/getPayRate", async (req, res) => {
         const params = [param.PayClassID, param.GameID];
         const sql = `select p.BetType,p.SubType,b.DfRate,p.Rate,b.Probability,b.Steps,b.OneHand
             from  BasePayRate b left join PayRate p on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType where p.PayClassID=? and p.GameID = ?`;
-        conn.query(sql, params).then((v) => {
+        await conn.query(sql, params).then((v) => {
             console.log("getPayRate", v, params);
             conn.release();
             res.send(JSON.stringify(v));
@@ -220,7 +224,7 @@ app.post("/api/batch/saveBasePayRate", async (req, res) => {
         let sql = "insert into BasePayRate(GameID,BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,PlusRate,ModifyID) values";
         sql += valstr.join(",");
         sql += " ON DUPLICATE KEY UPDATE Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Probability=values(Probability),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),PlusRate=values(PlusRate),ModifyID=values(ModifyID)";
-        conn.query(sql).then((v) => {
+        await conn.query(sql).then((v) => {
             // console.log("getPayRate", v, params);
             conn.release();
             res.send(JSON.stringify(v));
@@ -243,7 +247,7 @@ app.post("/api/batch/savePayRate", async (req, res) => {
         let sql: string = "insert into PayRate(PayClassID,GameID,BetType,SubType,Rate) values";
         sql += valstr.join(",");
         sql += " ON DUPLICATE KEY UPDATE Rate=values(Rate)";
-        conn.query(sql).then((v) => {
+        await conn.query(sql).then((v) => {
             conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
@@ -326,7 +330,7 @@ app.post("/api/saveTerms", async (req, res) => {
             } else {
                 await conn.rollback();
             }
-            conn.release();
+            await conn.release();
             res.send(JSON.stringify(msg));
         }
     });
@@ -372,7 +376,7 @@ app.post("/api/createBetItems", async (req, res) => {
         let sql = "insert into dfOddsItems(GameID,BetType,Num,ModifyID) values";
         sql = sql + val.join(",");
         console.log("sql:", sql);
-        conn.query(sql).then((row) => {
+        await conn.query(sql).then((row) => {
             conn.release();
             res.send(JSON.stringify(row));
         }).catch((err) => {
@@ -398,6 +402,23 @@ app.post("/api/UpdateGame", async (req, res) => {
         conn.release();
         res.send(JSON.stringify(ans));
     });
+app.post("/api/Save/:TableName", async (req, res) => {
+    const conn = await dbPool.getConnection();
+    const TableName = req.params.TableName;
+    // console.log("/api/Save/TableName param", req.body);
+    const data: IOParam[] = JSON.parse(req.body.params.data);
+    const msg: IMsg = { ErrNo: 0 };
+    const jt: JTable<IOParam> = new JTable(conn, TableName);
+    const ans = await jt.MultiUpdate(data);
+    // console.log("/api/Save/:TableName ans:", ans);
+    if (ans) {
+        msg.data = ans;
+    } else {
+        msg.ErrNo = 9;
+        msg.error = ans;
+    }
+    res.send(JSON.stringify(msg));
+});
 app.get("/api/member/getAnimals", (req, res) => {
         res.send(JSON.stringify(Zadic));
     });
@@ -437,11 +458,12 @@ app.post("/api/member/mwagermulti", async (req, res) => {
         const GameID = param.LottoID;
         const PayClassID = param.PayClassID;
         const UpId = param.UpId;
-        const btrans = await conn.beginTransaction();
-        console.log("Begin:", btrans);
+        // const btrans = await conn.beginTransaction();
+        // console.log("Begin:", btrans);
         const snb: Bet = new Bet(UserID, Account, UpId , tid, GameID, PayClassID, conn);
         const ans: IMsg = await snb.AnaNum(param.WagerContent);
         // if (ans.warningStatus === 0) {
+        /*
         if (ans.ErrNo === 0) {
             const cmm = await conn.commit();
             console.log("Commit:", cmm);
@@ -449,6 +471,7 @@ app.post("/api/member/mwagermulti", async (req, res) => {
             const rback = await conn.rollback();
             console.log("Rollback:", rback);
         }
+        */
         conn.release();
         res.send(JSON.stringify(ans));
     });
@@ -462,11 +485,12 @@ app.post("/api/member/mwagerjn", async (req, res) => {
         const tid = param.LNoID;
         const GameID = param.LottoID;
         const PayClassID = param.PayClassID;
-        const btrans = await conn.beginTransaction();
-        console.log("Begin:", btrans);
+        // const btrans = await conn.beginTransaction();
+        // console.log("Begin:", btrans);
         const snb: Bet = new Bet(UserID, Account, UpId, tid, GameID, PayClassID, conn);
         const ans: IMsg = await snb.Parlay(param.wgtype, param.OddsID, param.JoinNumber, param.StakeMoney);
         // if (ans.warningStatus === 0) {
+            /*
         if (ans.ErrNo === 0) {
             const cmm = await conn.commit();
             console.log("Commit:", cmm);
@@ -474,6 +498,7 @@ app.post("/api/member/mwagerjn", async (req, res) => {
             const rback = await conn.rollback();
             console.log("Rollback:", rback);
         }
+        */
         conn.release();
         res.send(JSON.stringify(ans));
     });
@@ -543,12 +568,12 @@ app.get("/api/getOpParams", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "GameID is missing!!";
     } else {
-        const ans = getOpParams(param.GameID, conn);
+        const ans = await getOpParams(param.GameID, conn);
         if (ans) {
             msg.data = ans;
         } else {
             msg.ErrNo = 9;
-            msg.ErrCon = "Get Pay Class Error!!";
+            msg.ErrCon = "Get Open Params Error!!";
         }
     }
     conn.release();
@@ -575,6 +600,26 @@ app.post("/api/SaveNums", async (req, res) => {
         conn.release();
         res.send(JSON.stringify(msg));
     });
+app.get("/api/CurOddsInfo", async (req, res) => {
+    const conn = await dbPool.getConnection();
+    const param = req.query;
+    const msg: IMsg = {ErrNo: 0};
+    let tid: number = 0;
+    console.log("CurOddsInfo", param);
+    if (!param.GameID) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "GameID is missing!!";
+        res.send(JSON.stringify(msg));
+    }
+    if (!param.tid) {
+        tid = await getCurTermId(param.GameID, conn);
+    } else {
+        tid = param.tid;
+    }
+    const ans = await getCurOddsInfo(tid, param.GameID, conn);
+    msg.data = ans;
+    res.send(JSON.stringify(msg));
+});
 app.use("/agentApi", agentApi);
 app.use("/test", apiRouter);
 app.listen(port, () => {
@@ -713,8 +758,7 @@ async function getGameParams(GameID: number|string, conn: mariadb.PoolConnection
     }
     return msg;
 }
-async function updateCurOdds(tid: number, GameID: string|number, Bts: number[],
-                             OddsPlus: number, conn: mariadb.PoolConnection) {
+async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], OddsPlus: number, conn: mariadb.PoolConnection) {
     let sql = `
         select CONCAT(BetType,Num) Num,(Odds + ${OddsPlus}) Odds, MaxOdds,Steps
         from CurOddsInfo where tid=${tid} and GameID = ${GameID} and BetType in (${Bts.join(",")})
@@ -749,4 +793,39 @@ async function updateCurOdds(tid: number, GameID: string|number, Bts: number[],
         msg.ErrCon = err;
     });
     return msg;
+}
+
+async function getCurTermId(GameID: number|string, conn: mariadb.PoolConnection): Promise<number> {
+    const sql = `select id from Terms where GameID=? order by id desc limit 0,1`;
+    let ans: number = 0;
+    await conn.query(sql, [GameID]).then((res) => {
+        // console.log("getCurTermId:", res);
+        ans = res[0].id;
+    }).catch((err) => {
+        console.log("getCurTermId error:", err);
+    });
+    return ans;
+}
+async function getCurOddsInfo(tid: number, GameID: number|string, conn: mariadb.PoolConnection) {
+    const sql = `select BetType,Num,Odds,MaxOdds,isStop,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=?`;
+    let ans = {};
+    await conn.query(sql, [tid, GameID]).then((res) => {
+        // ans = res;
+        res.map((itm) => {
+            if (!ans[itm.BetType]) { ans[itm.BetType] = {}; }
+            const tmp = {
+                Odds: itm.Odds,
+                MaxOdds: itm.MaxOdds,
+                isStop: itm.isStop,
+                tolW: itm.tolW,
+                tolS: itm.tolS,
+                tolP: itm.tolP,
+            };
+            ans[itm.BetType][itm.Num] = Object.assign({}, tmp);
+        });
+    }).catch((err) => {
+        console.log(err);
+        ans = err;
+    });
+    return ans;
 }

@@ -1,7 +1,25 @@
 import mariadb from "mariadb";
 import eds from "./EncDecString";
-interface IHasID {
+export interface IHasID {
     id: number;
+}
+interface ITableIndex {
+    Table: string;
+    Non_unique: number;
+    Key_name: string;
+    Seq_in_index: number;
+    Column_name: string;
+    Collation: string;
+    Cardinality: number;
+    Sub_part: null;
+    Packed: null;
+    Null?: null;
+    Index_type: string;
+    Comment: string;
+    Index_comment: string;
+}
+interface ITBIdxes {
+    [key: number]: ITableIndex;
 }
 const ED = new eds();
 export default class JTable<T extends IHasID> {
@@ -64,6 +82,7 @@ export default class JTable<T extends IHasID> {
                     if (v[mykey] === 1) {
                         fields.push("DfKey");
                         params.push(ED.KeyString);
+                        vals.push("?");
                     }
                 }
                 return;
@@ -124,5 +143,75 @@ export default class JTable<T extends IHasID> {
             ans = false;
         });
         return ans;
+    }
+    public async MultiUpdate(data: T[], isAdd: boolean= false) {
+        if (data.length === 0) { return false; }
+        const keys: string[] = [];
+        const updates: string[] = [];
+        const ff: string[] = [];
+        const values: any[][] = [];
+        const ans = await this.getIndexes();
+        let idx: string[] = [];
+        if (ans) {
+            idx = ans as string[];
+        }
+        Object.keys(data[0]).map((key) => {
+            if (key !== "id") {
+                keys.push(key);
+                ff.push("?");
+                const f = idx.find((itm) => itm === key);
+                if (!f) {
+                    if (isAdd) {
+                        updates.push(`${key}=${key}+values(${key})`);
+                    } else {
+                        updates.push(`${key}=values(${key})`);
+                    }
+                }
+            }
+        });
+        data.map((dta: T) => {
+            const tmp: any[] = [];
+            keys.map((fn) => {
+                tmp.push(dta[fn]);
+            });
+            values.push(tmp);
+        });
+        const sql = `insert into ${this.TableName}(${keys.join(",")}) values(${ff.join(",")})
+            on duplicate key update ${updates.join(",")}`;
+        // console.log(`MultiUpdate ${this.TableName}:`, sql, values);
+        let ans1;
+        await this.conn.batch(sql, values).then((res) => {
+            ans1 = res;
+        }).catch((err) => {
+            console.log("JTable MultiUpdate error", err, values);
+            ans1 = false;
+        });
+        return ans1;
+    }
+    private async getIndexes(): Promise<string[] | boolean> {
+        const sql = `show indexes from ${this.TableName}`;
+        let ans: string[] | boolean = [];
+        await this.conn.query(sql).then((res) => {
+            // console.log("getIndexes res:", res);
+            ans = this.anaIndexes(res);
+        }).catch((err) => {
+            console.log("JTable getIndexes error", err);
+            ans = false;
+        });
+        return ans;
+    }
+    private anaIndexes(idx: ITableIndex[]): string[] {
+        const idxes: string[] = [];
+        idx.map((itm) => {
+            if (itm) {
+                // console.log("anaIndexes", itm);
+                if (itm.Non_unique === 0) {
+                    if (itm.Column_name !== "id") {
+                        idxes.push(itm.Column_name);
+                    }
+                }
+            }
+        });
+        return idxes;
     }
 }

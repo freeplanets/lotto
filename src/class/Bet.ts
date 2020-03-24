@@ -1,38 +1,13 @@
 import mariadb from "mariadb";
-import {IBet, IBetContent, IBetHeader, IMsg, INumData} from "../DataSchema/if";
+import {IBet, IBetContent, IBetHeader, IBetTable,
+    ICurOddsData, IMsg, INumData, IOParam, IStrKeyNumer} from "../DataSchema/if";
 import {getUserCredit, ModifyCredit} from "../func/Credit";
 import {BetParam} from "./BetParam";
 import {C} from "./Func";
 import JTable from "./JTable";
+import {ErrCode, OpChk} from "./OpChk";
 interface INum {
     [key: number]: any;
-}
-interface ICurOddsData {
-    BetType: number;
-    OID: number;
-    Num: number;
-    Odds: number;
-}
-
-interface IBetTable {
-    id: number;
-    betid: number;
-    UserID: number;
-    Account: string;
-    UpId: number;
-    tid: number;
-    GameID: number;
-    BetType: number;
-    Num: string;
-    Odds: number;
-    Odds1?: number;
-    OpPASS?: number;
-    Amt: number;
-    Payouts: number;
-    Payouts1?: number;
-    WinLose?: number;
-    isCancled?: number;
-    isSettled?: number;
 }
 interface INumOdd {
     [key: number]: number;
@@ -58,6 +33,8 @@ export class Bet implements IBet {
         const num: string[] = nums.split("@");
         const arrNum: INum = {};
         const dta: INumData[] = [];
+        const BetTypes: number[] = [];
+        let Chker: OpChk|undefined;
         num.map((itm: string) => {
             const tmp: string[] = itm.split("#");
             const n: INumData = {
@@ -71,10 +48,19 @@ export class Bet implements IBet {
             }
             arrNum[n.BetType as number].push(n.Num);
             // dta[n.BetType].push(n);
+            if (n.BetType) {
+               const f: number | undefined = BetTypes.find((iBT) => iBT === n.BetType);
+               if (!f) {
+                BetTypes.push(n.BetType);
+               }
+            }
             dta.push(n);
         });
         const ans: ICurOddsData[] = await this.getOddsData(arrNum);
-        console.log("AnaNum ans:", ans);
+        const opParams: IOParam[] | undefined = await this.getOpParams(BetTypes);
+        if (opParams) {
+            Chker = new OpChk(opParams, false);
+        }
         let total: number = 0;
         let payouts: number = 0;
         let BtChange: boolean = false;
@@ -84,6 +70,13 @@ export class Bet implements IBet {
                 (nn) => nn.BetType === itm.BetType && nn.Num === itm.Num &&  nn.OID === itm.OddsID
                 );
             if (found) {
+                if (Chker) {
+                    const chk = Chker.ChkData(itm, found);
+                    if (chk !== ErrCode.PASS) {
+                        msg.ErrNo = chk;
+                        return msg;
+                    }
+                }
                 itm.Odds = found.Odds;
                 if (CurBT === 0) {
                     CurBT = itm.BetType as number;
@@ -157,10 +150,24 @@ export class Bet implements IBet {
             });
             const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
-            console.log("Save Detail:", rlt1);
-            msg.data = rlt1;
-            await this.conn.commit();
-            return msg;
+            console.log("AnaNum Save Detail:", rlt1);
+            if (rlt1) {
+                if (Chker) {
+                    // console.log("do Chker updateTotals");
+                    const totchk = Chker.updateTotals(BetDetail, this.conn);
+                    if (!totchk) {
+                        await this.conn.rollback();
+                        msg.ErrNo = 9;
+                        msg.ErrCon = "Add Total error!!";
+                        return msg;
+                    }
+                } else {
+                    console.log("no checker", Chker);
+                }
+                msg.data = rlt1;
+                await this.conn.commit();
+                return msg;
+            }
         }
         msg.ErrNo = 9;
         msg.ErrCon = "System busy";
@@ -172,6 +179,8 @@ export class Bet implements IBet {
         const msg: IMsg = {
             ErrNo: 0
         };
+        const BetTypes: number[] = [BetType];
+        let Chker: OpChk | undefined;
         const Odd: string[] = Odds.split(",");
         const arrNum: INum = {};
         let BNum = BetParam[BetType];
@@ -200,17 +209,36 @@ export class Bet implements IBet {
             const tmp: string[] = itm.split(":");
             const iNumD: INumData = {
                 Num: parseInt(tmp[0], 10),
-                OddsID: parseInt(tmp[1], 10)
+                OddsID: parseInt(tmp[1], 10),
+                Amt: 0
             };
             arrNum[BetType].push(iNumD.Num);
             // SNB.Content.push(iNumD);
             tmpNums.push(iNumD);
         });
         const ans: ICurOddsData[] = await this.getOddsData(arrNum);
+        const opParams: IOParam[] | undefined = await this.getOpParams(BetTypes);
+        if (opParams) {
+            Chker = new OpChk(opParams, true);
+            /*
+            const chkans = Chker.ChkData(Amt, BetType);
+            if (chkans !== ErrCode.PASS) {
+                msg.ErrNo = chkans;
+                return msg;
+            }
+            */
+        }
         console.log("Parlay data:", tmpNums, ans);
         tmpNums.map((itm) => {
             const fnd = ans.find((f) => f.Num === itm.Num && f.OID === itm.OddsID);
             if (fnd) {
+                if (Chker) {
+                    const chk = Chker.ChkData(itm, fnd);
+                    if (chk !== ErrCode.PASS) {
+                        msg.ErrNo = chk;
+                        return msg;
+                    }
+                }
                 itm.Odds = fnd.Odds;
                 NumOdd[itm.Num] = fnd.Odds;
                 if (itm.Num > 100 && !isPASS) {
@@ -249,7 +277,7 @@ export class Bet implements IBet {
             msg.ErrCon = "Insufficient credit";
             return msg;
         }
-        // await this.conn.beginTransaction();
+        await this.conn.beginTransaction();
         const rlt = await jt.Insert(bh);
         console.log("Parlay SNB:", SNB);
         if (rlt.warningStatus === 0) {
@@ -264,6 +292,7 @@ export class Bet implements IBet {
                 return msg;
             }
             const BetDetail: IBetTable[] = [];
+            const nums: string[] = [];
             numsets.map((set) => {
                 let odds: number = 0;
                 let odds1: number = 0;
@@ -304,16 +333,44 @@ export class Bet implements IBet {
                     bd.Odds1 =  odds1 / set.length;
                     bd.Payouts1 = parseFloat((Amt * bd.Odds1).toFixed(6));
                 }
+                nums.push(bd.Num);
                 BetDetail.push(bd);
             });
+            // 聯碼限額
+            const UnionTotals: IStrKeyNumer|undefined = await this.getUnionTotals(BetType, nums);
+            if (UnionTotals) {
+                if (Chker) {
+                    const unchk = Chker.overUnionNum(BetDetail, UnionTotals);
+                    if (unchk !== ErrCode.PASS) {
+                        msg.ErrNo = unchk;
+                        await this.conn.rollback();
+                        return msg;
+                    }
+                }
+            }
+            // 聯碼限額--End
             const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
-            console.log("Save Detail:", rlt1);
+            console.log("Parlay Save Detail:", rlt1);
+            if (rlt1) {
+                if (Chker) {
+                    // console.log("do Chker updateTotals");
+                    const totchk = Chker.updateTotals(BetDetail, this.conn);
+                    if (!totchk) {
+                        await this.conn.rollback();
+                        msg.ErrNo = 9;
+                        msg.ErrCon = "Add Total error!!";
+                        return msg;
+                    }
+                } else {
+                    console.log("no checker", Chker);
+                }
+            }
             msg.data = rlt1;
-            // await this.conn.commit();
+            await this.conn.commit();
             return msg;
         }
-        // await this.conn.rollback();
+        await this.conn.rollback();
         msg.ErrNo = 9;
         msg.ErrCon = "System busy!!";
         msg.header = rlt;
@@ -321,7 +378,7 @@ export class Bet implements IBet {
 
     }
     private async getOddsData(nums: INum) {
-        let sql: string = `select c.BetType,c.OID,c.Num,Odds+Rate Odds from CurOddsInfo c left join PayRate p
+        let sql: string = `select c.BetType,c.OID,c.Num,Odds+Rate Odds,tolS from CurOddsInfo c left join PayRate p
         on c.GameID=p.GameID and c.BetType=p.BetType where p.SubType=0 and
         c.tid= ${this.tid} and c.GameID = ${this.GameID} and p.PayClassID= ${this.PayClassID} and `;
         const filters: string[] = [];
@@ -339,5 +396,32 @@ export class Bet implements IBet {
             ans = false;
         });
         return ans;
+    }
+    private getOpParams(BetTypes: number[]): Promise<IOParam[] | undefined> {
+        const sql: string = `select * from OpenParams where GameID=${this.GameID} and BetType in (${BetTypes.join(",")})`;
+        return new Promise(async (resolve) => {
+            console.log("getOpParams", sql);
+            await this.conn.query(sql).then((res) => {
+                console.log("getOpParams", res);
+                resolve(res);
+            }).catch((err) => {
+                console.log("getOpParams error:", err);
+                resolve();
+            });
+        });
+    }
+    private async getUnionTotals(BetType: number, Nums: string[]): Promise<IStrKeyNumer|undefined> {
+        const sql = `select Num,Amount from UnionNums where tid=${this.tid} and GameID=${this.GameID} and
+        BetType=${BetType} and UpId=0 and Num in ('${Nums.join(",")}')`;
+        const dta: IStrKeyNumer = {};
+        await this.conn.query(sql).then((res) => {
+            res.map((itm) => {
+                dta[itm.Num] = itm.Amount;
+            });
+        }).catch((err) => {
+            console.log("getUnionTotals", err);
+            return;
+        });
+        return dta;
     }
 }

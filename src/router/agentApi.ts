@@ -119,6 +119,7 @@ async function CreditAC(req: Request, res: Response, ac: number) {
         const key: number = (ac === 3 ? 1 : -1);
         const ans = await ModifyCredit(user.id, user.Account, params.agentId,
             money * key, param.orderId as string, conn);
+        console.log("CreditAC ModifyCredit:", ans);
         if (ans) {
             data.money = ans.balance + "";
             data.freeMoney = ans.balance + "";
@@ -133,7 +134,7 @@ async function CreditAC(req: Request, res: Response, ac: number) {
 }
 async function getAgent(id: string, conn: Connection) {
     const sql: string = "select * from User where id=?";
-    console.log("getAgent:", sql);
+    // console.log("getAgent:", sql);
     const row = await conn.query(sql, [id]);
     return row[0];
 }
@@ -241,25 +242,25 @@ async function chkLoginAction(uid: number, conn: Connection) {
 }
 async function getTicketDetail(req, res) {
     const params = req.query;
-    console.log("getTicketDetail:", params);
+    // console.log("getTicketDetail:", params);
     const data: IAnsData = {code: 0};
     const conn = await dbPool.getConnection();
     const UpId = params.agentId;
     const Agent: IUser = await getAgent(UpId, conn);
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
-    console.log("getTicketDetail param:", param);
+    // console.log("getTicketDetail param:", param);
     const sql = `select id,Account userCode,tid TermID,GameID,BetType,Num,Odds,Amt,WinLose,
         UNIX_TIMESTAMP(CreateTime) CreateTime,UNIX_TIMESTAMP(ModifyTime) ModifyTime
         from BetTable where UpId=${UpId} and isCancled=0 and
         ModifyTime between from_unixtime(${param.startTime}) and from_unixtime(${param.endTime})`;
     await conn.query(sql).then((rows) => {
         data.list = rows;
-        console.log("getTicketDetail", sql);
+        // console.log("getTicketDetail", sql);
     }).catch((err) => {
         data.code = 9;
         data.error = err;
-        console.log("getTicketDetail error", data);
+        // console.log("getTicketDetail error", data);
         // res.send(JSON.stringify(data));
     });
     conn.release();
