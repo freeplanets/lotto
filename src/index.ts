@@ -10,7 +10,7 @@ import JTable from "./class/JTable";
 import {SaveNums} from "./class/Settlement";
 import {IBTItem, IGameItem, IMsg, IOParam} from "./DataSchema/if";
 import { IBasePayRateItm, IDBAns, IGame , IPayClassParam , IPayRateItm , ITerms, IUser} from "./DataSchema/user";
-import dbPool, {port} from "./db";
+import dbPool, {doQuery, getConnection, port} from "./db";
 import agentApi from "./router/agentApi";
 import apiRouter from "./router/api";
 
@@ -18,7 +18,12 @@ interface IBetItem {
     BetType: string;
     Num: string;
 }
-
+interface IOdds {
+    Odds: number;
+    MaxOdds: number;
+    isStop: number;
+    Steps: number;
+}
 const app = express();
 /*
 dbPool.getConnection().then((conn) => {
@@ -88,7 +93,13 @@ app.get("/saveGames", async (req, res) => {
         });
     });
 app.get("/api/getGames", async (req, res) => {
-        const conn = await dbPool.getConnection();
+        // const conn = await dbPool.getConnection();
+        let conn;
+        await dbPool.getConnection().then((resconn) => {
+            conn = resconn;
+        }).catch((err) => {
+            res.send(err);
+        });
         const sql = "select id,name,GType from Games order by id";
         await conn.query(sql).then((v) => {
             conn.release();
@@ -601,23 +612,85 @@ app.post("/api/SaveNums", async (req, res) => {
         res.send(JSON.stringify(msg));
     });
 app.get("/api/CurOddsInfo", async (req, res) => {
-    const conn = await dbPool.getConnection();
-    const param = req.query;
+    // const conn = await dbPool.getConnection();
     const msg: IMsg = {ErrNo: 0};
-    let tid: number = 0;
-    console.log("CurOddsInfo", param);
-    if (!param.GameID) {
+    const conn = await getConnection();
+    if (!conn) {
         msg.ErrNo = 9;
-        msg.ErrCon = "GameID is missing!!";
+        msg.ErrCon = "Connection error!!";
         res.send(JSON.stringify(msg));
-    }
-    if (!param.tid) {
-        tid = await getCurTermId(param.GameID, conn);
     } else {
-        tid = param.tid;
+        const param = req.query;
+        let tid: number | undefined = 0;
+        // console.log("CurOddsInfo", param);
+        if (!param.GameID) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "GameID is missing!!";
+            res.send(JSON.stringify(msg));
+        }
+        if (!param.tid) {
+            tid = await getCurTermId(param.GameID, conn);
+            if (!tid) {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Get data error!!";
+                res.send(JSON.stringify(msg));
+            }
+        } else {
+            tid = param.tid;
+        }
+        msg.tid = tid;
+        let MaxOddsID: number = 0;
+        if (param.MaxOddsID) {
+            MaxOddsID = param.MaxOddsID;
+        }
+        const ans = await getCurOddsInfo(tid as number, param.GameID, MaxOddsID, conn);
+        if (ans) {
+            msg.data = ans;
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Get Odds error!";
+        }
+        conn.release();
     }
-    const ans = await getCurOddsInfo(tid, param.GameID, conn);
-    msg.data = ans;
+    res.send(JSON.stringify(msg));
+});
+app.get("/api/setOdds", async (req, res) => {
+    const msg: IMsg = {ErrNo: 0};
+    const conn: mariadb.PoolConnection|undefined = await getConnection();
+    if (!conn) {
+        msg.ErrNo = 8;
+        msg.ErrCon = "Database busy!!";
+    } else {
+        const param = req.query;
+        console.log("setOdds param", param);
+        if (param.Step) {
+            const fOdds: IOdds|undefined = await getOddsInfo(param.tid, param.GameID, param.BT, param.Num, conn);
+            if (fOdds) {
+                // msg.data = ans;
+                const step: number = param.Step;
+                let odds: number = fOdds.Odds + step * fOdds.Steps;
+                console.log("before setOdds", odds, step, fOdds);
+                if (odds > fOdds.MaxOdds) {
+                    odds = fOdds.MaxOdds;
+                }
+                if (odds !== fOdds.Odds) {
+                    const ans = await setOdds(param.tid, param.GameID, param.BT, param.Num, odds, param.UserID, conn);
+                    if (ans) {
+                        msg.data = ans;
+                    } else {
+                        msg.ErrNo = 9;
+                        msg.ErrCon = "Set odds error!!";
+                    }
+                }
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Get odds info error!!";
+            }
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Odds error!!";
+        }
+    }
     res.send(JSON.stringify(msg));
 });
 app.use("/agentApi", agentApi);
@@ -795,25 +868,27 @@ async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], 
     return msg;
 }
 
-async function getCurTermId(GameID: number|string, conn: mariadb.PoolConnection): Promise<number> {
+async function getCurTermId(GameID: number|string, conn: mariadb.PoolConnection): Promise<number|undefined> {
     const sql = `select id from Terms where GameID=? order by id desc limit 0,1`;
     let ans: number = 0;
-    await conn.query(sql, [GameID]).then((res) => {
-        // console.log("getCurTermId:", res);
+    const res = await doQuery(sql, conn, [GameID]);
+    // console.log("getCurTermId:", res);
+    if (res) {
         ans = res[0].id;
-    }).catch((err) => {
-        console.log("getCurTermId error:", err);
-    });
+    } else {
+        return undefined;
+    }
     return ans;
 }
-async function getCurOddsInfo(tid: number, GameID: number|string, conn: mariadb.PoolConnection) {
-    const sql = `select BetType,Num,Odds,MaxOdds,isStop,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=?`;
-    let ans = {};
-    await conn.query(sql, [tid, GameID]).then((res) => {
-        // ans = res;
+async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: number, conn: mariadb.PoolConnection): Promise<any> {
+    const sql = `select OID,BetType,Num,Odds,MaxOdds,isStop,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and OID > ?`;
+    const ans = {};
+    const res = await doQuery(sql, conn, [tid, GameID, MaxOddsID]);
+    if (res) {
         res.map((itm) => {
             if (!ans[itm.BetType]) { ans[itm.BetType] = {}; }
             const tmp = {
+                OID: itm.OID,
                 Odds: itm.Odds,
                 MaxOdds: itm.MaxOdds,
                 isStop: itm.isStop,
@@ -823,9 +898,32 @@ async function getCurOddsInfo(tid: number, GameID: number|string, conn: mariadb.
             };
             ans[itm.BetType][itm.Num] = Object.assign({}, tmp);
         });
-    }).catch((err) => {
-        console.log(err);
-        ans = err;
-    });
+    } else  {
+        return;
+    }
     return ans;
+}
+
+async function getOddsInfo(tid: number, GameID: number, BT: number, Num: number, conn: mariadb.PoolConnection): Promise<any> {
+    const sql = "select Odds,MaxOdds,isStop,Steps from CurOddsInfo where tid=? and GameID=? and BetType=? and Num=?";
+    const ans = await doQuery(sql, conn, [tid, GameID, BT, Num]);
+    if (ans) {
+        return ans[0];
+    }
+    return undefined;
+}
+
+async function setOdds(tid: number, GameID: number, BT: number, Num: number, Odds: number, UserID: number, conn: mariadb.PoolConnection): Promise<any> {
+    const maxid = new Date().getTime();
+    const sql = `update CurOddsInfo set Odds=?,OID=${maxid} where tid=? and GameID=? and BetType=? and Num=?`;
+    const ans = await doQuery(sql, conn, [Odds, tid, GameID, BT, Num]);
+    if (ans) {
+        const sql1 = `insert into OddsInfoLog(tid,OID,GameID,BetType,Num,Odds,isStop,UserID)
+            select tid,OID,GameID,BetType,Num,Odds,isStop,${UserID} UserID from CurOddsInfo
+            where tid=? and GameID=? and BetType=? and Num=? `;
+        await doQuery(sql1, conn, [tid, GameID, BT, Num]);
+        // console.log("Insert Odds log:", sql1, ans1);
+        return ans;
+    }
+    return undefined;
 }

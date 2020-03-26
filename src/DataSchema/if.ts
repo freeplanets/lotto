@@ -12,6 +12,7 @@ export interface IMsg {
     ErrNo: number;
     data?: object[]|object;
     debug?: string;
+    ErrCon?: string;
     [key: string]: any;
 }
 

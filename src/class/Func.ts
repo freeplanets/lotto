@@ -10,3 +10,8 @@ export function C(arr, num) {
     })([], arr, num);
     return r;
 }
+export function BaNum(n: number): number {
+    const s: string = n.toString();
+    const p: number = s.length - (s.indexOf(".") + 1);
+    return Math.pow(10, p);
+}

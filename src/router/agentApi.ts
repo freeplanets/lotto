@@ -60,7 +60,7 @@ agentApi.get("/1", async (req: Request, res: Response) => {
                 msg.Agent = Agent;
             }
         } else {
-            msg.ErrCon = param;
+            msg.ErrCon = JSON.stringify(param);
         }
     } else {
         msg.ErrNo = 9;
