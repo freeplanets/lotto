@@ -428,6 +428,7 @@ app.post("/api/Save/:TableName", async (req, res) => {
         msg.ErrNo = 9;
         msg.error = ans;
     }
+    conn.release();
     res.send(JSON.stringify(msg));
 });
 app.get("/api/member/getAnimals", (req, res) => {
@@ -693,6 +694,28 @@ app.get("/api/setOdds", async (req, res) => {
     }
     res.send(JSON.stringify(msg));
 });
+app.get("/api/setStop", async (req, res) => {
+    const msg: IMsg = {ErrNo: 0};
+    const conn: mariadb.PoolConnection|undefined = await getConnection();
+    if (!conn) {
+        msg.ErrNo = 8;
+        msg.ErrCon = "Database busy!!";
+    } else {
+        const param = req.query;
+        console.log("setStop param", param);
+        const ans = await setStop(param.tid, param.GameID, param.isStop, param.UserID, conn, param.BetTypes, param.Num);
+        if (ans) {
+            msg.data = ans;
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Set stop error!!";
+        }
+    }
+    res.send(JSON.stringify(msg));
+});
+app.post("/api/saveComment",async(req,res)=>{
+    
+})
 app.use("/agentApi", agentApi);
 app.use("/test", apiRouter);
 app.listen(port, () => {
@@ -923,6 +946,23 @@ async function setOdds(tid: number, GameID: number, BT: number, Num: number, Odd
             where tid=? and GameID=? and BetType=? and Num=? `;
         await doQuery(sql1, conn, [tid, GameID, BT, Num]);
         // console.log("Insert Odds log:", sql1, ans1);
+        return ans;
+    }
+    return undefined;
+}
+
+async function setStop(tid: number, GameID: number, isStop: number, UserID: number, conn: mariadb.PoolConnection, BetTypes?: string, Num?: string): Promise<any> {
+    const maxid = new Date().getTime();
+    const BTS: string = BetTypes !== undefined ? ` and BetType in (${BetTypes})` : "";
+    const NN: string = Num !== undefined ? ` and Num=${Num}` : "";
+    const sql = `update CurOddsInfo set isStop=?,OID=${maxid} where tid=? and GameID=? ${BTS}${NN}`;
+    const ans = await doQuery(sql, conn, [isStop, tid, GameID]);
+    if (ans) {
+        const Bt = BetTypes ? BetTypes : "all";
+        const Nm = Num ? Num : -1;
+        const sql1 = `insert into OddsInfoLog(tid,OID,GameID,BetType,Num,isStop,UserID)
+            values(${tid},${maxid},${GameID},'${Bt}',${Nm},${isStop},${UserID})`;
+        await doQuery(sql1, conn);
         return ans;
     }
     return undefined;
