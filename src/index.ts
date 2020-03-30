@@ -62,7 +62,7 @@ app.get("/login", async (req, res) => {
         let sql: string = "";
         const params = [param.Account, param.Password];
         sql = `Select * from User where Account= ? and Password=Password(?)`;
-        //console.log(sql, params);
+        // console.log(sql, params);
         await conn.query(sql, params).then((rows) => {
             // console.log("login:", rows);
             let msg: string = "";
@@ -398,7 +398,7 @@ app.post("/api/createBetItems", async (req, res) => {
     });
 app.get("/api/GameList", async (req, res) => {
         const conn = await dbPool.getConnection();
-        const jt: JTable<IGame> = new JTable(conn, "games");
+        const jt: JTable<IGame> = new JTable(conn, "Games");
         const games: IGame[] = await jt.List();
         // console.log("/api/GameList", JSON.stringify(games));
         conn.release();
@@ -406,7 +406,7 @@ app.get("/api/GameList", async (req, res) => {
     });
 app.post("/api/UpdateGame", async (req, res) => {
         const conn = await dbPool.getConnection();
-        const jt: JTable<IGame> = new JTable(conn, "games");
+        const jt: JTable<IGame> = new JTable(conn, "Games");
         const param: IGame = req.body;
         const ans = await jt.Update(param);
         console.log("UpdateGame", ans);
@@ -722,7 +722,7 @@ app.post("/api/saveComments", async (req, res) => {
     }
     const conn: mariadb.PoolConnection | undefined = await getConnection();
     if (conn) {
-        //console.log("saveComments:", param);
+        // console.log("saveComments:", param);
         const ans = await saveComments(param.PageName, param.Comments, conn);
         if (ans) {
             msg.data = ans;
@@ -745,7 +745,7 @@ app.post("/api/getComments", async (req, res) => {
     }
     const conn: mariadb.PoolConnection | undefined = await getConnection();
     if (conn) {
-        //console.log("getComments:", param);
+        // console.log("getComments:", param);
         const ans = await getComments(param.PageName, conn);
         if (ans) {
             msg.data = ans;
