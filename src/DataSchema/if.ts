@@ -160,3 +160,9 @@ export interface ICurOddsData {
 export interface IStrKeyNumer {
     [key: string]: number;
 }
+
+export interface IComments {
+    id: number;
+    PageName: string;
+    Comments: string;
+}

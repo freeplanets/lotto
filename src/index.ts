@@ -8,7 +8,7 @@ import { Gets } from "./class/Gets";
 import JDate from "./class/JDate";
 import JTable from "./class/JTable";
 import {SaveNums} from "./class/Settlement";
-import {IBTItem, IGameItem, IMsg, IOParam} from "./DataSchema/if";
+import {IBTItem, IComments, IGameItem, IMsg, IOParam} from "./DataSchema/if";
 import { IBasePayRateItm, IDBAns, IGame , IPayClassParam , IPayRateItm , ITerms, IUser} from "./DataSchema/user";
 import dbPool, {doQuery, getConnection, port} from "./db";
 import agentApi from "./router/agentApi";
@@ -62,7 +62,7 @@ app.get("/login", async (req, res) => {
         let sql: string = "";
         const params = [param.Account, param.Password];
         sql = `Select * from User where Account= ? and Password=Password(?)`;
-        console.log(sql, params);
+        //console.log(sql, params);
         await conn.query(sql, params).then((rows) => {
             // console.log("login:", rows);
             let msg: string = "";
@@ -713,9 +713,52 @@ app.get("/api/setStop", async (req, res) => {
     }
     res.send(JSON.stringify(msg));
 });
-app.post("/api/saveComment",async(req,res)=>{
-    
-})
+app.post("/api/saveComments", async (req, res) => {
+    const param = req.body.params;
+    const msg: IMsg = { ErrNo: 0 };
+    if (!param.PageName) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "PageName is missing!!";
+    }
+    const conn: mariadb.PoolConnection | undefined = await getConnection();
+    if (conn) {
+        //console.log("saveComments:", param);
+        const ans = await saveComments(param.PageName, param.Comments, conn);
+        if (ans) {
+            msg.data = ans;
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Save comments error!";
+        }
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get Connection error!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.post("/api/getComments", async (req, res) => {
+    const param = req.body.params;
+    const msg: IMsg = { ErrNo: 0 };
+    if (!param.PageName) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "PageName is missing!!";
+    }
+    const conn: mariadb.PoolConnection | undefined = await getConnection();
+    if (conn) {
+        //console.log("getComments:", param);
+        const ans = await getComments(param.PageName, conn);
+        if (ans) {
+            msg.data = ans;
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Get comments error!";
+        }
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get Connection error!";
+    }
+    res.send(JSON.stringify(msg));
+});
 app.use("/agentApi", agentApi);
 app.use("/test", apiRouter);
 app.listen(port, () => {
@@ -966,4 +1009,24 @@ async function setStop(tid: number, GameID: number, isStop: number, UserID: numb
         return ans;
     }
     return undefined;
+}
+
+async function saveComments(pagename: string, comments: string, conn: mariadb.PoolConnection): Promise<any> {
+    const sql = "insert into PageComments(PageName,Comments) values(?,?) on duplicate key update Comments=values(Comments)";
+    const ans = await doQuery(sql, conn, [pagename, comments]);
+    if (ans) {
+        return ans;
+    } else {
+        return undefined;
+    }
+}
+
+async function getComments(pagename: string, conn: mariadb.PoolConnection): Promise<any> {
+    const sql = "select * from PageComments where PageName = ? ";
+    const ans = await doQuery(sql, conn, [pagename]);
+    if (ans) {
+        return ans;
+    } else {
+        return undefined;
+    }
 }
