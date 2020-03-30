@@ -57,26 +57,28 @@ app.get("/", async (req: Request, res: Response) => {
     });
 app.get("/login", async (req, res) => {
         // console.log(req.query);
-        const conn = await dbPool.getConnection();
-        const param = req.query;
-        let sql: string = "";
-        const params = [param.Account, param.Password];
-        sql = `Select * from User where Account= ? and Password=Password(?)`;
-        // console.log(sql, params);
-        await conn.query(sql, params).then((rows) => {
-            // console.log("login:", rows);
-            let msg: string = "";
-            if (rows.length > 0) {
-                let row: any;
-                row = rows.pop();
-                msg = JSON.stringify(row);
+        const conn: mariadb.PoolConnection|undefined =  await getConnection();
+        const msg: IMsg = { ErrNo: 0};
+        if (conn) {
+            const param = req.query;
+            let sql: string = "";
+            const params = [param.Account, param.Password];
+            sql = `Select * from User where Account= ? and Password=Password(?)`;
+            const ans = await doQuery(sql, conn, params);
+            if (ans) {
+                if (ans.length > 0) {
+                    msg.data = ans.pop();
+                }
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "User not found";
             }
             conn.release();
-            res.send(msg);
-        }).catch((err) => {
-            console.log(err);
-            res.send(err);
-        });
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Get connection error!!";
+        }
+        res.send(JSON.stringify(msg));
     });
     // start the Express server
 app.get("/saveGames", async (req, res) => {
@@ -86,6 +88,7 @@ app.get("/saveGames", async (req, res) => {
         const sql = `insert into Games(id,name) values(?,?)`;
         console.log(sql, params);
         await conn.query(sql, params).then((v) => {
+            conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("saveGames", err);
@@ -94,13 +97,24 @@ app.get("/saveGames", async (req, res) => {
     });
 app.get("/api/getGames", async (req, res) => {
         // const conn = await dbPool.getConnection();
-        let conn;
-        await dbPool.getConnection().then((resconn) => {
-            conn = resconn;
-        }).catch((err) => {
-            res.send(err);
-        });
-        const sql = "select id,name,GType from Games order by id";
+        const conn = await getConnection();
+        const msg: IMsg = {ErrNo: 0};
+        if (conn) {
+            const sql = "select id,name,GType from Games order by id";
+            const ans = await doQuery(sql, conn);
+            if (ans) {
+                msg.data = ans;
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Games not found!!";
+            }
+            conn.release();
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "get connection error!!";
+        }
+        res.send(JSON.stringify(msg));
+        /*
         await conn.query(sql).then((v) => {
             conn.release();
             res.send(JSON.stringify(v));
@@ -108,33 +122,68 @@ app.get("/api/getGames", async (req, res) => {
             console.log("saveGames", err);
             res.send(err);
         });
+        */
     });
 app.post("/api/saveBtClass", async (req, res) => {
-        const conn = await dbPool.getConnection();
-        const param = req.body;
-        const params = [param.GameID, param.BCName, param.BetTypes, param.ModifyID];
-        const sql = "insert into BetClass(GameID,BCname,BetTypes,ModifyID) values(?,?,?,?) on duplicate key update BetTypes=values(BetTypes),ModifyID=values(ModifyID)";
-        await conn.query(sql, params).then((v) => {
-            console.log("saveBtClass", v);
+        const conn = await getConnection();
+        const msg: IMsg = {ErrNo: 0};
+        if (conn) {
+            const param = req.body;
+            const params = [param.GameID, param.BCName, param.BetTypes, param.ModifyID];
+            const sql = "insert into BetClass(GameID,BCname,BetTypes,ModifyID) values(?,?,?,?) on duplicate key update BetTypes=values(BetTypes),ModifyID=values(ModifyID)";
+            const ans = await doQuery(sql, conn, params);
+            if (ans) {
+                msg.data = ans;
+            } else {
+                msg.ErrCon = "Save BetType class error!!";
+            }
             conn.release();
-            res.send(JSON.stringify(v));
-        }).catch((err) => {
-            console.log("saveBtClass error", err);
-            res.send(err);
-        });
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "get connection error!!";
+        }
+        res.send(JSON.stringify(msg));
     });
 app.get("/api/getBtClass", async (req, res) => {
-        const conn = await dbPool.getConnection();
-        const param = req.query;
-        const params = [param.GameID];
-        const sql = "select BCName,BetTypes from BetClass where GameID = ?";
-        await conn.query(sql, params).then((v) => {
+        const conn = await getConnection();
+        const msg: IMsg = {ErrNo: 0};
+        if (conn) {
+            const param = req.query;
+            const params = [param.GameID];
+            const sql = "select id,BCName,BetTypes from BetClass where GameID = ?";
+            const ans = await doQuery(sql, conn, params);
+            if (ans) {
+                msg.data = ans;
+            } else {
+                msg.ErrCon = "BetClass Not found!!";
+            }
             conn.release();
-            res.send(JSON.stringify(v));
-        }).catch((err) => {
-            console.log("etBtClass", err);
-        });
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "get connection error!!";
+        }
+        res.send(JSON.stringify(msg));
     });
+app.get("/api/delBtClass",async(req,res)=>{
+    const conn = await getConnection();
+    const msg:IMsg = {ErrNo:0};
+    if(conn){
+        const param = req.query;
+        const params = [param.GameID,param.BCName];
+        const sql = 'delete from BetClass where GameID=?  and BCName=?';
+        const ans = await doQuery(sql,conn,params);
+        if (ans) {
+            msg.data = ans;
+        } else {
+            msg.ErrCon = "BetClass delete fail!!";
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+})
 app.get("/api/getPayClass", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.query;
@@ -714,7 +763,7 @@ app.get("/api/setStop", async (req, res) => {
     res.send(JSON.stringify(msg));
 });
 app.post("/api/saveComments", async (req, res) => {
-    const param = req.body.params;
+    const param = req.body;
     const msg: IMsg = { ErrNo: 0 };
     if (!param.PageName) {
         msg.ErrNo = 9;
@@ -737,7 +786,7 @@ app.post("/api/saveComments", async (req, res) => {
     res.send(JSON.stringify(msg));
 });
 app.post("/api/getComments", async (req, res) => {
-    const param = req.body.params;
+    const param = req.body;
     const msg: IMsg = { ErrNo: 0 };
     if (!param.PageName) {
         msg.ErrNo = 9;
