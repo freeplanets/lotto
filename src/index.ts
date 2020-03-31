@@ -164,14 +164,14 @@ app.get("/api/getBtClass", async (req, res) => {
         }
         res.send(JSON.stringify(msg));
     });
-app.get("/api/delBtClass",async(req,res)=>{
+app.get("/api/delBtClass", async (req, res) => {
     const conn = await getConnection();
-    const msg:IMsg = {ErrNo:0};
-    if(conn){
+    const msg: IMsg = {ErrNo: 0};
+    if (conn) {
         const param = req.query;
-        const params = [param.GameID,param.BCName];
-        const sql = 'delete from BetClass where GameID=?  and BCName=?';
-        const ans = await doQuery(sql,conn,params);
+        const params = [param.GameID, param.BCName];
+        const sql = "delete from BetClass where GameID=?  and BCName=?";
+        const ans = await doQuery(sql, conn, params);
         if (ans) {
             msg.data = ans;
         } else {
@@ -183,7 +183,7 @@ app.get("/api/delBtClass",async(req,res)=>{
         msg.ErrCon = "get connection error!!";
     }
     res.send(JSON.stringify(msg));
-})
+});
 app.get("/api/getPayClass", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.query;
