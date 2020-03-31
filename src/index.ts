@@ -242,13 +242,14 @@ app.get("/api/getBasePayRate", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.query;
         const params = [param.GameID];
-        const sql = "select BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,PlusRate from BasePayRate where GameID = ?";
+        const sql = "select BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand from BasePayRate where GameID = ?";
         await conn.query(sql, params).then((v) => {
             // console.log("getBasePayRate", v, params);
             conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("getBasePayRate error", err);
+            res.send(JSON.stringify(err));
         });
     });
 app.get("/api/getPayRate", async (req, res) => {
@@ -258,17 +259,18 @@ app.get("/api/getPayRate", async (req, res) => {
         const sql = `select p.BetType,p.SubType,b.DfRate,p.Rate,b.Probability,b.Steps,b.OneHand
             from  BasePayRate b left join PayRate p on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType where p.PayClassID=? and p.GameID = ?`;
         await conn.query(sql, params).then((v) => {
-            console.log("getPayRate", v, params);
+            // console.log("getPayRate", v, params);
             conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("getPayRate error", err);
+            res.send(JSON.stringify(err));
         });
     });
 app.post("/api/batch/saveBasePayRate", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.body;
-        console.log(param);
+        //console.log(param);
         param.data = JSON.parse(param.data);
         const valstr: string[] = [];
         param.data.map((itm: IBasePayRateItm) => {
@@ -278,12 +280,12 @@ app.post("/api/batch/saveBasePayRate", async (req, res) => {
             if (!itm.TopRate) { itm.TopRate = 0; }
             if (!itm.Probability) { itm.Probability = 0; }
             if (!itm.Steps) { itm.Steps = 0; }
-            const tmp = `(${param.GameID},${itm.BetType},'${itm.Title}','${itm.SubTitle}',${itm.SubType},${itm.Profit},${itm.DfRate},${itm.TopRate},${itm.Probability},${itm.Steps},${itm.TopPay},${itm.OneHand},${itm.PlusRate},${param.ModifyID})`;
+            const tmp = `(${param.GameID},${itm.BetType},'${itm.Title}','${itm.SubTitle}',${itm.SubType},${itm.Profit},${itm.DfRate},${itm.TopRate},${itm.Probability},${itm.Steps},${itm.TopPay},${itm.OneHand},${param.ModifyID})`;
             valstr.push(tmp);
         });
-        let sql = "insert into BasePayRate(GameID,BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,PlusRate,ModifyID) values";
+        let sql = "insert into BasePayRate(GameID,BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,ModifyID) values";
         sql += valstr.join(",");
-        sql += " ON DUPLICATE KEY UPDATE Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Probability=values(Probability),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),PlusRate=values(PlusRate),ModifyID=values(ModifyID)";
+        sql += " ON DUPLICATE KEY UPDATE Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Probability=values(Probability),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),ModifyID=values(ModifyID)";
         await conn.query(sql).then((v) => {
             // console.log("getPayRate", v, params);
             conn.release();
@@ -863,7 +865,7 @@ async function CreateOddsData(GameID: string|number, tid: number, conn: mariadb.
     });
     if (!isEmpty) {
         sql = `insert into CurOddsInfo(tid,OID,GameID,BetType,Num,Odds,MaxOdds,Steps)
-            SELECT ${tid} tid,1 OID,d.GameID,d.BetType,d.Num,(b.DfRate+b.PlusRate) Odds,(TopRate+b.PlusRate) MaxOdds,Steps
+            SELECT ${tid} tid,1 OID,d.GameID,d.BetType,d.Num,b.DfRate Odds,TopRate MaxOdds,Steps
         FROM dfOddsItems d left join BasePayRate b on d.GameID=b.GameID and d.BetType = b.BetType and d.SubType = b.SubType
         where d.GameID= ${GameID}
         `;

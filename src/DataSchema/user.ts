@@ -59,7 +59,6 @@ export interface IBasePayRateItm {
     Steps?: number;
     TopPay?: number;
     OneHand?: number;
-    PlusRate?: number;
 }
 export interface IPayRateItm {
     BetType: string;
