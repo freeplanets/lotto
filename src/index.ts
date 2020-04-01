@@ -270,7 +270,7 @@ app.get("/api/getPayRate", async (req, res) => {
 app.post("/api/batch/saveBasePayRate", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.body;
-        //console.log(param);
+        // console.log(param);
         param.data = JSON.parse(param.data);
         const valstr: string[] = [];
         param.data.map((itm: IBasePayRateItm) => {
