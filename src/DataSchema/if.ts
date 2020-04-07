@@ -147,6 +147,22 @@ export interface IOParam {
     BetForChange: number;
     Steps: number;
 }
+export interface IOparamSub {
+    TotalNums: number;
+    UseAvg: number;
+    SingleNum: number;
+    UnionNum: number;
+    MinHand: number;
+    MaxHand: number;
+    BetForChange: number;
+    Steps: number;
+}
+export interface IOparamG {
+    id: number;
+    GameID: number;
+    BetType: number;
+    Subs: IOparamSub[];
+}
 export interface ICurOddsData {
     BetType: number;
     OID: number;

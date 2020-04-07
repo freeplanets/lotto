@@ -1,6 +1,7 @@
 import cors from "cors";
 import express, {Request, Response} from "express";
 import mariadb from "mariadb";
+import minimist from "minimist";
 import {getOddsData, getOpParams, getPayClass, getUsers} from "./API/MemberApi";
 import Zadic from "./class/Animals";
 import {Bet} from "./class/Bet";
@@ -13,7 +14,8 @@ import { IBasePayRateItm, IDBAns, IGame , IPayClassParam , IPayRateItm , ITerms,
 import dbPool, {doQuery, getConnection, port} from "./db";
 import agentApi from "./router/agentApi";
 import apiRouter from "./router/api";
-
+// const args: minimist.ParsedArgs = minimist(process.argv.slice(2), {});
+// console.log("minimist:", args);
 interface IBetItem {
     BetType: string;
     Num: string;

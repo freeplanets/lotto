@@ -1,4 +1,11 @@
 class JDate {
+    private curDate:Date;
+    constructor() {
+        this.curDate = new Date();
+    }
+    get createDate():Date {
+        return this.curDate;
+    }
     public LeftSec(dStr: string): number {
         return Math.round((this.getTime(dStr) - new Date().getTime()) / 1000);
     }

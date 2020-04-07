@@ -22,6 +22,13 @@ interface IFunc {
  }
 
 export default class XFunc implements IFunc {
+    private curDate: Date;
+    constructor() {
+        this.curDate = new Date();
+    }
+    get createDate(): Date {
+        return this.curDate;
+    }
     public getZodic(num: number): number {
         return ZMap[num];
     }
