@@ -1,9 +1,9 @@
 class JDate {
-    private curDate:Date;
+    private curDate: Date;
     constructor() {
         this.curDate = new Date();
     }
-    get createDate():Date {
+    get createDate(): Date {
         return this.curDate;
     }
     public LeftSec(dStr: string): number {

@@ -225,7 +225,7 @@ app.post("/api/savePayClass", async (req, res) => {
         const p: IPayClassParam = {
             GameID: param.GameID,
             PayClassID : rlt.insertId,
-            ModifyID: param.ModifyID,
+            ModifyID: param.ModifyID ? param.ModifyID : 0,
             RateType: cond.type
         };
         if (cond.type < 3) {
@@ -244,7 +244,7 @@ app.get("/api/getBasePayRate", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.query;
         const params = [param.GameID];
-        const sql = "select BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand from BasePayRate where GameID = ?";
+        const sql = "select BetType,Title,SubTitle,SubType,NoAdjust,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand from BasePayRate where GameID = ?";
         await conn.query(sql, params).then((v) => {
             // console.log("getBasePayRate", v, params);
             conn.release();
@@ -282,12 +282,12 @@ app.post("/api/batch/saveBasePayRate", async (req, res) => {
             if (!itm.TopRate) { itm.TopRate = 0; }
             if (!itm.Probability) { itm.Probability = 0; }
             if (!itm.Steps) { itm.Steps = 0; }
-            const tmp = `(${param.GameID},${itm.BetType},'${itm.Title}','${itm.SubTitle}',${itm.SubType},${itm.Profit},${itm.DfRate},${itm.TopRate},${itm.Probability},${itm.Steps},${itm.TopPay},${itm.OneHand},${param.ModifyID})`;
+            const tmp = `(${param.GameID},${itm.BetType},'${itm.Title}','${itm.SubTitle}',${itm.SubType},${itm.NoAdjust},${itm.Profit},${itm.DfRate},${itm.TopRate},${itm.Probability},${itm.Steps},${itm.TopPay},${itm.OneHand},${param.ModifyID})`;
             valstr.push(tmp);
         });
-        let sql = "insert into BasePayRate(GameID,BetType,Title,SubTitle,SubType,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,ModifyID) values";
+        let sql = "insert into BasePayRate(GameID,BetType,Title,SubTitle,SubType,NoAdjust,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,ModifyID) values";
         sql += valstr.join(",");
-        sql += " ON DUPLICATE KEY UPDATE Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Probability=values(Probability),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),ModifyID=values(ModifyID)";
+        sql += " ON DUPLICATE KEY UPDATE NoAdjust=values(NoAdjust),Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Probability=values(Probability),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),ModifyID=values(ModifyID)";
         await conn.query(sql).then((v) => {
             // console.log("getPayRate", v, params);
             conn.release();

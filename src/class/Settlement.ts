@@ -1,5 +1,5 @@
-import { rejects } from "assert";
 import mariadb from "mariadb";
+import {IExProc} from "./Bet";
 import MSNum, {IMarkSixNums} from "./MSNum";
 import SettleMethods, {GType, ISetl} from "./SettleMethods";
 import XFunc from "./XFunc";
@@ -106,35 +106,52 @@ interface IMSResult {
      Seven: number[];
      DragonTiger: number[];
 }
+interface ISqlProc {
+    pre: string[];
+    common: string[];
+}
 export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection) {
     const imsr: IMSResult = new CMarkSixMum(num).Nums;
     let ans;
     let sql: string = "";
-    let sqls: string[];
+    // let sqls: string[];
+    let sqls: ISqlProc = {
+        pre: [],
+        common: []
+    };
     await conn.beginTransaction();
-    sql = `update BetTable set WinLose=Amt*-1,OpNums=0,OpSP=0,isSettled=1 where tid=${tid} and GameID=${GameID} and isCancled=0`;
+    sql = `update BetTableEx set Opened=0 where tid=${tid} and GameID=${GameID}`;
     await conn.query(sql).then((res) => {
-        console.log("WinLose=Amt*-1", sql, res);
+        console.log("BetTableEx set open zero:", sql, res);
         ans = true;
     }).catch(async (err) => {
         console.log("WinLose=Amt*-1 err 1", err);
         await conn.rollback();
         ans = false;
     });
-    if (!ans) {
-        return imsr;
+    if (ans) {
+        sql = `update BetTable set WinLose=Amt*-1,OpNums=0,OpSP=0,isSettled=1 where tid=${tid} and GameID=${GameID} and isCancled=0`;
+        await conn.query(sql).then((res) => {
+            console.log("WinLose=Amt*-1", sql, res);
+            ans = true;
+        }).catch(async (err) => {
+            console.log("WinLose=Amt*-1 err 1", err);
+            await conn.rollback();
+            ans = false;
+        });
     }
-
-    // winlose update check
-    sql = `select count(*) cnt from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 and WinLose=0`;
-    await conn.query(sql).then((res) => {
-        console.log("WinLose=0", sql, res);
-        ans = true;
-    }).catch(async (err) => {
-        console.log("WinLose=0", err);
-        await conn.rollback();
-        ans = false;
-    });
+    if (ans) {
+        // winlose update check
+        sql = `select count(*) cnt from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 and WinLose=0`;
+        await conn.query(sql).then((res) => {
+            console.log("WinLose=0", sql, res);
+            ans = true;
+        }).catch(async (err) => {
+            console.log("WinLose=0", err);
+            await conn.rollback();
+            ans = false;
+        });
+    }
     if (!ans) {
         return imsr;
     }
@@ -150,7 +167,37 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     });
     if (rtn) {
         sqls = doBT(tid, GameID, imsr, rtn, conn);
-        await Promise.all(sqls.map(async (itm) => {
+        if (sqls.pre.length > 0) {
+            await Promise.all(sqls.pre.map(async (itm) => {
+                ans = await doSql(itm, conn);
+                if (!ans) {
+                    console.log("err rollback 0");
+                    await conn.rollback();
+                    return imsr;
+                }
+            }));
+            sql = `select * from BetTableEx
+                where tid=${tid} and GameID=${GameID} `;
+            let strs: string[] = [];
+            await conn.query(sql).then((res) => {
+                strs = getEx(res);
+            }).catch(async (err) => {
+                console.log("Ex proc error", err);
+                await conn.rollback();
+                return imsr;
+            });
+            if (strs.length > 0) {
+                await Promise.all(strs.map(async (str) => {
+                    ans = await doSql(str, conn);
+                    if (!ans) {
+                        console.log("err rollback ex modify:");
+                        await conn.rollback();
+                        return imsr;
+                    }
+                }));
+            }
+        }
+        await Promise.all(sqls.common.map(async (itm) => {
             ans = await doSql(itm, conn);
             if (!ans) {
                 console.log("err rollback 1");
@@ -176,16 +223,97 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     }
     // console.log("SQL:", ans);
     return imsr;
- }
-function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, conn: mariadb.PoolConnection) {
-    let ans: string[] = [];
-    let sqls: string[];
+}
+interface INumOdds {
+    Num: number;
+    Odds: number;
+}
+interface IExData {
+    betid: number;
+    BetType: number;
+    group: number;
+    Op: number;
+    UseAvgOdds: number;
+    OpenNums: INumOdds[];
+    Nums: number[];
+}
+function getEx(data: IExProc[]): string[] {
+    const tmp: IExData[] = [];
+    let sql: string;
+    const sqls: string[] = [];
+    data.map((itm) => {
+        let f: IExData | undefined = tmp.find((d) => d.betid === itm.betid && d.BetType === itm.BetType && d.group === itm.tGroup);
+        if (f) {
+            f.Nums.push(itm.Num);
+            if (itm.Opened) {
+                f.Op += itm.Opened;
+                const nm: INumOdds = {
+                        Num: itm.Num,
+                        Odds: itm.Odds
+                };
+                f.OpenNums.push(nm);
+            }
+        } else {
+            f = {
+                betid: itm.betid,
+                BetType: itm.BetType,
+                group: itm.tGroup,
+                Op: itm.Opened,
+                UseAvgOdds: itm.UseAvgOdds,
+                OpenNums: itm.Opened ? [{Num: itm.Num, Odds: itm.Odds}] : [],
+                Nums: [itm.Num]
+            };
+            tmp.push(f);
+        }
+    });
+    tmp.map((itm) => {
+        const nums: number[] = [];
+        itm.Nums.map((nm) => {
+            nums.push(nm);
+        });
+        if (itm.Nums.length === itm.OpenNums.length) {
+            sql = `update BetTable set OpNums=${itm.OpenNums.length} where betid=${itm.betid} and Num='x${nums.join("x")}x'`;
+        } else if (itm.OpenNums.length === (itm.Nums.length - 1)) {
+            let odds: number = 0;
+            if (itm.UseAvgOdds) {
+                itm.OpenNums.map((nm) => {
+                    odds += nm.Odds;
+                });
+                odds /= itm.OpenNums.length;
+            } else {
+                itm.OpenNums.map((nm) => {
+                    if (odds) {
+                        odds = odds > nm.Odds ? nm.Odds : odds;
+                    } else {
+                        odds = nm.Odds;
+                    }
+                });
+            }
+            sql = `update BetTable set OpNums=${itm.OpenNums.length},Payouts=ROUND(Amt*${odds},2) where betid=${itm.betid} and Num='x${nums.join("x")}x'`;
+        } else {
+            sql = `update BetTable set OpNums=${itm.OpenNums.length} where betid=${itm.betid} and Num='x${nums.join("x")}x'`;
+        }
+        sqls.push(sql);
+    });
+    return sqls;
+}
+function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
+    // let ans: string[] = [];
+    const ans: ISqlProc = {
+        pre: [],
+        common: []
+    };
+    // let sqls: string[];
+    let sqls: ISqlProc;
     rtn.map((rd) => {
         const found: ISetl | undefined = SettleMethods.find((el) => el.BetTypes === rd.BetType);
         if (found) {
             sqls = CreateSql(tid, GameID, found, imsr, conn);
-            if (sqls) {
-                ans = ans.concat(sqls);
+            if (sqls.pre.length > 0) {
+                ans.pre = ans.pre.concat(sqls.pre);
+            }
+            if (sqls.common.length > 0) {
+                ans.common = ans.common.concat(sqls.common);
             }
         }
     });
@@ -194,22 +322,29 @@ function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, conn: mari
      */
     let sql = `insert into BetHeader(id,WinLose,isSettled) select betid id,sum(WinLose) WinLose,1 isSettled from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 group by betid`;
     sql = sql + " on duplicate key update WinLose=values(WinLose),isSettled=values(isSettled)";
-    ans = ans.concat([sql]);
+    // ans = ans.concat([sql]);
+    ans.common.push(sql);
     return ans;
 }
-function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, conn: mariadb.PoolConnection): string[] {
+function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, conn: mariadb.PoolConnection): ISqlProc {
     let nn: number|number[];
     let sql: string = "";
-    const sqls: string[] = [];
+    // const sqls: string[] = [];
+    const sqls: ISqlProc = {
+        pre: [],
+        common: []
+    };
     if (itm.NumTarget === "PASS") {
         sql = `update BetTable set WinLose=Payouts where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=OpPASS and isCancled=0`;
-        return [sql];
+        sqls.common.push(sql);
+        return sqls;
     }
     if (itm.TieNum) {
         if (itm.TieNum === imsr.SPNo) {
             sql = `update BetTable set WinLose=Amt,isSettled=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
-            return [sql];
-        }
+            sqls.common.push(sql);
+            return sqls;
+            }
     }
     if (itm.Position !== undefined) {
         // nn = console.log(typeof(itm.Position));
@@ -217,10 +352,16 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
             if (itm.Position < 0) {
                 // console.log("Position -1:", itm, imsr[itm.NumTarget]);
                 const tmp: number[] = imsr[itm.NumTarget];
-                nn = tmp;
-                nn.map(async (elm) => {
-                    sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${elm}x%' and isCancled=0`;
-                });
+                // nn = tmp;
+                if (itm.OpenLess) {
+                    sql = `update BetTableEx set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in (${tmp.join(",")})`;
+                    sqls.pre.push(sql);
+                } else {
+                    tmp.map((elm) => {
+                        sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${elm}x%' and isCancled=0`;
+                        sqls.common.push(sql);
+                    });
+                }
             } else {
                 if (itm.SubName) {
                     nn = imsr[itm.NumTarget][itm.Position][itm.SubName];
@@ -228,19 +369,22 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
                     nn = imsr[itm.NumTarget][itm.Position];
                 }
                 sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num = '${nn}' and isCancled=0`;
-                sqls.push(sql);
+                // sqls.push(sql);
+                sqls.common.push(sql);
             }
         } else {
             // const tmp: number[] = [];
             itm.Position.map(async (elm, idx) => {
                 nn = (idx + 1) * 10 + imsr[itm.NumTarget][elm][itm.SubName];
                 sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
-                sqls.push(sql);
+                // sqls.push(sql);
+                sqls.common.push(sql);
                 if (itm.ExtBT) {
                     const num: number = nn as number;
                     const exnn: number = itm.ExtBT * 100 + num;
                     sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.ExtBT} and Num='${exnn}' and isCancled=0`;
-                    sqls.push(sql);
+                    // sqls.push(sql);
+                    sqls.common.push(sql);
                 }
             });
             // nn = tmp;
@@ -264,31 +408,40 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
                 sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
             }
         }
-        sqls.push(sql);
+        // sqls.push(sql);
+        sqls.common.push(sql);
     }
     if (itm.ExSP) {
         nn = imsr[itm.ExSP];
-        sql = `update BetTable set OpSP=OpSP+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${nn}x%' and isCancled=0`;
-        sqls.push(sql);
+        sql = `update BetTable set OpSP=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${nn}x%' and isCancled=0`;
+        // sql = `update BetTableEx set OpSP=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num = ${nn}`;
+        // sqls.push(sql);
+        sqls.common.push(sql);
     }
     if (itm.OpenSP) {
         if (itm.OpenSP === itm.OpenAll) {
             sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll} and OpSP=${itm.OpenSP}`;
-            sqls.push(sql);
+            // sqls.push(sql);
+            sqls.common.push(sql);
         } else {
             sql = `update BetTable set WinLose=Payouts1-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll - itm.OpenSP} and OpSP=${itm.OpenSP}`;
-            sqls.push(sql);
+            // sqls.push(sql);
+            sqls.common.push(sql);
             sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
-            sqls.push(sql);
+            // sqls.push(sql);
+            sqls.common.push(sql);
         }
     } else if (itm.OpenLess) {
         sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenLess}`;
-        sqls.push(sql);
+        // sqls.push(sql);
+        sqls.common.push(sql);
         sql = `update BetTable set WinLose=Payouts1-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
-        sqls.push(sql);
+        // sqls.push(sql);
+        sqls.common.push(sql);
     } else {
         sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
-        sqls.push(sql);
+        // sqls.push(sql);
+        sqls.common.push(sql);
     }
     return sqls;
 }
@@ -424,7 +577,7 @@ class CMarkSixMum {
         */
     }
 }
-async function doSql(sql: string, conn: mariadb.PoolConnection) {
+async function doSql(sql: string, conn: mariadb.PoolConnection): Promise<boolean> {
     return new Promise((resolve, reject) => {
         conn.query(sql).then((res) => {
             // if (res) { ans = true; }

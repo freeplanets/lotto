@@ -52,6 +52,7 @@ export interface IBasePayRateItm {
     SubTitle?: string;
     BetType?: string;
     SubType?: number;
+    NoAdjust?: number;
     Profit?: number;
     DfRate?: number;
     TopRate?: number;

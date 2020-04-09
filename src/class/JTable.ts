@@ -27,7 +27,7 @@ export default class JTable<T extends IHasID> {
     public async List() {
         const sql = `select * from ${this.TableName} where 1`;
         let mb: T[] | any;
-        console.log("JTable List sql", sql);
+        // console.log("JTable List sql", sql);
         await this.conn.query(sql).then((row) => {
             mb = row;
         }).catch((err) => {

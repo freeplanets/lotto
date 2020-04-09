@@ -12,6 +12,25 @@ interface INum {
 interface INumOdd {
     [key: number]: number;
 }
+interface IGameInfo {
+    UseAvgOdds: number;
+    GType: string;
+}
+const GameTypes = {
+    MarkSix : "MarkSix"
+};
+export interface IExProc {
+    id: number;
+    betid: number;
+    tid: number;
+    GameID: number;
+    BetType: number;
+    tGroup: number;
+    Num: number;
+    Odds: number;
+    Opened: number;
+    UseAvgOdds: number;
+}
 /**
  * define errno
  * 1 balance
@@ -196,6 +215,14 @@ export class Bet implements IBet {
             msg.ErrCon = "Not enough num";
             return msg;
         }
+        const igf: IGameInfo | undefined = await this.getUseAvgOdds();
+        if (igf === undefined) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "get UseAvgOdds error!!";
+            return msg;
+        }
+        const UseAvgOdds = igf.UseAvgOdds;
+        const GType = igf.GType;
         if (BNum === 0) {
             isPASS = true;
         }
@@ -293,9 +320,12 @@ export class Bet implements IBet {
             }
             const BetDetail: IBetTable[] = [];
             const nums: string[] = [];
-            numsets.map((set) => {
+            const exproc: IExProc[] = [];
+            numsets.map((set, idx) => {
                 let odds: number = 0;
                 let odds1: number = 0;
+                const oddsg: number[] = [];
+                const oddsg1: number[] = [];
                 set.map((n) => {
                     const nn: number = parseInt(n, 10);
                     if (isPASS) {
@@ -305,13 +335,31 @@ export class Bet implements IBet {
                         odds = odds * NumOdd[n];
                     } else {
                         odds = odds + NumOdd[n];
+                        oddsg.push(NumOdd[n]);
                         if (arrNum[BetType].length > setsN.length) {
                             console.log("Odds1", nn, NumOdd[100 + nn], NumOdd);
                             odds1 = odds1 + NumOdd[100 + nn];
+                            oddsg1.push(NumOdd[100 + nn]);
+                            // 三中二額外處理
+                            if (GType === GameTypes.MarkSix && (BetType === 8 || BetType === 72)) {
+                                const tmp: IExProc = {
+                                    id: 0,
+                                    betid: rlt.insertId,
+                                    tid: this.tid,
+                                    GameID: this.GameID,
+                                    BetType,
+                                    tGroup: idx,
+                                    Num: n,
+                                    Odds: NumOdd[n],
+                                    Opened: 0,
+                                    UseAvgOdds
+                                };
+                                exproc.push(tmp);
+                            }
                         }
                     }
                 });
-                const avgOdds: number = (isPASS ? odds : odds / set.length);
+                const avgOdds: number = (isPASS ? odds : this.AvgOrMin(oddsg, UseAvgOdds));
                 const bd: IBetTable = {
                     id: 0,
                     betid: rlt.insertId,
@@ -323,15 +371,15 @@ export class Bet implements IBet {
                     BetType,
                     Num: "x" + set.join("x") + "x",
                     Odds: avgOdds,
-                    Payouts: parseFloat((Amt * avgOdds).toFixed(6)),
+                    Payouts: parseFloat((Amt * avgOdds).toFixed(2)),
                     Amt
                 };
                 if (isPASS) {
                     bd.OpPASS = BNum;
                 }
                 if (odds1) {
-                    bd.Odds1 =  odds1 / set.length;
-                    bd.Payouts1 = parseFloat((Amt * bd.Odds1).toFixed(6));
+                    bd.Odds1 =  this.AvgOrMin(oddsg1, UseAvgOdds);
+                    bd.Payouts1 = parseFloat((Amt * bd.Odds1).toFixed(2));
                 }
                 nums.push(bd.Num);
                 BetDetail.push(bd);
@@ -364,6 +412,16 @@ export class Bet implements IBet {
                     }
                 } else {
                     console.log("no checker", Chker);
+                }
+                if (exproc.length > 0) {
+                    const exjtd: JTable<IExProc> = new JTable(this.conn, "BetTableEx");
+                    const exrlt = await exjtd.MultiInsert(exproc);
+                    if (!exrlt) {
+                        await this.conn.rollback();
+                        msg.ErrNo = 9;
+                        msg.ErrCon = "Save BetTableEx error!!";
+                        return msg;
+                    }
                 }
             }
             msg.data = rlt1;
@@ -423,5 +481,28 @@ export class Bet implements IBet {
             return;
         });
         return dta;
+    }
+    private async getUseAvgOdds(): Promise<IGameInfo|undefined> {
+        const sql = `select UseAvgOdds,GType from Games where id=${this.GameID}`;
+        let ans: IGameInfo|undefined;
+        await this.conn.query(sql).then((res) => {
+            if (res) {
+                ans = res[0];
+            }
+        }).catch((err) => {
+            console.log("Bet getUseAvgOdds error:", err);
+        });
+        return ans;
+    }
+    private AvgOrMin(dta: number[], UseAvgOdds: number) {
+        if (UseAvgOdds) {
+            let total: number = 0;
+            dta.map((n) => {
+                total += n;
+            });
+            return total / dta.length;
+        } else {
+            return Math.min.apply(Math, dta);
+        }
     }
 }
