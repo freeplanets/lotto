@@ -885,14 +885,26 @@ async function CreateOddsData(GameID: string|number, tid: number, conn: mariadb.
     }
     return msg;
 }
-async function chkTermIsSettled(GameID: string|number, conn: mariadb.PoolConnection) {
-    const sql = "select * from Terms where GameID=? and isSettled=0";
-    let ans;
-    await conn.query(sql, [GameID]).then((rows) => {
-        // console.log("chkTermIsSettled:", rows, sql, GameID);
-        ans = rows.affectedRows > 0;
+async function chkTermIsSettled(GameID: string|number, conn: mariadb.PoolConnection, tid?: number): Promise<boolean> {
+    const param: number[] = [GameID as number];
+    let sql: string = "select * from Terms where GameID=?";
+    let ans: boolean = true;
+    if (tid) {
+        sql = sql + " and id=?";
+        param.push(tid);
+    } else {
+        sql = " and isSettled=0";
+    }
+    await conn.query(sql, param).then((rows) => {
+        // console.log("chkTermIsSettled:", rows[0], sql, param);
+        if (tid) {
+            ans = !!rows[0].isSettled;
+        } else {
+            ans = rows.affectedRows > 0;
+        }
     }).catch((err) => {
-        ans = err;
+        console.log("chkTermIsSettled:", err);
+        ans = true;
     });
     return ans;
 }
@@ -1000,6 +1012,8 @@ async function getCurTermId(GameID: number|string, conn: mariadb.PoolConnection)
     return ans;
 }
 async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: number, conn: mariadb.PoolConnection): Promise<any> {
+    const gameStoped: boolean = await chkTermIsSettled(GameID, conn, tid);
+    // console.log("getCurOddsInfo gameStoped:", gameStoped);
     const sql = `select OID,BetType,Num,Odds,MaxOdds,isStop,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and OID > ?`;
     const ans = {};
     const res = await doQuery(sql, conn, [tid, GameID, MaxOddsID]);
@@ -1010,7 +1024,7 @@ async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: num
                 OID: itm.OID,
                 Odds: itm.Odds,
                 MaxOdds: itm.MaxOdds,
-                isStop: itm.isStop,
+                isStop: itm.isStop | (gameStoped ? 1 : 0),
                 tolW: itm.tolW,
                 tolS: itm.tolS,
                 tolP: itm.tolP,
@@ -1049,7 +1063,7 @@ async function setOdds(tid: number, GameID: number, BT: number, Num: number, Odd
 
 async function setStop(tid: number, GameID: number, isStop: number, UserID: number, conn: mariadb.PoolConnection, BetTypes?: string, Num?: string): Promise<any> {
     const maxid = new Date().getTime();
-    const BTS: string = BetTypes !== undefined ? ` and BetType in (${BetTypes})` : "";
+    const BTS: string = !!BetTypes  ? ` and BetType in (${BetTypes})` : "";
     const NN: string = Num !== undefined ? ` and Num=${Num}` : "";
     const sql = `update CurOddsInfo set isStop=?,OID=${maxid} where tid=? and GameID=? ${BTS}${NN}`;
     const ans = await doQuery(sql, conn, [isStop, tid, GameID]);
