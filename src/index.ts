@@ -893,7 +893,7 @@ async function chkTermIsSettled(GameID: string|number, conn: mariadb.PoolConnect
         sql = sql + " and id=?";
         param.push(tid);
     } else {
-        sql = " and isSettled=0";
+        sql = sql + " and isSettled=0";
     }
     await conn.query(sql, param).then((rows) => {
         // console.log("chkTermIsSettled:", rows[0], sql, param);
