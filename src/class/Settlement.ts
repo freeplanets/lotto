@@ -578,14 +578,14 @@ class CMarkSixMum {
     }
 }
 async function doSql(sql: string, conn: mariadb.PoolConnection): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         conn.query(sql).then((res) => {
             // if (res) { ans = true; }
             console.log("doSql:", sql, res);
             resolve(true);
         }).catch((err) => {
             console.log("doSql error:", sql, err);
-            reject(false);
+            resolve(false);
         });
     });
 }

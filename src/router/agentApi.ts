@@ -87,6 +87,9 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     conn.release();
     res.send(JSON.stringify(msg));
 });
+agentApi.get("/2", async (req: Request, res: Response) => {
+    await CreditAC(req, res, 2);
+});
 agentApi.get("/3", async (req: Request, res: Response) => {
     await CreditAC(req, res, 3);
 });
@@ -102,6 +105,7 @@ async function CreditAC(req: Request, res: Response, ac: number) {
     console.log(`agentApi/${ac} param:`, params);
     const msg: IMsg = {ErrNo: 0};
     const data: IAnsData = {code: 0};
+    const justquery: boolean = ac === 2;
     data.tradeType = (ac === 3 ? 1 : 2);
     const Agent: IUser = await getAgent(params.agentId, conn);
     const eds = new EDS(Agent.DfKey);
@@ -115,10 +119,10 @@ async function CreditAC(req: Request, res: Response, ac: number) {
         msg.ErrCon = "No user found!!";
     } else {
         const user = hasUser as IUser;
-        const money: number = parseInt(param.money as string, 10);
+        const money: number = param.money ?  parseInt(param.money as string, 10) : 0;
         const key: number = (ac === 3 ? 1 : -1);
         const ans = await ModifyCredit(user.id, user.Account, params.agentId,
-            money * key, param.orderId as string, conn);
+            money * key, param.orderId as string, conn, justquery);
         console.log("CreditAC ModifyCredit:", ans);
         if (ans) {
             data.money = ans.balance + "";
@@ -204,14 +208,14 @@ function getUser(Account: string, AgentId: string, conn: Connection ): Promise<I
             resolve(rows[0]);
         }).catch((err) => {
             console.log("getUser error", err);
-            reject(false);
+            resolve(false);
         });
     });
 }
 async function getUserLogin( Account: string, skey: string, conn: Connection) {
     const sql = "select * from LoginInfo where Account=?  and logkey=? and isActive=1";
     const rows = await conn.query(sql, [Account, skey]);
-    console.log("getUserLogin", rows, sql);
+    // console.log("getUserLogin", rows, sql);
     if (rows[0]) {
         return rows[0];
     } else {

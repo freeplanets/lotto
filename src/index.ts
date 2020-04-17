@@ -187,22 +187,24 @@ app.get("/api/delBtClass", async (req, res) => {
     res.send(JSON.stringify(msg));
 });
 app.get("/api/getPayClass", async (req, res) => {
-        const conn = await dbPool.getConnection();
-        const param = req.query;
-        const params = [param.GameID];
-        const sql = "select id,PayClassName from PayClass where GameID = ?";
-        await conn.query(sql, params).then((v) => {
-            // console.log("getPayClass", v, params);
-            conn.release();
-            res.send(JSON.stringify(v));
-        }).catch((err) => {
-            console.log("getPayClass error", err);
-        });
-    });
+    const conn = await dbPool.getConnection();
+    const msg: IMsg = {ErrNo: 0};
+    const param = req.query;
+    const ans = await getPayClass(conn, param.GameID);
+    if (ans) {
+        msg.data = ans;
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = ans;
+    }
+    conn.release();
+    res.send(JSON.stringify(msg));
+});
 
 app.post("/api/savePayClass", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.body;
+        const msg: IMsg = {ErrNo: 0};
         console.log("param chk", param);
         const params = [param.GameID, param.PayClassName, param.ModifyID];
         const sql = `insert into PayClass(GameID,PayClassName,ModifyID) values(?,?,?) on duplicate key update PayClassName=values(PayClassName),ModifyID=values(ModifyID)`;
@@ -218,40 +220,54 @@ app.post("/api/savePayClass", async (req, res) => {
         }).catch((err) => {
             console.log("savePayClass error", err);
             conn.release();
-            res.send(JSON.stringify(err));
+            msg.ErrNo = 9;
+            msg.debug = err;
+            res.send(JSON.stringify(msg));
         });
         let ans;
-        const cond = JSON.parse(param.condition);
-        const p: IPayClassParam = {
-            GameID: param.GameID,
-            PayClassID : rlt.insertId,
-            ModifyID: param.ModifyID ? param.ModifyID : 0,
-            RateType: cond.type
-        };
-        if (cond.type < 3) {
-            p.RateDiff = cond.param;
-            ans = await setPayRate(p, conn);
+        if (param.data) {
+            ans = await setPayRateData(param.GameID, rlt.insertId, param.ModifyID, param.data, conn);
         } else {
-            p.RateCond = cond.param;
-            ans = await setPayRate(p, conn);
+            const cond = JSON.parse(param.condition);
+            const p: IPayClassParam = {
+                GameID: param.GameID,
+                PayClassID : rlt.insertId,
+                ModifyID: param.ModifyID ,
+                RateType: cond.type
+            };
+            if (cond.type < 3) {
+                p.RateDiff = cond.param;
+                ans = await setPayRate(p, conn);
+            } else {
+                p.RateCond = cond.param;
+                ans = await setPayRate(p, conn);
+            }
         }
-        console.log("savePayClass", ans);
+        if (!ans) {
+            msg.ErrNo = 9;
+        }
+        msg.debug = ans;
+        console.log("savePayClass", msg);
         conn.release();
-        res.send(JSON.stringify(ans));
+        res.send(JSON.stringify(msg));
 
     });
 app.get("/api/getBasePayRate", async (req, res) => {
         const conn = await dbPool.getConnection();
+        const msg: IMsg = {ErrNo: 0};
         const param = req.query;
         const params = [param.GameID];
         const sql = "select BetType,Title,SubTitle,SubType,NoAdjust,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand from BasePayRate where GameID = ?";
         await conn.query(sql, params).then((v) => {
             // console.log("getBasePayRate", v, params);
             conn.release();
-            res.send(JSON.stringify(v));
+            msg.data = v;
+            res.send(JSON.stringify(msg));
         }).catch((err) => {
             console.log("getBasePayRate error", err);
-            res.send(JSON.stringify(err));
+            msg.ErrNo = 9;
+            msg.debug = err;
+            res.send(JSON.stringify(msg));
         });
     });
 app.get("/api/getPayRate", async (req, res) => {
@@ -354,7 +370,7 @@ app.post("/api/saveTerms", async (req, res) => {
             const fields = ["GameID", "TermID", "PDate", "PTime", "StopTime", "StopTimes", "ModifyID"];
             const values = ["?", "?", "?", "?", "?", "?", "?"];
             const extSql = ` on duplicate key update
-                GameID=values(GameID),TermID=values(TermID),PDate=values(PDate),PTime=values(PTime),
+                TermID=values(TermID),PDate=values(PDate),PTime=values(PTime),
                 StopTime=values(StopTime),StopTimeS=values(StopTimeS),ModifyID=values(ModifyID)
             `;
             if (param.id) {
@@ -383,25 +399,28 @@ app.post("/api/saveTerms", async (req, res) => {
                 // res.send(JSON.stringify(err));
             });
             if (ans) {
-               const codAns = await CreateOddsData(param.GameID, tid, conn);
-               if (codAns.ErrNo !== 0) {
-                    await conn.rollback();
-                    conn.release();
-                    res.send(JSON.stringify(codAns));
-               } else {
-                   await conn.commit();
-               }
+                if (!param.id) {
+                    const codAns = await CreateOddsData(param.GameID, tid, conn);
+                    if (codAns.ErrNo !== 0) {
+                            await conn.rollback();
+                            conn.release();
+                            res.send(JSON.stringify(codAns));
+                    }
+                }
+                await conn.commit();
             } else {
                 await conn.rollback();
+                msg.ErrNo = 9;
+                msg.ErrCon = "Error!!";
             }
-            await conn.release();
+            conn.release();
             res.send(JSON.stringify(msg));
         }
     });
 app.get("/api/getTerms", async (req, res) => {
         const conn = await dbPool.getConnection();
         const param = req.query;
-        const sql = "select * from Terms where GameID=?";
+        const sql = "select * from Terms where GameID=? order by id desc limit 0,10";
         const msg: IMsg = {
             ErrNo: 0,
             ErrCon: ""
@@ -595,7 +614,8 @@ app.post("/api/SaveUser", async (req, res) => {
     });
 app.get("/api/getUsers", async (req, res) => {
         const conn = await dbPool.getConnection();
-        const ans = await getUsers(conn);
+        const param = req.query;
+        const ans = await getUsers(conn, param);
         const msg: IMsg = {ErrNo: 0};
         if (ans) {
             msg.data = ans;
@@ -614,7 +634,7 @@ app.get("/api/member/getPayClass", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "GameID is missing!!";
         } else {
-            const ans = getPayClass(param.GameID, conn);
+            const ans = getPayClass(conn, param.GameID);
             if (ans) {
                 msg.data = ans;
             } else {
@@ -822,6 +842,20 @@ app.listen(port, () => {
     console.log("db error:", err);
 });
 */
+async function setPayRateData(GameID: number, PayClassID: number, ModifyID: number, data: any, conn: mariadb.PoolConnection): Promise<boolean> {
+    const jt: JTable<IPayRateItm> = new JTable(conn, "PayRate");
+    data.map((itm: IPayRateItm) => {
+        itm.id = 0;
+        itm.GameID = GameID;
+        itm.PayClassID = PayClassID;
+        itm.ModifyID = ModifyID;
+    });
+    const ans = await jt.MultiInsert(data);
+    if (ans) {
+        return true;
+    }
+    return false;
+}
 async function setPayRate(param: IPayClassParam, conn: mariadb.PoolConnection) {
     let diff: string = "";
     if (param.RateType === 0) {

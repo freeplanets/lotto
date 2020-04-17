@@ -32,8 +32,12 @@ export async function getOddsData(GameID: number|string, PayClassID: number,
     }
     return msg;
 }
-export async function getPayClass(GameID: number|string, conn: mariadb.PoolConnection) {
-    const sql: string = "select id,PayClassName from PayClass where GameID=?";
+export async function getPayClass(conn: mariadb.PoolConnection, GameID?: number|string ) {
+    let cond: string = "1";
+    if (GameID) {
+       cond = `GameID=${GameID}`;
+    }
+    const sql: string = `select id,PayClassName,GameID from PayClass where ${cond}`;
     let ans;
     await conn.query(sql, [GameID]).then((rows) => {
         ans = rows;
@@ -50,7 +54,7 @@ export async function getOpParams(GameID: number|string, conn: mariadb.PoolConne
         ans = rows;
         // console.log("getOpParams", sql, ans);
     }).catch((err) => {
-        console.log("getPayClass", err);
+        console.log("getOpParams", err);
         ans = false;
     });
     return ans;
@@ -146,9 +150,21 @@ async function getOddsItem(GameID: number|string, tid: string, isSettled: number
     return {MaxOID: MaxID, Odds: gameOdds};
 }
 
-export async function getUsers(conn: mariadb.PoolConnection) {
-    const sql = "select id,Account,Nickname,Types from User where 1";
+export async function getUsers(conn: mariadb.PoolConnection, param?: any) {
+    const cond: string[] = [];
+    if (param) {
+        if (param.findString) {
+            cond.push(` (Account like '%${param.findString}%' or Nickname like '%${param.findString}%')
+             `);
+        }
+        if (param.userType !== undefined) {
+            cond.push(` Types = ${param.userType} `);
+        }
+    }
+    if (cond.length === 0) { cond.push("1"); }
+    const sql = `select id,Account,Nickname,Types from User where ${cond.join("and")}`;
     let ans;
+    console.log("getUsers:", sql, param);
     await conn.query(sql).then((rows) => {
         // console.log("getUsers", rows);
         ans = rows;

@@ -23,20 +23,22 @@ const mdOptions: object = {
     database: process.env.MDDATABASE,
     port: process.env.MDPORT
 };
-const dbPool: mariadb.Pool = mariadb.createPool(mdOptions);
+let dbPool: mariadb.Pool = mariadb.createPool(mdOptions);
 
-export function getConnection(counter?: number): Promise<mariadb.PoolConnection|undefined> {
-    const limitTimes: number = 1;
+export function getConnection(): Promise<mariadb.PoolConnection|undefined> {
     return new Promise(async (resolve) => {
         await dbPool.getConnection().then((conn: mariadb.PoolConnection) => {
             resolve(conn);
         }).catch(async (err) => {
             console.log("getConnection error:", err);
-            if (counter) {
-                if (counter >= limitTimes) { resolve(undefined); }
+            if (err.errno === 45028) {
+                console.log("rest dbPool");
+                await dbPool.end();
+                dbPool = mariadb.createPool(mdOptions);
+                const cc = await getConnection();
+                resolve(cc);
             }
-            const cc = await getConnection(1);
-            resolve(cc);
+            resolve(undefined);
         });
     });
 }
@@ -51,7 +53,11 @@ export function doQuery(sql: string, conn: mariadb.PoolConnection, params?: IAxP
         await query.then((res) => {
             resolve(res);
         }).catch((err) => {
-            console.log("doQuery", sql, params, err);
+            // console.log("doQuery", sql, params, err);
+            console.log("doQuery:", err, "\nErrNo:", err.errno);
+            Object.keys(err).map((key) => {
+                console.log(key, ">", err[key]);
+            });
             resolve(undefined);
         });
     });

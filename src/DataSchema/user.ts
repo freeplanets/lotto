@@ -62,6 +62,7 @@ export interface IBasePayRateItm {
     OneHand?: number;
 }
 export interface IPayRateItm {
+    id: number;
     BetType: string;
     SubType: number;
     Rate: number;
