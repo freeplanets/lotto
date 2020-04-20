@@ -1053,7 +1053,7 @@ async function getCurTermId(GameID: number|string, conn: mariadb.PoolConnection)
 async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: number, conn: mariadb.PoolConnection): Promise<any> {
     const gameStoped: boolean = await chkTermIsSettled(GameID, conn, tid);
     // console.log("getCurOddsInfo gameStoped:", gameStoped);
-    const sql = `select OID,BetType,Num,Odds,MaxOdds,isStop,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and OID > ?`;
+    const sql = `select OID,BetType,Num,Odds,MaxOdds,isStop,tolW,tolS,tolP,Steps from CurOddsInfo where tid=? and GameID=? and OID > ?`;
     const ans = {};
     const res = await doQuery(sql, conn, [tid, GameID, MaxOddsID]);
     if (res) {
@@ -1067,6 +1067,7 @@ async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: num
                 tolW: itm.tolW,
                 tolS: itm.tolS,
                 tolP: itm.tolP,
+                Steps: itm.Steps
             };
             ans[itm.BetType][itm.Num] = Object.assign({}, tmp);
         });
