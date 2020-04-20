@@ -769,6 +769,7 @@ app.get("/api/setOdds", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Odds error!!";
         }
+        conn.release();
     }
     res.send(JSON.stringify(msg));
 });
@@ -788,6 +789,7 @@ app.get("/api/setStop", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Set stop error!!";
         }
+        conn.release();
     }
     res.send(JSON.stringify(msg));
 });
@@ -808,6 +810,7 @@ app.post("/api/saveComments", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Save comments error!";
         }
+        conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get Connection error!";
@@ -831,6 +834,7 @@ app.post("/api/getComments", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Get comments error!";
         }
+        conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get Connection error!";
