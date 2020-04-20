@@ -1,10 +1,9 @@
 import express, { Request, Response, Router } from "express";
 import {Connection} from "mariadb";
-import { userInfo } from "os";
 import EDS from "../class/EncDecString";
 import {IDbAns, IGameAccessParams, IMsg} from "../DataSchema/if";
 import {IUser} from "../DataSchema/user";
-import dbPool from "../db";
+import {getConnection} from "../db";
 import {ModifyCredit} from "../func/Credit";
 
 interface IAnsData {
@@ -28,7 +27,13 @@ agentApi.get("/1", async (req: Request, res: Response) => {
     console.log("agentApi/1 :", params);
     const msg: IMsg = {ErrNo: 0};
     const data: IAnsData = {code: 0};
-    const conn = await dbPool.getConnection();
+    const conn = await getConnection();
+    if(!conn){
+        msg.ErrNo = 9;
+        msg.ErrCon = "system busy!!";
+        res.send(JSON.stringify(msg));
+        return;
+    }
     const Agent: IUser = await getAgent(params.agentId, conn);
     console.log("agent Api /1", Agent);
     if (Agent.DfKey) {
@@ -72,8 +77,15 @@ agentApi.get("/1", async (req: Request, res: Response) => {
 agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     const param = req.query;
     console.log("memberlogin", param);
-    const conn = await dbPool.getConnection();
+    //const conn = await dbPool.getConnection();
     const msg: IMsg = {ErrNo: 0};
+    const conn = await getConnection();
+    if(!conn){
+        msg.ErrNo = 9;
+        msg.ErrCon = "system busy!!";
+        res.send(JSON.stringify(msg));
+        return;
+    }    
     const login = await getUserLogin(param.Account, param.token, conn);
     if (login) {
         const User: IUser | boolean = await getUser(param.Account, login.AgentID, conn);
@@ -101,9 +113,16 @@ agentApi.get("/logHandle", async (req: Request, res: Response) => {
 });
 async function CreditAC(req: Request, res: Response, ac: number) {
     const params = req.query;
-    const conn = await dbPool.getConnection();
+    //const conn = await dbPool.getConnection();
     console.log(`agentApi/${ac} param:`, params);
     const msg: IMsg = {ErrNo: 0};
+    const conn = await getConnection();
+    if(!conn){
+        msg.ErrNo = 9;
+        msg.ErrCon = "system busy!!";
+        res.send(JSON.stringify(msg));
+        return;
+    }    
     const data: IAnsData = {code: 0};
     const justquery: boolean = ac === 2;
     data.tradeType = (ac === 3 ? 1 : 2);
@@ -248,7 +267,14 @@ async function getTicketDetail(req, res) {
     const params = req.query;
     // console.log("getTicketDetail:", params);
     const data: IAnsData = {code: 0};
-    const conn = await dbPool.getConnection();
+    //const conn = await dbPool.getConnection();
+    const conn = await getConnection();
+    if(!conn){
+        data.code = 9;
+        data.ErrCon = "system busy!!";
+        res.send(JSON.stringify(data));
+        return;
+    }    
     const UpId = params.agentId;
     const Agent: IUser = await getAgent(UpId, conn);
     const eds = new EDS(Agent.DfKey);

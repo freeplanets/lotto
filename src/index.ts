@@ -32,9 +32,11 @@ dbPool.getConnection().then((conn) => {
 });
 */
     // define a route handler for the default home page
+const crosOption: cors.CorsOptions = {
+};
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-app.use(cors());
+app.use(cors(crosOption));
 app.get("/", async (req: Request, res: Response) => {
         /*
         const conn = await dbPool.getConnection();
@@ -267,6 +269,7 @@ app.get("/api/getBasePayRate", async (req, res) => {
             console.log("getBasePayRate error", err);
             msg.ErrNo = 9;
             msg.debug = err;
+            conn.release();
             res.send(JSON.stringify(msg));
         });
     });
@@ -282,6 +285,7 @@ app.get("/api/getPayRate", async (req, res) => {
             res.send(JSON.stringify(v));
         }).catch((err) => {
             console.log("getPayRate error", err);
+            conn.release();
             res.send(JSON.stringify(err));
         });
     });
@@ -454,6 +458,7 @@ app.post("/api/createBetItems", async (req, res) => {
         if (data.length <= 0) {
             msg.ErrNo = 9;
             msg.ErrCon = "No Data !!!";
+            conn.release();
             res.send(JSON.stringify(msg));
         }
         let sql = "insert into dfOddsItems(GameID,BetType,Num,ModifyID) values";
