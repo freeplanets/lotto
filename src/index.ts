@@ -254,6 +254,87 @@ app.post("/api/savePayClass", async (req, res) => {
         res.send(JSON.stringify(msg));
 
     });
+app.get("/api/editPayClass", async (req, res) => {
+    const conn = await dbPool.getConnection();
+    const param = req.query;
+    const msg: IMsg = {ErrNo: 0};
+    console.log("param chk", param);
+    const params = [param.PayClassName, param.ModifyID, param.id];
+    const sql = `update PayClass set PayClassName=?,ModifyID=? where id=?`;
+    let rlt: IDBAns = {
+        affectedRows: 0,
+        insertId: 0,
+        warningStatus: 0
+    };
+    await conn.query(sql, params).then((v) => {
+        // console.log("savePayClass", v);
+        // res.send(JSON.stringify(v));
+        rlt = v;
+        msg.data = rlt;
+    }).catch((err) => {
+        console.log("savePayClass error", err);
+        msg.ErrNo = 9;
+        msg.debug = err;
+    });
+    conn.release();
+    res.send(JSON.stringify(msg));
+});
+app.get("/api/delPayClass", async (req, res) => {
+    const conn = await dbPool.getConnection();
+    const param = req.query;
+    const msg: IMsg = {ErrNo: 0};
+    console.log("param chk", param);
+    const params = [param.id];
+    const chk = await isPayClassUsed(param.GameID, param.id, conn);
+    console.log("delPayClass chk", chk);
+    if (chk) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "PayClass in used!!";
+        conn.release();
+        res.send(JSON.stringify(msg));
+    }
+    await conn.beginTransaction();
+    let sql = `delete from  PayClass where id=?`;
+    let rlt: IDBAns = {
+        affectedRows: 0,
+        insertId: 0,
+        warningStatus: 0
+    };
+    await conn.query(sql, params).then((v) => {
+        // console.log("savePayClass", v);
+        // res.send(JSON.stringify(v));
+        rlt = v;
+        if (rlt.affectedRows <= 0) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Delete PayClass Error!!";
+        }
+    }).catch((err) => {
+        console.log("savePayClass error", err);
+        msg.ErrNo = 9;
+        msg.debug = err;
+    });
+    if (msg.ErrNo === 0) {
+        sql = "delete from PayRate where PayClassID=?";
+        await conn.query(sql, params).then((v) => {
+            rlt = v;
+            if (rlt.affectedRows <= 0) {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Delete PayClass Error!!";
+            }
+        }).catch((err) => {
+            console.log("savePayClass error", err);
+            msg.ErrNo = 9;
+            msg.debug = err;
+        });
+    }
+    if (msg.ErrNo === 0) {
+        conn.commit();
+    } else {
+        conn.rollback();
+    }
+    conn.release();
+    res.send(JSON.stringify(msg));
+});
 app.get("/api/getBasePayRate", async (req, res) => {
         const conn = await dbPool.getConnection();
         const msg: IMsg = {ErrNo: 0};
@@ -1140,4 +1221,23 @@ async function getComments(pagename: string, conn: mariadb.PoolConnection): Prom
     } else {
         return undefined;
     }
+}
+
+async function isPayClassUsed(GameID: string, PayClassID: string, conn: mariadb.PoolConnection): Promise<boolean> {
+    let ans: boolean = false;
+    const sql = "select PayClass from User where PayClass !=''";
+    await conn.query(sql).then((res) => {
+        const iPID: number = parseInt(PayClassID, 10);
+        res.map((itm) => {
+            const pc = JSON.parse(itm.PayClass);
+            console.log("pc", pc);
+            if (pc[GameID] === iPID) {
+                ans = true;
+                return ans;
+            }
+        });
+    }).catch((err) => {
+        console.log("isPayClassUsed Error:", err);
+    });
+    return ans;
 }

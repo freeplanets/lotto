@@ -216,7 +216,7 @@ async function addLoginInfo(uid: number, Account: string, AgentId: string, skey:
     return false;
 }
 function getUser(Account: string, AgentId: string, conn: Connection ): Promise<IUser|boolean> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
         const param: {[key: number]: any} = [Account, AgentId];
         const sql = "select * from User where Account=? and UpId=?";
         await conn.query(sql, param).then((rows) => {
