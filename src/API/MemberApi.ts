@@ -1,6 +1,6 @@
 import mariadb from "mariadb";
 import JDate from "../class/JDate";
-import {IGameInfo, IGameOdds, ILastGame, IMsg, IOdds} from "../DataSchema/if";
+import {ICommonParams, IGameInfo, IGameOdds, ILastGame, IMsg, IOdds} from "../DataSchema/if";
 
 interface IBtOdds {
     [key: string]: IOdds;
@@ -150,22 +150,33 @@ async function getOddsItem(GameID: number|string, tid: string, isSettled: number
     return {MaxOID: MaxID, Odds: gameOdds};
 }
 
-export async function getUsers(conn: mariadb.PoolConnection, param?: any) {
+export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonParams) {
     const cond: string[] = [];
+    const params: any[] = [];
     if (param) {
         if (param.findString) {
-            cond.push(` (Account like '%${param.findString}%' or Nickname like '%${param.findString}%')
-             `);
+            cond.push(" (Account like ? or Nickname like ? ) ");
+            params.push(`%${param.findString}%`);
+            params.push(`%${param.findString}%`);
         }
         if (param.userType !== undefined) {
-            cond.push(` Types = ${param.userType} `);
+            cond.push(" Types = ? ");
+            params.push(param.userType);
+        }
+        if (param.UpId) {
+            cond.push(" UpId = ? ");
+            params.push(param.UpId);
         }
     }
     if (cond.length === 0) { cond.push("1"); }
-    const sql = `select id,Account,Nickname,Types from User where ${cond.join("and")}`;
+    let exFields = ",Account,Nickname,Types";
+    if (param?.OnlyID) {
+        exFields = "";
+    }
+    const sql = `select id${exFields} from User where ${cond.join("and")}`;
     let ans;
-    console.log("getUsers:", sql, param);
-    await conn.query(sql).then((rows) => {
+    console.log("getUsers:", sql, param, params);
+    await conn.query(sql, params).then((rows) => {
         // console.log("getUsers", rows);
         ans = rows;
     }).catch((err) => {

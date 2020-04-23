@@ -182,3 +182,40 @@ export interface IComments {
     PageName: string;
     Comments: string;
 }
+
+export interface IBetItem {
+    BetType: string;
+    Num: string;
+}
+
+export interface IMOdds {
+    Odds: number;
+    MaxOdds: number;
+    isStop: number;
+    Steps: number;
+}
+
+export interface ICommonParams {
+    id?: number;
+    tid?: number;
+    GameID?: number|string;
+    BT?: number;
+    Num?: number;
+    Step?: number;
+    UserID?: number;
+    MaxOddsID?: number;
+    BetTypes?: string;
+    isStop?: number;
+    PageName?: string;
+    Comments?: string;
+    BCName?: string;
+    findString?: string;
+    userType?: number;
+    ModifyID?: number;
+    data?: any;
+    PayClassName?: string;
+    NameOrNick?: string;
+    SDate?: string;
+    UpId?: number;
+    OnlyID?: boolean;
+}

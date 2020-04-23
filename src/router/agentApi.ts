@@ -3,8 +3,8 @@ import {Connection} from "mariadb";
 import EDS from "../class/EncDecString";
 import {IDbAns, IGameAccessParams, IMsg} from "../DataSchema/if";
 import {IUser} from "../DataSchema/user";
-import {getConnection} from "../db";
 import {ModifyCredit} from "../func/Credit";
+import {getConnection} from "../func/db";
 
 interface IAnsData {
     code: number;
