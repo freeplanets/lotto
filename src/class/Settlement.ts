@@ -132,7 +132,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     if (ans) {
         sql = `update BetTable set WinLose=Amt*-1,OpNums=0,OpSP=0,isSettled=1 where tid=${tid} and GameID=${GameID} and isCancled=0`;
         await conn.query(sql).then((res) => {
-            console.log("WinLose=Amt*-1", sql, res);
+            //console.log("WinLose=Amt*-1", sql, res);
             ans = true;
         }).catch(async (err) => {
             console.log("WinLose=Amt*-1 err 1", err);
@@ -144,7 +144,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         // winlose update check
         sql = `select count(*) cnt from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 and WinLose=0`;
         await conn.query(sql).then((res) => {
-            console.log("WinLose=0", sql, res);
+            //console.log("WinLose=0", sql, res);
             ans = true;
         }).catch(async (err) => {
             console.log("WinLose=0", err);
@@ -325,16 +325,15 @@ function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, conn: mari
     // ans = ans.concat([sql]);
     ans.common.push(sql);
     // 損益歸戶
-    /*
     sql = `insert into UserCredit(uid,GameID,tid,DepWD)
         select UserID uid,GameID,tid,sum(WinLose) DepWD
-        from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group UserID uid,GameID,tid
-        on duplicate key update DepWD=values(DepWD)
-    `;
+        from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group by UserID,GameID,tid`;
+    sql = sql + " on duplicate key update DepWD=values(DepWD)";
     ans.common.push(sql);
-    sql = `insert into User(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid on duplicate key update Balance=values(Balance)`;
+    sql = "insert into User(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid";
+    sql = sql + " on duplicate key update Balance=values(Balance)";
     ans.common.push(sql);
-    */
+
     return ans;
 }
 function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, conn: mariadb.PoolConnection): ISqlProc {
@@ -435,10 +434,10 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
             // sqls.push(sql);
             sqls.common.push(sql);
         } else {
-            sql = `update BetTable set WinLose=Payouts1-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll - itm.OpenSP} and OpSP=${itm.OpenSP}`;
+            sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll - itm.OpenSP} and OpSP=${itm.OpenSP}`;
             // sqls.push(sql);
             sqls.common.push(sql);
-            sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
+            sql = `update BetTable set WinLose=Payouts1-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
             // sqls.push(sql);
             sqls.common.push(sql);
         }
@@ -447,6 +446,10 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
         // sqls.push(sql);
         sqls.common.push(sql);
         sql = `update BetTable set WinLose=Payouts1-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
+        // sqls.push(sql);
+        sqls.common.push(sql);
+    } else if (itm.OneToGo) {
+        sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums > 0`;
         // sqls.push(sql);
         sqls.common.push(sql);
     } else {
@@ -529,11 +532,11 @@ class CMarkSixMum {
                 BigCnt++;
             }
             const fzd = zd.find((elm) => elm === itm.Zadic);
-            console.log("find zadic:", fzd, itm.Num, itm.Zadic);
+            //console.log("find zadic:", fzd, itm.Num, itm.Zadic);
             if (!fzd) {
                 zd.push(itm.Zadic as number);
             }
-            console.log("find zadic", fzd, itm.Zadic, zd);
+            //console.log("find zadic", fzd, itm.Zadic, zd);
         });
         if (this.imsr.SPNum.OddEven === 1) {
             EvenCnt++;

@@ -5,6 +5,7 @@ export interface ISetl {
     Position?: number[] | number;   // -1 表示對該項目所有號碼
     OpenAll: number;           // 須開出號數
     OpenLess?: number;          // 最少開出號數
+    OneToGo?:boolean;
     TieNum?: number;             // 平手
     ExSP?: string;               // 中特
     OpenSP?: number;
@@ -116,11 +117,6 @@ const SettleNums: ISetl[] = [
         ExSP: "SPNo",
         OpenAll: 1,
         OpenSP: 1,
-    },
-    {
-        BetTypes: 71,           // 四中一
-        NumTarget: "Nums",
-        OpenAll: 1
     },
     {
         BetTypes: 12,             // 正碼1-6單雙
@@ -433,6 +429,12 @@ const SettleNums: ISetl[] = [
         OpenAll: 1
     },
     {
+        BetTypes: 71,           // 四中一
+        NumTarget: "Nums",
+        OpenAll: 1,
+        Position: -1
+    },
+    {
         BetTypes: 57,           // 五中一
         NumTarget: "Nums",
         OpenAll: 1,
@@ -472,30 +474,35 @@ const SettleNums: ISetl[] = [
         BetTypes: 63,     // 一粒任
         NumTarget: "Nums",
         OpenAll: 1,
+        OneToGo: true,
         Position: -1
     },
     {
         BetTypes: 64,     // 二粒任
         NumTarget: "Nums",
         OpenAll: 2,
+        OneToGo: true,
         Position: -1
     },
     {
         BetTypes: 65,     // 三粒任
         NumTarget: "Nums",
         OpenAll: 3,
+        OneToGo: true,
         Position: -1
     },
     {
         BetTypes: 66,     // 四粒任
         NumTarget: "Nums",
         OpenAll: 4,
+        OneToGo: true,        
         Position: -1
     },
     {
         BetTypes: 67,     // 五粒任
         NumTarget: "Nums",
         OpenAll: 5,
+        OneToGo: true,        
         Position: -1
     },
     {
