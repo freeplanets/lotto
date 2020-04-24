@@ -37,7 +37,7 @@ export class Gets {
             rows.map((itm: IBetHeader) => {
                 const tmp: IBetItem = {
                     GameID: itm.GameID,
-                    id: itm.tid,
+                    id: itm.id,
                     con: JSON.parse(itm.BetContent),
                     gold: itm.Total,
                     end: parseFloat(itm.WinLose ? itm.WinLose.toFixed(2) : "0"),

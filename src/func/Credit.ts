@@ -34,7 +34,7 @@ async function ModifyUserCredit(uid: number, balance: number, conn: Connection) 
 
 export function getUserCredit(uid: number, conn: Connection) {
     return new Promise<number>(async (resolve) => {
-        const sql = `select balance from UserCredit where uid=? order by id desc limit 0,1`;
+        const sql = `select sum(DepWD) balance from UserCredit where uid=?`;
         const ans = await conn.query(sql, [uid]);
         let balance: number = 0;
         if (ans[0]) {
