@@ -323,16 +323,18 @@ function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, conn: mari
     let sql = `insert into BetHeader(id,WinLose,isSettled) select betid id,sum(WinLose) WinLose,1 isSettled from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 group by betid`;
     sql = sql + " on duplicate key update WinLose=values(WinLose),isSettled=values(isSettled)";
     // ans = ans.concat([sql]);
-    ans.common.push(sql);   
-    //損益歸戶
-    sql= `insert into UserCredit(uid,GameID,tid,DepWD) 
-        select UserID uid,GameID,tid,sum(WinLose) DepWD 
+    ans.common.push(sql);
+    // 損益歸戶
+    /*
+    sql = `insert into UserCredit(uid,GameID,tid,DepWD)
+        select UserID uid,GameID,tid,sum(WinLose) DepWD
         from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group UserID uid,GameID,tid
         on duplicate key update DepWD=values(DepWD)
-    `
+    `;
     ans.common.push(sql);
     sql = `insert into User(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid on duplicate key update Balance=values(Balance)`;
     ans.common.push(sql);
+    */
     return ans;
 }
 function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, conn: mariadb.PoolConnection): ISqlProc {

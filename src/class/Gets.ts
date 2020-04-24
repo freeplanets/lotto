@@ -3,6 +3,7 @@ import {IBetHeader, IMsg} from "../DataSchema/if";
 interface IBetItem {
     GameID: number;
     id: number;
+    tid: number;
     con: object;
     gold: number;
     end?: number;
@@ -38,6 +39,7 @@ export class Gets {
                 const tmp: IBetItem = {
                     GameID: itm.GameID,
                     id: itm.id,
+                    tid: itm.tid,
                     con: JSON.parse(itm.BetContent),
                     gold: itm.Total,
                     end: parseFloat(itm.WinLose ? itm.WinLose.toFixed(2) : "0"),
