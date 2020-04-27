@@ -132,7 +132,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     if (ans) {
         sql = `update BetTable set WinLose=Amt*-1,OpNums=0,OpSP=0,isSettled=1 where tid=${tid} and GameID=${GameID} and isCancled=0`;
         await conn.query(sql).then((res) => {
-            //console.log("WinLose=Amt*-1", sql, res);
+            // console.log("WinLose=Amt*-1", sql, res);
             ans = true;
         }).catch(async (err) => {
             console.log("WinLose=Amt*-1 err 1", err);
@@ -144,7 +144,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         // winlose update check
         sql = `select count(*) cnt from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 and WinLose=0`;
         await conn.query(sql).then((res) => {
-            //console.log("WinLose=0", sql, res);
+            // console.log("WinLose=0", sql, res);
             ans = true;
         }).catch(async (err) => {
             console.log("WinLose=0", err);
@@ -197,10 +197,14 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
                 }));
             }
         }
+        console.log("sqls:", sqls);
+        let needBreak: boolean = false;
         await Promise.all(sqls.common.map(async (itm) => {
+            if (needBreak) { return; }
             ans = await doSql(itm, conn);
             if (!ans) {
                 console.log("err rollback 1");
+                needBreak = true;
                 await conn.rollback();
                 return imsr;
             }
@@ -345,7 +349,15 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
         common: []
     };
     if (itm.NumTarget === "PASS") {
-        sql = `update BetTable set WinLose=Payouts where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=OpPASS and isCancled=0`;
+        imsr.RGNums.map((rgn: IMarkSixNums, idx: number) => {
+            sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x12${idx + 1}${rgn.OddEven}x%' and isCancled=0`;
+            sqls.common.push(sql);
+            sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x13${idx + 1}${rgn.BigSmall}x%' and isCancled=0`;
+            sqls.common.push(sql);
+            sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x14${idx + 1}${rgn.ColorWave}x%' and isCancled=0`;
+            sqls.common.push(sql);
+        });
+        sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=OpPASS and isCancled=0`;
         sqls.common.push(sql);
         return sqls;
     }
@@ -532,11 +544,11 @@ class CMarkSixMum {
                 BigCnt++;
             }
             const fzd = zd.find((elm) => elm === itm.Zadic);
-            //console.log("find zadic:", fzd, itm.Num, itm.Zadic);
+            // console.log("find zadic:", fzd, itm.Num, itm.Zadic);
             if (!fzd) {
                 zd.push(itm.Zadic as number);
             }
-            //console.log("find zadic", fzd, itm.Zadic, zd);
+            // console.log("find zadic", fzd, itm.Zadic, zd);
         });
         if (this.imsr.SPNum.OddEven === 1) {
             EvenCnt++;

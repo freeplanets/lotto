@@ -5,7 +5,7 @@ export interface ISetl {
     Position?: number[] | number;   // -1 表示對該項目所有號碼
     OpenAll: number;           // 須開出號數
     OpenLess?: number;          // 最少開出號數
-    OneToGo?:boolean;
+    OneToGo?: boolean;
     TieNum?: number;             // 平手
     ExSP?: string;               // 中特
     OpenSP?: number;
@@ -495,14 +495,14 @@ const SettleNums: ISetl[] = [
         BetTypes: 66,     // 四粒任
         NumTarget: "Nums",
         OpenAll: 4,
-        OneToGo: true,        
+        OneToGo: true,
         Position: -1
     },
     {
         BetTypes: 67,     // 五粒任
         NumTarget: "Nums",
         OpenAll: 5,
-        OneToGo: true,        
+        OneToGo: true,
         Position: -1
     },
     {
