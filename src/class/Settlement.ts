@@ -197,7 +197,6 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
                 }));
             }
         }
-        console.log("sqls:", sqls);
         let needBreak: boolean = false;
         await Promise.all(sqls.common.map(async (itm) => {
             if (needBreak) { return; }
