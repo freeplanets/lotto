@@ -329,7 +329,7 @@ function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, conn: mari
     ans.common.push(sql);
     // 損益歸戶
     sql = `insert into UserCredit(uid,GameID,tid,DepWD)
-        select UserID uid,GameID,tid,sum(WinLose) DepWD
+        select UserID uid,GameID,tid,sum(Total + WinLose) DepWD
         from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group by UserID,GameID,tid`;
     sql = sql + " on duplicate key update DepWD=values(DepWD)";
     ans.common.push(sql);
