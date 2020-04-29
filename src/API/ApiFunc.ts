@@ -322,7 +322,7 @@ export async function getComments(pagename: string, conn: mariadb.PoolConnection
 export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConnection, uids?: number[]): Promise<any> {
     let cond: string[] = [];
     if (param.SDate) {
-        cond.push(` (CreateTime BETWEEN '${param.SDate}' AND '${param.SDate} 23:59:59') `);
+        cond.push(` (t.CreateTime BETWEEN '${param.SDate}' AND '${param.SDate} 23:59:59') `);
     }
     if (uids) {
         cond.push(` UserID in (${uids.join(",")}) `);
@@ -333,7 +333,7 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
         }
     }
     if (param.BetID) {
-        cond.push(` id in (${param.BetID}) `);
+        cond.push(` t.id in (${param.BetID}) `);
     }
     if (param.BetType) {
         cond.push(` BetContent like '%"BetType":${param.BetType}%'`);
