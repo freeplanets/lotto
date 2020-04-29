@@ -5,6 +5,7 @@ import JTable, {IHasID} from "./JTable";
 interface ICurOddsT {
     id: 0;
     tid: number;
+    OID: number;
     GameID: number;
     BetType: number;
     UpId?: number;
@@ -98,8 +99,9 @@ export class OpChk {
         this.MCurOT = [];
         this.AvgT = [];
         this.UnT = [];
+        const maxid = new Date().getTime();
         data.map((itm) => {
-            this.addCurOddT(itm);
+            this.addCurOddT(itm, maxid);
             this.calAvg(itm);
             this.calUnionNumTotal(itm);
         });
@@ -177,7 +179,7 @@ export class OpChk {
         const jt: JTable<T> = new JTable<T>(conn, tableName);
         return await jt.MultiUpdate(data, true);
     }
-    private addCurOddT(itm: IBetTable): void {
+    private addCurOddT(itm: IBetTable, maxid: number): void {
         if (this.isParlay) {
             const reg = /\d+(?=x)/g;
             const nums = itm.Num.match(reg)?.map((sNum) => {
@@ -188,6 +190,7 @@ export class OpChk {
                 nums.map((num) => {
                     const tmpC: ICurOddsT = {
                         id: 0,
+                        OID: maxid,
                         tid: itm.tid,
                         GameID: itm.GameID,
                         BetType: itm.BetType,
@@ -205,6 +208,7 @@ export class OpChk {
         } else {
             const tmpC: ICurOddsT = {
                 id: 0,
+                OID: maxid,
                 tid: itm.tid,
                 GameID: itm.GameID,
                 BetType: itm.BetType,
