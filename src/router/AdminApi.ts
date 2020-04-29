@@ -1,5 +1,7 @@
-import express, { Router } from "express";
+import { CommonOptions } from "child_process";
+import express, {Request, Response, Router } from "express";
 import mariadb from "mariadb";
+import { Z_ERRNO } from "zlib";
 // import {setPayRateData,setPayRate,isPayClassUsed,chkTermIsSettled,CreateOddsData,getGameList,getBtList} from '../API/ApiFunc';
 import * as afunc from "../API/ApiFunc";
 import {getOddsData, getOpParams, getPayClass, getUsers} from "../API/MemberApi";
@@ -989,6 +991,20 @@ app.get("/getBetHeaders", async (req, res) => {
   const conn: mariadb.PoolConnection | undefined = await getConnection();
   if (conn) {
         const uids: number[] = [];
+        if (param.UpName) {
+            let upid: number[]|undefined = [];
+            const uparam = {
+                findString: param.UpName
+            };
+            upid = await getUsers(conn, uparam);
+            if (!upid || upid.length === 0) {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Get BetLists error!";
+                conn.release();
+                res.send(JSON.stringify(msg));
+            }
+            param.UpId = upid;
+        }
         const users = await getUsers(conn, param);
         if (users) {
             users.map((itm) => {
@@ -1012,4 +1028,27 @@ app.get("/getBetHeaders", async (req, res) => {
   }
   res.send(JSON.stringify(msg));
 });
+app.get("/getTermIDByGameID", async (req: Request, res: Response) => {
+    // await getCurTermId();
+    const conn = await getConnection();
+    let msg: IMsg = {ErrNo: 0};
+    if (conn) {
+        msg = await getTermIds(req.query.GameID, conn);
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get Connection error!";
+    }
+    res.send(JSON.stringify(msg));
+});
+async function getTermIds(GameID: number, conn: mariadb.PoolConnection): Promise<IMsg> {
+    const msg: IMsg = { ErrNo: 0 };
+    const sql = `select id,TermID from Terms where GameID=? order by id desc`;
+    await conn.query(sql, [GameID]).then((res) => {
+        msg.data = res;
+    }).catch((err) => {
+        msg.ErrNo = 9;
+        msg.debug = err;
+    });
+    return msg;
+}
 export default app;

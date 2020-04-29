@@ -150,7 +150,7 @@ async function getOddsItem(GameID: number|string, tid: string, isSettled: number
     return {MaxOID: MaxID, Odds: gameOdds};
 }
 
-export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonParams) {
+export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonParams): Promise<any> {
     const cond: string[] = [];
     const params: any[] = [];
     if (param) {
@@ -164,8 +164,12 @@ export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonPara
             params.push(param.userType);
         }
         if (param.UpId) {
-            cond.push(" UpId = ? ");
-            params.push(param.UpId);
+            if (Array.isArray(param.UpId)) {
+                cond.push(` UpId in (${param.UpId.join(",")}) `);
+            } else {
+                cond.push(" UpId = ? ");
+                params.push(param.UpId);
+            }
         }
     }
     if (cond.length === 0) { cond.push("1"); }
@@ -175,13 +179,12 @@ export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonPara
     }
     const sql = `select id${exFields} from User where ${cond.join("and")}`;
     let ans;
-    console.log("getUsers:", sql, param, params);
+    // console.log("getUsers:", sql, param, params);
     await conn.query(sql, params).then((rows) => {
         // console.log("getUsers", rows);
         ans = rows;
     }).catch((err) => {
         console.log("getUsers error", err);
-        ans = false;
     });
     return ans;
 }

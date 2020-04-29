@@ -319,7 +319,7 @@ export async function getComments(pagename: string, conn: mariadb.PoolConnection
 }
 
 export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConnection, uids?: number[]): Promise<any> {
-    const cond: string[] = [];
+    let cond: string[] = [];
     if (param.SDate) {
         cond.push(` (CreateTime BETWEEN '${param.SDate}' AND '${param.SDate} 23:59:59') `);
     }
@@ -328,10 +328,20 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
     }
     if (param.GameID) {
         if (param.GameID > 0) {
-            cond.push(` GameID = ${param.GameID}`);
+            cond.push(` GameID = ${param.GameID} `);
         }
     }
-    const sql = `select * from BetHeader where ${cond.join(" and ")}`;
+    if (param.BetID) {
+        cond.push(` id in (${param.BetID}) `);
+    }
+    if (param.BetType) {
+        cond.push(` BetContent like '%"BetType":${param.BetType}%'`);
+    }
+    const f = getCond(param);
+    if (f) {
+        cond = cond.concat(f);
+    }
+    const sql = `select *,t.TermID from BetHeader b left join Terms t on b.tid=t.id where ${cond.join(" and ")}`;
     console.log("ApiFunc get getBetHeaders sql:", sql, cond);
     let rr;
     await conn.query(sql).then((res) => {
@@ -341,4 +351,46 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
         console.log("ApiFunc get getBetHeaders error:", err);
     });
     return rr;
+}
+function getCond(param: ICommonParams): string[]|undefined {
+    const tmp: string[] = [];
+    if (param.SDate) {
+        if (!param.EDate) {
+            param.EDate = param.SDate;
+        }
+    } else {
+        if (param.EDate) {
+            param.SDate = param.EDate as string;
+        }
+    }
+    if (param.SDate) {
+        if (!param.STime) { param.STime = "00:00:00"; }
+        if (!param.ETime) { param.ETime = "23:12:59"; }
+        tmp.push(`CreateTime BETWEEN '${param.SDate} ${param.STime}' and '${param.EDate} ${param.ETime}' `);
+    }
+    const f1 = getCondSE("Total", param.OrdAmtS as number, param.OrdAmtE as number);
+    if (f1) {
+        tmp.push(f1);
+    }
+    const f2 = getCondSE("WinLose", param.WinLoseS as number, param.WinLoseE as number);
+    if (f2) {
+        tmp.push(f2);
+    }
+    if (tmp.length > 0) { return tmp; }
+    return;
+}
+function getCondSE(field: string, start?: number, end?: number): string|undefined {
+    let cond: string|undefined;
+    if (start) {
+        if (end) {
+            cond = `${field} between ${start} and ${end} `;
+        } else {
+            cond = ` ${field} = ${start} `;
+        }
+    } else {
+        if (end) {
+            cond = ` ${field} between 0 and  ${end} `;
+        }
+    }
+    return cond;
 }

@@ -218,4 +218,5 @@ export interface ICommonParams {
     SDate?: string;
     UpId?: number;
     OnlyID?: boolean;
+    [key: string]: number|string|boolean|undefined;
 }
