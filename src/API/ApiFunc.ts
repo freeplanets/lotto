@@ -342,7 +342,7 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
     if (f) {
         cond = cond.concat(f);
     }
-    const sql = `select *,t.TermID from BetHeader b left join Terms t on b.tid=t.id where ${cond.join(" and ")}`;
+    const sql = `select b.*,t.TermID from BetHeader b left join Terms t on b.tid=t.id where ${cond.join(" and ")}`;
     console.log("ApiFunc get getBetHeaders sql:", sql, cond);
     let rr;
     await conn.query(sql).then((res) => {
