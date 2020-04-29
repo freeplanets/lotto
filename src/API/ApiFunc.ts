@@ -329,11 +329,14 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
     }
     if (param.GameID) {
         if (param.GameID > 0) {
-            cond.push(` t.GameID = ${param.GameID} `);
+            cond.push(` b.GameID = ${param.GameID} `);
         }
     }
+    if (param.tid) {
+        cond.push(` b.tid = ${param.tid} `);
+    }
     if (param.BetID) {
-        cond.push(` t.id in (${param.BetID}) `);
+        cond.push(` b.id in (${param.BetID}) `);
     }
     if (param.BetType) {
         cond.push(` BetContent like '%"BetType":${param.BetType}%'`);
