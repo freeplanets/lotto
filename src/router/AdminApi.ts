@@ -11,7 +11,7 @@ import {Gets} from "../class/Gets";
 import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
-import {IBetItem, IBTItem, IGameItem, IMOdds, IMsg, IOParam} from "../DataSchema/if";
+import {IBetItem, IBTItem, ICommonParams, IGameItem, IMOdds, IMsg, IOParam} from "../DataSchema/if";
 import {IBasePayRateItm, IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 
@@ -1040,6 +1040,34 @@ app.get("/getTermIDByGameID", async (req: Request, res: Response) => {
     }
     res.send(JSON.stringify(msg));
 });
+app.get("/getBetTotal", async (req, res) => {
+    const param: ICommonParams = req.query;
+    const sql: string = getBetTotalSql(param);
+    const msg: IMsg = {ErrNo: 0};
+    const conn = await getConnection();
+    if (conn) {
+        const data = await doQuery(sql, conn);
+        const ids: number[] = [];
+        if (data) {
+            msg.data = data;
+            data.map((itm) => {
+                ids.push(itm.UpId);
+            });
+        }
+        if (ids.length > 0) {
+            const sqlusr = `select id,Account from User where id in (${ids.join(",")})`;
+            const usr = await doQuery(sqlusr, conn);
+            if (usr) {
+                msg.User = usr;
+            }
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
 async function getTermIds(GameID: number, conn: mariadb.PoolConnection): Promise<IMsg> {
     const msg: IMsg = { ErrNo: 0 };
     const sql = `select id,TermID from Terms where GameID=? order by id desc`;
@@ -1050,5 +1078,38 @@ async function getTermIds(GameID: number, conn: mariadb.PoolConnection): Promise
         msg.debug = err;
     });
     return msg;
+}
+function getBetTotalSql(param: ICommonParams): string {
+    const cond: string[] = [];
+    let extField: string = "";
+    if (param.UpId) {
+        cond.push(` UpId = ${param.UpId} `);
+    }
+    if (param.GameID) {
+        cond.push(` GameID = ${param.GameID} `);
+    }
+    const tse: string|undefined = getCondTSE("CreateTime", param.SDate, param.EDate);
+    if (tse) {
+        cond.push(tse);
+    }
+    if (param.Ledger) {
+        extField = ",BetType";
+    }
+    const sql: string = `SELECT UpId${extField},sum(Amt) Total,sum(WinLose) WinLose FROM BetTable
+        WHERE ${cond.length > 0 ? cond.join("and") : 1 }
+        group by UpId${extField}`;
+    return sql;
+}
+function getCondTSE(field: string, start?: string, end?: string): string|undefined {
+    if (start) {
+        if (!end) {
+            end = start;
+        }
+    } else if (end) {
+            start = end;
+    } else {
+        return;
+    }
+    return ` ${field} BETWEEN '${start} 00:00:00' and '${end} 23:59:59' `;
 }
 export default app;

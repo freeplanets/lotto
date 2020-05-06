@@ -322,7 +322,7 @@ export async function getComments(pagename: string, conn: mariadb.PoolConnection
 export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConnection, uids?: number[]): Promise<any> {
     let cond: string[] = [];
     if (param.SDate) {
-        cond.push(` (t.CreateTime BETWEEN '${param.SDate}' AND '${param.SDate} 23:59:59') `);
+        cond.push(` (b.CreateTime BETWEEN '${param.SDate}' AND '${param.SDate} 23:59:59') `);
     }
     if (uids) {
         cond.push(` UserID in (${uids.join(",")}) `);

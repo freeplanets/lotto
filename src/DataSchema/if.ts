@@ -216,6 +216,7 @@ export interface ICommonParams {
     PayClassName?: string;
     NameOrNick?: string;
     SDate?: string;
+    EDate?: string;
     UpId?: number;
     OnlyID?: boolean;
     [key: string]: number|string|boolean|undefined;
