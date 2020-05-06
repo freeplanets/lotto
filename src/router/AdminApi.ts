@@ -1,7 +1,5 @@
-import { CommonOptions } from "child_process";
 import express, {Request, Response, Router } from "express";
 import mariadb from "mariadb";
-import { Z_ERRNO } from "zlib";
 // import {setPayRateData,setPayRate,isPayClassUsed,chkTermIsSettled,CreateOddsData,getGameList,getBtList} from '../API/ApiFunc';
 import * as afunc from "../API/ApiFunc";
 import {getOddsData, getOpParams, getPayClass, getUsers} from "../API/MemberApi";
@@ -14,6 +12,7 @@ import {SaveNums} from "../class/Settlement";
 import {IBetItem, IBTItem, ICommonParams, IGameItem, IMOdds, IMsg, IOParam} from "../DataSchema/if";
 import {IBasePayRateItm, IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
+import apiRouter from "./api";
 
 const app: Router = express.Router();
 app.get("/getGames", async (req, res) => {
@@ -828,7 +827,7 @@ app.post("/SaveNums", async (req, res) => {
       msg.ErrCon = "Nums is missing!!";
   }
   if (msg.ErrNo === 0) {
-      const Nums = SaveNums(param.tid, param.GameID, param.Nums, conn);
+      const Nums = SaveNums(param.tid, param.GameID, param.Nums, conn,param.isSettled);
       msg.Data = Nums;
   }
   conn.release();
@@ -1065,6 +1064,24 @@ app.get("/getBetTotal", async (req, res) => {
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/getLastTerm", async (req, res) => {
+    const msg: IMsg = { ErrNo: 0 };
+    const conn = await getConnection();
+    if (conn) {
+        const param = req.query;
+        const term = await afunc.getLastTerm(param.GameID, conn);
+        if (term) {
+            msg.data = term;
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Data not found";
+        }
+    } else {
+        msg.ErrNo = 9;
+        msg.debug = "db connection error!!";
     }
     res.send(JSON.stringify(msg));
 });

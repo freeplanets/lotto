@@ -68,6 +68,7 @@ export interface IBet {
 export interface IBetHeader {
     id: number;
     UserID: number;
+    UpId: number;
     tid: number;
     GameID: number;
     BetContent: string;

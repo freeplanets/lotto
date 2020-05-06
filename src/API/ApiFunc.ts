@@ -398,3 +398,8 @@ function getCondSE(field: string, start?: number, end?: number): string|undefine
     }
     return cond;
 }
+export async function getLastTerm(GameID: number, conn: mariadb.PoolConnection) {
+    const sql = "select * from Terms where GameID=? order by id desc limit 0,1";
+    const ans = await doQuery(sql, conn, [GameID]);
+    return ans;
+}

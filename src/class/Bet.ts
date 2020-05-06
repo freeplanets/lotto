@@ -146,6 +146,7 @@ export class Bet implements IBet {
         const bh: IBetHeader = {
             id: 0,
             UserID: this.UserID,
+            UpId: this.UpId,
             tid: this.tid,
             GameID: this.GameID,
             BetContent: JSON.stringify(SNB),
@@ -292,6 +293,7 @@ export class Bet implements IBet {
         SNB.Sets = numsets.length;
         const bh: IBetHeader = {
             id: 0,
+            UpId: this.UpId,
             UserID: this.UserID,
             tid: this.tid,
             GameID: this.GameID,

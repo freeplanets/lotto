@@ -110,7 +110,8 @@ interface ISqlProc {
     pre: string[];
     common: string[];
 }
-export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection) {
+//重結 isSettled =3 轉成 status = 4 提供平台視別
+export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection,isSettled?:number) {
     const imsr: IMSResult = new CMarkSixMum(num).Nums;
     let ans;
     let sql: string = "";
@@ -119,6 +120,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         pre: [],
         common: []
     };
+    const SettleStatus:number= isSettled ? 3 : 1;
     await conn.beginTransaction();
     sql = `update BetTableEx set Opened=0 where tid=${tid} and GameID=${GameID}`;
     await conn.query(sql).then((res) => {
@@ -130,7 +132,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         ans = false;
     });
     if (ans) {
-        sql = `update BetTable set WinLose=Amt*-1,OpNums=0,OpSP=0,isSettled=1 where tid=${tid} and GameID=${GameID} and isCancled=0`;
+        sql = `update BetTable set WinLose=Amt*-1,OpNums=0,OpSP=0,isSettled=${SettleStatus} where tid=${tid} and GameID=${GameID} and isCancled=0`;
         await conn.query(sql).then((res) => {
             // console.log("WinLose=Amt*-1", sql, res);
             ans = true;
@@ -211,7 +213,8 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     }
     console.log("batch:", ans);
     if (ans) {
-        sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=1 where id=${tid}`;
+        //sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=1 where id=${tid}`;
+        sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}' where id=${tid}`;
         ans = await doSql(sql, conn);
         if (ans) {
             console.log("commit 1");
@@ -362,7 +365,8 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
     }
     if (itm.TieNum) {
         if (itm.TieNum === imsr.SPNo) {
-            sql = `update BetTable set WinLose=Amt,isSettled=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
+            //sql = `update BetTable set WinLose=Amt,isSettled=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
+            sql = `update BetTable set WinLose=Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
             sqls.common.push(sql);
             return sqls;
             }
