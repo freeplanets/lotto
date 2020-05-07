@@ -133,6 +133,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     });
     if (ans) {
         sql = `update BetTable set WinLose=Amt*-1,OpNums=0,OpSP=0,isSettled=${SettleStatus} where tid=${tid} and GameID=${GameID} and isCancled=0`;
+        console.log("Update Settle Status", sql);
         await conn.query(sql).then((res) => {
             // console.log("WinLose=Amt*-1", sql, res);
             ans = true;
@@ -326,7 +327,7 @@ function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, conn: mari
     /**
      * update header
      */
-    let sql = `insert into BetHeader(id,WinLose,isSettled) select betid id,sum(WinLose) WinLose,1 isSettled from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 group by betid`;
+    let sql = `insert into BetHeader(id,WinLose,isSettled) select betid id,sum(WinLose) WinLose,isSettled from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 group by betid`;
     sql = sql + " on duplicate key update WinLose=values(WinLose),isSettled=values(isSettled)";
     // ans = ans.concat([sql]);
     ans.common.push(sql);
