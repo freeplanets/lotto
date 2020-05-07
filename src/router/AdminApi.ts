@@ -827,7 +827,7 @@ app.post("/SaveNums", async (req, res) => {
       msg.ErrCon = "Nums is missing!!";
   }
   if (msg.ErrNo === 0) {
-      const Nums = SaveNums(param.tid, param.GameID, param.Nums, conn,param.isSettled);
+      const Nums = SaveNums(param.tid, param.GameID, param.Nums, conn, param.isSettled);
       msg.Data = Nums;
   }
   conn.release();

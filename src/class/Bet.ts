@@ -6,6 +6,7 @@ import {BetParam} from "./BetParam";
 import {C} from "./Func";
 import JTable from "./JTable";
 import {ErrCode, OpChk} from "./OpChk";
+// import dbPool from "src/func/db";
 interface INum {
     [key: number]: any;
 }
@@ -84,7 +85,10 @@ export class Bet implements IBet {
         let payouts: number = 0;
         let BtChange: boolean = false;
         let CurBT: number = 0;
-        dta.map((itm) => {
+        // dta.map((itm) => {
+        // for (const x in dta) {
+        for (let i = 0, n = dta.length; i < n; i++) {
+            const itm = dta[i];
             const found = ans.find(
                 (nn) => nn.BetType === itm.BetType && nn.Num === itm.Num &&  nn.OID === itm.OddsID
                 );
@@ -92,7 +96,9 @@ export class Bet implements IBet {
                 if (Chker) {
                     const chk = Chker.ChkData(itm, found);
                     if (chk !== ErrCode.PASS) {
+                        // console.log("Chker", chk);
                         msg.ErrNo = chk;
+                        msg.ErrCon = `ChkData error:${chk}`;
                         return msg;
                     }
                 }
@@ -131,12 +137,14 @@ export class Bet implements IBet {
                 msg.ErrCon = `BetType ${itm.BetType} item ${itm.Num} not found!!`;
                 return msg;
             }
-        });
+        }
+        // });
         if (!BtChange) {
             SNB.BetType = CurBT;
         }
         const balance: number = await getUserCredit(this.UserID, this.conn);
         if (total > balance) {
+            console.log("Balance", total, balance);
             msg.ErrNo = 2;
             msg.ErrCon = "Insufficient credit";
             return msg;
@@ -195,7 +203,7 @@ export class Bet implements IBet {
         await this.conn.rollback();
         return msg;
     }
-    public async Parlay(BetType: number, Odds: string, Nums: string, Amt: number) {
+    public async Parlay(BetType: number, Odds: string, Nums: string, Amt: number): Promise<IMsg> {
         const msg: IMsg = {
             ErrNo: 0
         };
@@ -257,7 +265,9 @@ export class Bet implements IBet {
             */
         }
         console.log("Parlay data:", tmpNums, ans);
-        tmpNums.map((itm) => {
+        // tmpNums.map((itm) => {
+        for (let i = 0, n = tmpNums.length; i < n; i++) {
+            const itm = tmpNums[i];
             const fnd = ans.find((f) => f.Num === itm.Num && f.OID === itm.OddsID);
             if (fnd) {
                 if (Chker) {
@@ -280,9 +290,11 @@ export class Bet implements IBet {
                     SNB.Content.push(itm);
                 }
             } else {
-                return false;
+                msg.ErrNo = 9;
+                return msg;
             }
-        });
+        }
+        // });
         SNB.BetType = BetType;
         SNB.isPaylay = true;
         if (BNum === 0) {
@@ -302,7 +314,7 @@ export class Bet implements IBet {
         };
         const balance = await getUserCredit(this.UserID, this.conn);
         if (bh.Total > balance) {
-            msg.ErrNo = 2;
+            msg.ErrNo = 3;
             msg.ErrCon = "Insufficient credit";
             return msg;
         }
@@ -447,7 +459,7 @@ export class Bet implements IBet {
             filters.push(tmp);
         });
         sql = sql + "(" + filters.join(" or ") + ")";
-        console.log("getOddsData:", sql);
+        // console.log("getOddsData:", sql);
         let ans;
         await this.conn.query(sql).then((rows) => {
             ans = rows;
@@ -460,9 +472,9 @@ export class Bet implements IBet {
     private getOpParams(BetTypes: number[]): Promise<IOParam[] | undefined> {
         const sql: string = `select * from OpenParams where GameID=${this.GameID} and BetType in (${BetTypes.join(",")})`;
         return new Promise(async (resolve) => {
-            console.log("getOpParams", sql);
+            // console.log("getOpParams", sql);
             await this.conn.query(sql).then((res) => {
-                console.log("getOpParams", res);
+                // console.log("getOpParams", res);
                 resolve(res);
             }).catch((err) => {
                 console.log("getOpParams error:", err);
