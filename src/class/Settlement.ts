@@ -214,8 +214,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     }
     console.log("batch:", ans);
     if (ans) {
-        // sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=1 where id=${tid}`;
-        sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}' where id=${tid}`;
+        sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=${SettleStatus} where id=${tid}`;
         ans = await doSql(sql, conn);
         if (ans) {
             console.log("commit 1");
