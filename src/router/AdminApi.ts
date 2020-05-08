@@ -9,8 +9,8 @@ import {Gets} from "../class/Gets";
 import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
-import {IBetItem, IBTItem, ICommonParams, IGameItem, IMOdds, IMsg, IOParam} from "../DataSchema/if";
-import {IBasePayRateItm, IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
+import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IGameItem, IMOdds, IMsg, IOParam} from "../DataSchema/if";
+import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 import apiRouter from "./api";
 
@@ -284,7 +284,9 @@ app.get("/getBasePayRate", async (req, res) => {
   }
   const param = req.query;
   const params = [param.GameID];
-  const sql = "select BetType,Title,SubTitle,SubType,NoAdjust,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand from BasePayRate where GameID = ?";
+  const sql = `select BetType,Title,SubTitle,SubType,NoAdjust,Profit,DfRate,TopRate,
+        Probability,Steps,TopPay,OneHand,TotalNums,UseAvg,SingleNum,UnionNum,MinHand,MaxHand,
+        BetForChange,StepsGroup from BasePayRate where GameID = ?`;
   await conn.query(sql, params).then((v) => {
       // console.log("getBasePayRate", v, params);
       conn.release();
@@ -322,6 +324,30 @@ app.get("/getPayRate", async (req, res) => {
   });
 });
 app.post("/batch/saveBasePayRate", async (req, res) => {
+    const conn = await getConnection();
+    const msg: IMsg = {ErrNo: 0};
+    if (!conn) {
+      msg.ErrNo = 9;
+      msg.ErrCon = "get connection error!!";
+      res.send(JSON.stringify(msg));
+      return;
+    }
+    const param = req.body;
+    const datas: IBasePayRateItm[] = JSON.parse(param.data);
+    datas.map((itm) => {
+        itm.GameID = param.GameID;
+        itm.ModifyID = param.ModifyID;
+    });
+    const jt: JTable<IBasePayRateItm> = new JTable(conn, "BasePayRate");
+    const ans = jt.MultiUpdate(datas);
+    if (ans) {
+        msg.data = ans;
+    } else {
+        msg.ErrNo = 9;
+    }
+    res.send(JSON.stringify(msg));
+});
+app.post("/batch/saveBasePayRate1", async (req, res) => {
   const conn = await getConnection();
   const msg: IMsg = {ErrNo: 0};
   if (!conn) {
@@ -348,7 +374,7 @@ app.post("/batch/saveBasePayRate", async (req, res) => {
   sql += valstr.join(",");
   sql += " ON DUPLICATE KEY UPDATE NoAdjust=values(NoAdjust),Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Probability=values(Probability),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),ModifyID=values(ModifyID)";
   await conn.query(sql).then((v) => {
-      // console.log("getPayRate", v, params);
+      console.log("getPayRate", sql, v);
       conn.release();
       res.send(JSON.stringify(v));
   }).catch((err) => {
@@ -796,7 +822,7 @@ app.get("/getOpParams", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "GameID is missing!!";
   } else {
-      const ans = await getOpParams(param.GameID, conn);
+      const ans = await getOpParams(param.GameID, conn, !!param.onlySteps);
       if (ans) {
           msg.data = ans;
       } else {

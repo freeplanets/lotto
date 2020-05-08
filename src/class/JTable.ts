@@ -1,4 +1,5 @@
 import mariadb from "mariadb";
+import {IDbAns} from "../DataSchema/if";
 import eds from "./EncDecString";
 export interface IHasID {
     id: number;
@@ -109,7 +110,7 @@ export default class JTable<T extends IHasID> {
         });
         return ans;
     }
-    public async MultiInsert(v: T[]) {
+    public async MultiInsert(v: T[]): Promise<IDbAns|undefined> {
         const fields: string[] = [];
         const vals: string[] = [];
         let cnt = 0;
@@ -134,13 +135,13 @@ export default class JTable<T extends IHasID> {
             insert into ${this.TableName}(${fields.join(",")}) values${vals.join(",")}
         `;
         console.log("JTable Multi Insert:", sql);
-        let ans;
+        let ans: IDbAns|undefined;
         await this.conn.query(sql).then((rows) => {
-            ans = rows;
+            ans = rows as IDbAns;
         }).catch((err) => {
             // ans = err;
             console.log(err);
-            ans = false;
+            // ans = false;
         });
         return ans;
     }

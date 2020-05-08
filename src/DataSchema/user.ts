@@ -33,34 +33,6 @@ export interface IPayRate {
     ChangeTime: Date;   // 修改時間
 }
 
-export interface IBasePayRate {
-    GameID: number;
-    BetType: number;
-    Title: string;
-    SubTitle: string;
-    SubType: number;
-    Profit: number;
-    DfRate: number;
-    TopRate: number;
-    Probability: number;
-    Steps: number;
-    ModifyID: number;
-}
-
-export interface IBasePayRateItm {
-    Title: string;
-    SubTitle?: string;
-    BetType?: string;
-    SubType?: number;
-    NoAdjust?: number;
-    Profit?: number;
-    DfRate?: number;
-    TopRate?: number;
-    Probability?: number;
-    Steps?: number;
-    TopPay?: number;
-    OneHand?: number;
-}
 export interface IPayRateItm {
     id: number;
     BetType: string;

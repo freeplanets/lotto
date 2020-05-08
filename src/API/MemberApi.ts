@@ -1,6 +1,7 @@
 import mariadb from "mariadb";
 import JDate from "../class/JDate";
 import {ICommonParams, IGameInfo, IGameOdds, ILastGame, IMsg, IOdds} from "../DataSchema/if";
+import { doQuery } from "../func/db";
 
 interface IBtOdds {
     [key: string]: IOdds;
@@ -47,9 +48,11 @@ export async function getPayClass(conn: mariadb.PoolConnection, GameID?: number|
     });
     return ans;
 }
-export async function getOpParams(GameID: number|string, conn: mariadb.PoolConnection) {
-    const sql: string = "select * from OpenParams where GameID=?";
+export async function getOpParams(GameID: number|string, conn: mariadb.PoolConnection, onlySteps?: boolean) {
+    const sql: string = `select ${onlySteps ? "BetType,Steps" : "*"} from OpenParams where GameID=?`;
     let ans;
+    ans = await doQuery(sql, conn);
+    /*
     await conn.query(sql, [GameID]).then((rows) => {
         ans = rows;
         // console.log("getOpParams", sql, ans);
@@ -57,6 +60,7 @@ export async function getOpParams(GameID: number|string, conn: mariadb.PoolConne
         console.log("getOpParams", err);
         ans = false;
     });
+    */
     return ans;
 }
 export async function getGameInfo(GameID: number|string, conn: mariadb.PoolConnection) {
@@ -113,9 +117,9 @@ function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConne
 
 async function getOddsItem(GameID: number|string, tid: string, isSettled: number, PayClassID: number,
                            MaxOddsID: number, conn: mariadb.PoolConnection) {
-    const sql = `SELECT OID,c.BetType,Num,Odds+Rate Odds,isStop,Steps
+    const sql = `SELECT UNIX_TIMESTAMP(OID) OID,c.BetType,Num,Odds+Rate Odds,isStop,Steps
         FROM CurOddsInfo c left join PayRate p on c.GameID=p.GameID and c.BetType=p.BetType
-        WHERE c.GameID=? and tid=? and PayClassID=? and p.SubType=0 and OID > ?`;
+        WHERE c.GameID=? and tid=? and PayClassID=? and p.SubType=0 and UNIX_TIMESTAMP(OID) > ?`;
     const gameOdds: IGameOdds = {};
     let MaxID: number = 0;
     const param = [GameID, tid, PayClassID, MaxOddsID];

@@ -222,3 +222,29 @@ export interface ICommonParams {
     OnlyID?: boolean;
     [key: string]: number|string|boolean|undefined;
 }
+
+export interface IBasePayRateItm {
+    id: number;
+    GameID?: number;
+    Title?: string;
+    SubTitle?: string;
+    BetType?: number;
+    SubType?: number;
+    NoAdjust?: number;
+    Profit?: number;
+    DfRate?: number;
+    TopRate?: number;
+    Probability?: number;
+    Steps?: number;
+    TopPay?: number;
+    OneHand?: number;
+    TotalNums?: number;
+    UseAvg?: number;
+    SingleNum?: number;
+    UnionNum?: number;
+    MinHand?: number;
+    MaxHand?: number;
+    BetForChange?: number;
+    StepsGroup?: string;
+    ModifyID?: number;
+}
