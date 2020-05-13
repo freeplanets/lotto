@@ -2,7 +2,7 @@ import express, {Request, Response, Router } from "express";
 import mariadb from "mariadb";
 // import {setPayRateData,setPayRate,isPayClassUsed,chkTermIsSettled,CreateOddsData,getGameList,getBtList} from '../API/ApiFunc';
 import * as afunc from "../API/ApiFunc";
-import {getOddsData, getOpParams, getPayClass, getUsers} from "../API/MemberApi";
+import {getOddsData, getPayClass, getUsers} from "../API/MemberApi";
 import Zadic from "../class/Animals";
 import {Bet} from "../class/Bet";
 import {Gets} from "../class/Gets";
@@ -286,7 +286,7 @@ app.get("/getBasePayRate", async (req, res) => {
   const params = [param.GameID];
   const sql = `select BetType,Title,SubTitle,SubType,NoAdjust,Profit,DfRate,TopRate,
         Probability,Steps,TopPay,OneHand,TotalNums,UseAvg,SingleNum,UnionNum,MinHand,MaxHand,
-        BetForChange,StepsGroup from BasePayRate where GameID = ?`;
+        BetForChange,StepsGroup,ChangeStart,PerStep from BasePayRate where GameID = ?`;
   await conn.query(sql, params).then((v) => {
       // console.log("getBasePayRate", v, params);
       conn.release();
@@ -808,6 +808,7 @@ app.get("/member/getPayClass", async (req, res) => {
   conn.release();
   res.send(JSON.stringify(msg));
 });
+/*
 app.get("/getOpParams", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
   const conn = await getConnection();
@@ -833,6 +834,7 @@ app.get("/getOpParams", async (req, res) => {
   conn.release();
   res.send(JSON.stringify(msg));
 });
+*/
 app.post("/SaveNums", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
   const conn = await getConnection();
@@ -889,11 +891,18 @@ app.get("/CurOddsInfo", async (req, res) => {
       msg.tid = tid;
       let MaxOddsID: number = 0;
       if (param.MaxOddsID) {
-          MaxOddsID = param.MaxOddsID;
+          MaxOddsID = parseInt(param.MaxOddsID, 10);
       }
       const ans = await afunc.getCurOddsInfo(tid as number, param.GameID, MaxOddsID, conn);
       if (ans) {
-          msg.data = ans;
+        msg.data = ans;
+        // console.log("CurOddsInfo MaxOdDsID:", typeof MaxOddsID, MaxOddsID);
+        if (MaxOddsID === 0) {
+          const stp = await afunc.getOpStep(param.GameID, conn);
+          if (stp) {
+              msg.Steps = stp;
+          }
+        }
       } else {
           msg.ErrNo = 9;
           msg.ErrCon = "Get Odds error!";
@@ -915,9 +924,9 @@ app.get("/setOdds", async (req, res) => {
           const fOdds: IMOdds|undefined = await afunc.getOddsInfo(param.tid, param.GameID, param.BT, param.Num, conn);
           if (fOdds) {
               // msg.data = ans;
-              const step: number = param.Step;
-              let odds: number = fOdds.Odds + step * fOdds.Steps;
-              console.log("before setOdds", odds, step, fOdds);
+              // const step: number = param.Step;
+              let odds: number = fOdds.Odds + param.Add * param.Step;
+              console.log("before setOdds", odds, param.Add, param.Step);
               if (odds > fOdds.MaxOdds) {
                   odds = fOdds.MaxOdds;
               }

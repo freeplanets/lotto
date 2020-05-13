@@ -470,7 +470,7 @@ export class Bet implements IBet {
         return ans;
     }
     private getOpParams(BetTypes: number[]): Promise<IOParam[] | undefined> {
-        const sql: string = `select * from OpenParams where GameID=${this.GameID} and BetType in (${BetTypes.join(",")})`;
+        const sql: string = `select * from BasePayRate where GameID=${this.GameID} and BetType in (${BetTypes.join(",")})`;
         return new Promise(async (resolve) => {
             // console.log("getOpParams", sql);
             await this.conn.query(sql).then((res) => {

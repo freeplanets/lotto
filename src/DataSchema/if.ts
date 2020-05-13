@@ -79,6 +79,7 @@ export interface IBetHeader {
     ExRate?: number;
     CancelLimit?: number;
     CreateTime?: string;
+    TermID?: string;
 }
 export interface IGameAccessParams {
     ac: string;
@@ -245,6 +246,8 @@ export interface IBasePayRateItm {
     MinHand?: number;
     MaxHand?: number;
     BetForChange?: number;
+    ChangeStart?: number;
+    PerStep?: number;
     StepsGroup?: string;
     ModifyID?: number;
 }

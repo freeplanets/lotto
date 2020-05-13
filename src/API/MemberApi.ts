@@ -48,21 +48,6 @@ export async function getPayClass(conn: mariadb.PoolConnection, GameID?: number|
     });
     return ans;
 }
-export async function getOpParams(GameID: number|string, conn: mariadb.PoolConnection, onlySteps?: boolean) {
-    const sql: string = `select ${onlySteps ? "BetType,Steps" : "*"} from OpenParams where GameID=?`;
-    let ans;
-    ans = await doQuery(sql, conn);
-    /*
-    await conn.query(sql, [GameID]).then((rows) => {
-        ans = rows;
-        // console.log("getOpParams", sql, ans);
-    }).catch((err) => {
-        console.log("getOpParams", err);
-        ans = false;
-    });
-    */
-    return ans;
-}
 export async function getGameInfo(GameID: number|string, conn: mariadb.PoolConnection) {
     const sql: string = "select t.*,g.name from Terms t left join Games g on t.GameID=g.id where t.GameID=? order by t.id desc limit 0,1";
     let row;

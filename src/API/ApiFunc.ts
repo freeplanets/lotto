@@ -104,8 +104,8 @@ export async function CreateOddsData(GameID: string|number, tid: number, conn: m
       msg.debug =  sql + ">>" + params.join(",");
   });
   if (!isEmpty) {
-      sql = `insert into CurOddsInfo(tid,GameID,BetType,Num,Odds,MaxOdds,Steps)
-          SELECT ${tid} tid,d.GameID,d.BetType,d.Num,b.DfRate Odds,TopRate MaxOdds,Steps
+      sql = `insert into CurOddsInfo(tid,GameID,BetType,Num,Odds,MaxOdds)
+          SELECT ${tid} tid,d.GameID,d.BetType,d.Num,b.DfRate Odds,TopRate MaxOdds
       FROM dfOddsItems d left join BasePayRate b on d.GameID=b.GameID and d.BetType = b.BetType and d.SubType = b.SubType
       where d.GameID= ${GameID}
       `;
@@ -160,7 +160,7 @@ async function getGameParams(GameID: number|string, conn: mariadb.PoolConnection
 
 async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], OddsPlus: number, conn: mariadb.PoolConnection) {
   let sql = `
-      select CONCAT(BetType,Num) Num,(Odds + ${OddsPlus}) Odds, MaxOdds,Steps
+      select CONCAT(BetType,Num) Num,(Odds + ${OddsPlus}) Odds, MaxOdds
       from CurOddsInfo where tid=${tid} and GameID = ${GameID} and BetType in (${Bts.join(",")})
   `;
   const msg: IMsg = {ErrNo: 0};
@@ -178,10 +178,10 @@ async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], 
   const dtas: any = msg.data;
   const data: string[] = [];
   dtas.map((itm) => {
-      data.push(`(${tid},${GameID},15,${itm.Num},${itm.Odds},${itm.MaxOdds},${itm.Steps})`);
+      data.push(`(${tid},${GameID},15,${itm.Num},${itm.Odds},${itm.MaxOdds}`);
   });
   sql = `
-  insert into CurOddsInfo(tid,GameID,BetType,Num,Odds,MaxOdds,Steps)
+  insert into CurOddsInfo(tid,GameID,BetType,Num,Odds,MaxOdds)
   values${data.join(",")}
   on duplicate key update Odds=values(Odds),MaxOdds=values(MaxOdds),Steps=values(Steps)
 `;
@@ -234,7 +234,7 @@ export async function getCurTermId(GameID: number|string, conn: mariadb.PoolConn
 export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: number, conn: mariadb.PoolConnection): Promise<any> {
   const gameStoped: boolean = await chkTermIsSettled(GameID, conn, tid);
   // console.log("getCurOddsInfo gameStoped:", gameStoped);
-  const sql = `select UNIX_TIMESTAMP(OID) OID,BetType,Num,Odds,MaxOdds,isStop,tolW,tolS,tolP,Steps from CurOddsInfo where tid=? and GameID=? and UNIX_TIMESTAMP(OID) > ?`;
+  const sql = `select UNIX_TIMESTAMP(OID) OID,BetType,SubType,Num,Odds,MaxOdds,isStop,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and UNIX_TIMESTAMP(OID) > ?`;
   const ans = {};
   const res = await doQuery(sql, conn, [tid, GameID, MaxOddsID]);
   if (res) {
@@ -244,11 +244,11 @@ export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOdds
               OID: itm.OID,
               Odds: itm.Odds,
               MaxOdds: itm.MaxOdds,
+              SubType: itm.SubType,
               isStop: itm.isStop | (gameStoped ? 1 : 0),
               tolW: itm.tolW,
               tolS: itm.tolS,
               tolP: itm.tolP,
-              Steps: itm.Steps
           };
           ans[itm.BetType][itm.Num] = Object.assign({}, tmp);
       });
@@ -257,7 +257,11 @@ export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOdds
   }
   return ans;
 }
-
+export async function getOpStep(GameID: number|string, conn: mariadb.PoolConnection) {
+    const sql = "select BetType,SubType,PerStep,Steps from BasePayRate where GameID=?";
+    const res = await doQuery(sql, conn, [GameID]);
+    return res;
+}
 export async function getOddsInfo(tid: number, GameID: number, BT: number, Num: number, conn: mariadb.PoolConnection): Promise<any> {
   const sql = "select Odds,MaxOdds,isStop,Steps from CurOddsInfo where tid=? and GameID=? and BetType=? and Num=?";
   const ans = await doQuery(sql, conn, [tid, GameID, BT, Num]);

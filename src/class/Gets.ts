@@ -8,6 +8,7 @@ interface IBetItem {
     gold: number;
     end?: number;
     time?: string;
+    TermID?: string;
 }
 interface ISum {
     no: number;
@@ -29,7 +30,7 @@ export class Gets {
         const msg: IMsg = {
             ErrNo: 0
         };
-        const sql: string = `select * from BetHeader where UserID = ? and CreateTime > ?`;
+        const sql: string = `select b.*,t.TermID from BetHeader b,Terms t where b.tid=t.id and UserID = ? and CreateTime > ?`;
         await this.conn.query(sql, [UserID, date]).then((rows) => {
             const items: IItems = {};
             const tolSum: ISum = {no: 0, gold: 0, end: 0 };
@@ -40,6 +41,7 @@ export class Gets {
                     GameID: itm.GameID,
                     id: itm.id,
                     tid: itm.tid,
+                    TermID: itm.TermID,
                     con: JSON.parse(itm.BetContent),
                     gold: itm.Total,
                     end: parseFloat(itm.WinLose ? itm.WinLose.toFixed(2) : "0"),
