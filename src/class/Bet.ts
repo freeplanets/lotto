@@ -1,6 +1,6 @@
 import mariadb from "mariadb";
 import {IBet, IBetContent, IBetHeader, IBetTable,
-    ICurOddsData, IMsg, INumData, IOParam, IStrKeyNumer} from "../DataSchema/if";
+    ICurOddsData, IMsg, INumData, IBasePayRateItm, IStrKeyNumer,INumAvg} from "../DataSchema/if";
 import {getUserCredit, ModifyCredit} from "../func/Credit";
 import {BetParam} from "./BetParam";
 import {C} from "./Func";
@@ -77,9 +77,10 @@ export class Bet implements IBet {
             dta.push(n);
         });
         const ans: ICurOddsData[] = await this.getOddsData(arrNum);
-        const opParams: IOParam[] | undefined = await this.getOpParams(BetTypes);
+        const navg:INumAvg[]|undefined=await this.getNumAvgle(BetTypes);
+        const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
-            Chker = new OpChk(opParams, false);
+            Chker = new OpChk(opParams, false,navg);
         }
         let total: number = 0;
         let payouts: number = 0;
@@ -253,9 +254,10 @@ export class Bet implements IBet {
             tmpNums.push(iNumD);
         });
         const ans: ICurOddsData[] = await this.getOddsData(arrNum);
-        const opParams: IOParam[] | undefined = await this.getOpParams(BetTypes);
+        const navg:INumAvg[]|undefined=await this.getNumAvgle(BetTypes);
+        const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
-            Chker = new OpChk(opParams, true);
+            Chker = new OpChk(opParams, true,navg);
             /*
             const chkans = Chker.ChkData(Amt, BetType);
             if (chkans !== ErrCode.PASS) {
@@ -469,8 +471,23 @@ export class Bet implements IBet {
         });
         return ans;
     }
-    private getOpParams(BetTypes: number[]): Promise<IOParam[] | undefined> {
-        const sql: string = `select * from BasePayRate where GameID=${this.GameID} and BetType in (${BetTypes.join(",")})`;
+    private async getNumAvgle(BetTypes: number[]):Promise<INumAvg[]|undefined> {
+        let sql: string = `select BetType,Amount from NumAvgle 
+            where tid= ${this.tid} and GameID = ${this.GameID} and BetType in (${BetTypes.join(",")})`;
+        let ans;
+        await this.conn.query(sql).then((rows) => {
+            ans = rows;
+        }).catch((err) => {
+            console.log("getOddsData", err);
+            //ans = false;
+        });
+        return ans;
+    }    
+    private getOpParams(BetTypes: number[]): Promise<IBasePayRateItm[] | undefined> {
+        const sql: string = `select  id,GameID,BetType,SubType,
+            isParlay,NoAdjust,TopRate,Steps,TopPay,TotalNums,UseAvg,
+            SingleNum,UnionNum,MinHand,MaxHand,BetForChange,ChangeStart,PerStep,StepsGroup 
+            from BasePayRate where GameID=${this.GameID} and BetType in (${BetTypes.join(",")})`;
         return new Promise(async (resolve) => {
             // console.log("getOpParams", sql);
             await this.conn.query(sql).then((res) => {

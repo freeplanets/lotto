@@ -1,5 +1,5 @@
 import mariadb from "mariadb";
-import {IBetTable, ICurOddsData, INumData, IOParam, IStrKeyNumer} from "../DataSchema/if";
+import {IBetTable, ICurOddsData, INumData, IStrKeyNumer,IBasePayRateItm,INumAvg} from "../DataSchema/if";
 import JTable, {IHasID} from "./JTable";
 interface ICurOddsT {
     id: 0;
@@ -38,28 +38,19 @@ export const enum ErrCode {
     LESS_MIN_HAND = 1,
     OVER_MAX_HAND = 2,
     OVER_SINGLE_NUM = 3,
-    OVER_UNION_NUM = 4
+    OVER_UNION_NUM = 4,
+    NUM_STOPED = 5,
 }
 export class OpChk {
-    private iniop: IOParam = {
-        id: 0,
-        GameID: 0,
-        BetType: 0,
-        TotalNums: 0,
-        UseAvg: 0,
-        SingleNum: 0,
-        UnionNum: 0,
-        MinHand: 0,
-        MaxHand: 0,
-        BetForChange: 0,
-        Steps: 0
+    private iniop: IBasePayRateItm = {
+        id: 0
     };
-    private op: IOParam = Object.assign({}, this.iniop);
+    private op: IBasePayRateItm = Object.assign({}, this.iniop);
     private CurOT: ICurOddsT[] = [];
     private MCurOT: ICurOddsT[] = [];
     private AvgT: INumAvgle[] = [];
     private UnT: IUnionTotal[] = [];
-    constructor(private ops: IOParam[], private isParlay: boolean ) {}
+    constructor(private ops: IBasePayRateItm[], private isParlay: boolean,private NumAvg?:INumAvg[] ) {}
     public ChkData(dt: INumData , Odds: ICurOddsData) {
         let BT: number = 0;
         let chkAmt = 0;
@@ -81,8 +72,8 @@ export class OpChk {
         chk = this.overMaxHand(chkAmt);
         if (chk !== ErrCode.PASS) { return chk; }
         chk = this.overSingleNum(chkAmt, Odds.tolS);
-        // if (chk !== ErrCode.PASS) { return chk; }
-        // chk = this.overUnionNum(chkAmt,0);
+        if (chk !== ErrCode.PASS) { return chk; }
+        chk = this.doBetForChange(chkAmt);        
         return chk;
     }
     /**
@@ -128,9 +119,10 @@ export class OpChk {
         return true;
     }
     public overUnionNum(itms: IBetTable[], UnionTotals: IStrKeyNumer): number {
-        if (this.op.UnionNum > 0) {
+        if (this.op.UnionNum) {
+            const UnionNum:number = this.op.UnionNum;
             itms.map((itm) => {
-                if (itm.Amt + UnionTotals[itm.Num] > this.op.UnionNum) {
+                if (itm.Amt + UnionTotals[itm.Num] > UnionNum) {
                     return ErrCode.OVER_UNION_NUM;
                 }
             });
@@ -138,7 +130,7 @@ export class OpChk {
         return ErrCode.PASS;
     }
     private lessMinHand(v: number): number {
-        if (this.op.MinHand > 0) {
+        if (this.op.MinHand) {
             if (v < this.op.MinHand) {
                 return ErrCode.LESS_MIN_HAND;
             }
@@ -146,7 +138,7 @@ export class OpChk {
         return ErrCode.PASS;
     }
     private overMaxHand(v: number): number {
-        if (this.op.MaxHand > 0) {
+        if (this.op.MaxHand) {
             if (v > this.op.MaxHand) {
                 return ErrCode.OVER_MAX_HAND;
             }
@@ -154,7 +146,7 @@ export class OpChk {
         return ErrCode.PASS;
     }
     private overSingleNum(v: number, NumTotal: number): number {
-        if (this.op.SingleNum > 0) {
+        if (this.op.SingleNum) {
             if ((v + NumTotal) > this.op.SingleNum) {
                 return ErrCode.OVER_SINGLE_NUM;
             }
@@ -165,10 +157,10 @@ export class OpChk {
         if (this.op.BetType !== itm.BetType) {
             const f = this.ops.find((op) => op.BetType === itm.BetType);
             if (f) {
-                return f.TotalNums;
+                return f.TotalNums ? f.TotalNums : 0;
             }
         } else {
-            return this.op.TotalNums;
+            return this.op.TotalNums ? this.op.TotalNums : 0;
         }
         return 0;
     }
@@ -247,5 +239,11 @@ export class OpChk {
         const tmpM = Object.assign({}, tmpU);
         tmpM.UpId = itm.UpId;
         this.UnT.push(tmpM);
+    }
+    private doBetForChange(amt:number):number{
+        if(!this.op.NoAdjust){
+
+        }
+        return ErrCode.PASS;
     }
 }

@@ -9,7 +9,7 @@ import {Gets} from "../class/Gets";
 import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
-import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IGameItem, IMOdds, IMsg, IOParam} from "../DataSchema/if";
+import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IGameItem, IMOdds, IMsg } from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 import apiRouter from "./api";
@@ -603,8 +603,8 @@ app.post("/Save/:TableName", async (req, res) => {
   }
   const TableName = req.params.TableName;
   // console.log("/api/Save/TableName param", req.body);
-  const data: IOParam[] = JSON.parse(req.body.params.data);
-  const jt: JTable<IOParam> = new JTable(conn, TableName);
+  const data: IBasePayRateItm[] = JSON.parse(req.body.params.data);
+  const jt: JTable<IBasePayRateItm> = new JTable(conn, TableName);
   const ans = await jt.MultiUpdate(data);
   // console.log("/api/Save/:TableName ans:", ans);
   if (ans) {

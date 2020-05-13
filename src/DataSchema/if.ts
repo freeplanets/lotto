@@ -136,19 +136,6 @@ export interface IBetTable {
     isSettled?: number;
 }
 
-export interface IOParam {
-    id: number;
-    GameID: number;
-    BetType: number;
-    TotalNums: number;
-    UseAvg: number;
-    SingleNum: number;
-    UnionNum: number;
-    MinHand: number;
-    MaxHand: number;
-    BetForChange: number;
-    Steps: number;
-}
 export interface IOparamSub {
     TotalNums: number;
     UseAvg: number;
@@ -250,4 +237,12 @@ export interface IBasePayRateItm {
     PerStep?: number;
     StepsGroup?: string;
     ModifyID?: number;
+}
+export interface IStepG {
+    Start:number;
+    Step:number;
+}
+export interface INumAvg {
+    BetType:number;
+    Amount:number;
 }
