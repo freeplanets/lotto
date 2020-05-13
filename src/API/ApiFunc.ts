@@ -178,12 +178,12 @@ async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], 
   const dtas: any = msg.data;
   const data: string[] = [];
   dtas.map((itm) => {
-      data.push(`(${tid},${GameID},15,${itm.Num},${itm.Odds},${itm.MaxOdds}`);
+      data.push(`(${tid},${GameID},15,${itm.Num},${itm.Odds},${itm.MaxOdds})`);
   });
   sql = `
   insert into CurOddsInfo(tid,GameID,BetType,Num,Odds,MaxOdds)
   values${data.join(",")}
-  on duplicate key update Odds=values(Odds),MaxOdds=values(MaxOdds),Steps=values(Steps)
+  on duplicate key update Odds=values(Odds),MaxOdds=values(MaxOdds)
 `;
   console.log("updateCurOdds", sql);
   await conn.query(sql).then((row) => {
