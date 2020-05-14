@@ -1,6 +1,6 @@
 import mariadb from "mariadb";
-import {IBet, IBetContent, IBetHeader, IBetTable,
-    ICurOddsData, IMsg, INumData, IBasePayRateItm, IStrKeyNumer,INumAvg} from "../DataSchema/if";
+import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
+    IBetTable, ICurOddsData, IMsg, INumAvg, INumData, IStrKeyNumer} from "../DataSchema/if";
 import {getUserCredit, ModifyCredit} from "../func/Credit";
 import {BetParam} from "./BetParam";
 import {C} from "./Func";
@@ -77,10 +77,10 @@ export class Bet implements IBet {
             dta.push(n);
         });
         const ans: ICurOddsData[] = await this.getOddsData(arrNum);
-        const navg:INumAvg[]|undefined=await this.getNumAvgle(BetTypes);
+        const navg: INumAvg[]|undefined = await this.getNumAvgle(BetTypes);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
-            Chker = new OpChk(opParams, false,navg);
+            Chker = new OpChk(opParams, false, navg);
         }
         let total: number = 0;
         let payouts: number = 0;
@@ -127,6 +127,7 @@ export class Bet implements IBet {
                     Num: itm.Num + "",
                     Odds: itm.Odds,
                     Amt: amt,
+                    validAmt: amt,
                     Payouts: itm.Odds * amt
                 };
                 total = total + amt;
@@ -254,10 +255,10 @@ export class Bet implements IBet {
             tmpNums.push(iNumD);
         });
         const ans: ICurOddsData[] = await this.getOddsData(arrNum);
-        const navg:INumAvg[]|undefined=await this.getNumAvgle(BetTypes);
+        const navg: INumAvg[]|undefined = await this.getNumAvgle(BetTypes);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
-            Chker = new OpChk(opParams, true,navg);
+            Chker = new OpChk(opParams, true, navg);
             /*
             const chkans = Chker.ChkData(Amt, BetType);
             if (chkans !== ErrCode.PASS) {
@@ -388,7 +389,8 @@ export class Bet implements IBet {
                     Num: "x" + set.join("x") + "x",
                     Odds: avgOdds,
                     Payouts: parseFloat((Amt * avgOdds).toFixed(2)),
-                    Amt
+                    Amt,
+                    validAmt: Amt
                 };
                 if (isPASS) {
                     bd.OpPASS = BNum;
@@ -471,22 +473,22 @@ export class Bet implements IBet {
         });
         return ans;
     }
-    private async getNumAvgle(BetTypes: number[]):Promise<INumAvg[]|undefined> {
-        let sql: string = `select BetType,Amount from NumAvgle 
+    private async getNumAvgle(BetTypes: number[]): Promise<INumAvg[]|undefined> {
+        const sql: string = `select BetType,Amount from NumAvgle
             where tid= ${this.tid} and GameID = ${this.GameID} and BetType in (${BetTypes.join(",")})`;
         let ans;
         await this.conn.query(sql).then((rows) => {
             ans = rows;
         }).catch((err) => {
             console.log("getOddsData", err);
-            //ans = false;
+            // ans = false;
         });
         return ans;
-    }    
+    }
     private getOpParams(BetTypes: number[]): Promise<IBasePayRateItm[] | undefined> {
         const sql: string = `select  id,GameID,BetType,SubType,
             isParlay,NoAdjust,TopRate,Steps,TopPay,TotalNums,UseAvg,
-            SingleNum,UnionNum,MinHand,MaxHand,BetForChange,ChangeStart,PerStep,StepsGroup 
+            SingleNum,UnionNum,MinHand,MaxHand,BetForChange,ChangeStart,PerStep,StepsGroup
             from BasePayRate where GameID=${this.GameID} and BetType in (${BetTypes.join(",")})`;
         return new Promise(async (resolve) => {
             // console.log("getOpParams", sql);

@@ -129,6 +129,7 @@ export interface IBetTable {
     Odds1?: number;
     OpPASS?: number;
     Amt: number;
+    validAmt: number;
     Payouts: number;
     Payouts1?: number;
     WinLose?: number;
@@ -239,10 +240,10 @@ export interface IBasePayRateItm {
     ModifyID?: number;
 }
 export interface IStepG {
-    Start:number;
-    Step:number;
+    Start: number;
+    Step: number;
 }
 export interface INumAvg {
-    BetType:number;
-    Amount:number;
+    BetType: number;
+    Amount: number;
 }

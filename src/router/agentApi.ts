@@ -280,7 +280,7 @@ async function getTicketDetail(req, res) {
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
     // console.log("getTicketDetail param:", param);
-    const sql = `select id,betid,Account userCode,tid TermID,GameID,BetType,Num,Odds,Amt,WinLose,
+    const sql = `select id,betid,Account userCode,tid TermID,GameID,BetType,Num,Odds,Amt,validAmt,WinLose,
         UNIX_TIMESTAMP(CreateTime) CreateTime,UNIX_TIMESTAMP(ModifyTime) ModifyTime,case isCancled when 1 then 3 else isSettled+1 end as \`status\`
         from BetTable where UpId=${UpId} and isCancled=0 and
         ModifyTime between from_unixtime(${param.startTime}) and from_unixtime(${param.endTime})`;

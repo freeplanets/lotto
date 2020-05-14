@@ -1,5 +1,5 @@
 import mariadb from "mariadb";
-import {IBetTable, ICurOddsData, INumData, IStrKeyNumer,IBasePayRateItm,INumAvg} from "../DataSchema/if";
+import {IBasePayRateItm, IBetTable, ICurOddsData, INumAvg, INumData, IStepG, IStrKeyNumer} from "../DataSchema/if";
 import JTable, {IHasID} from "./JTable";
 interface ICurOddsT {
     id: 0;
@@ -50,7 +50,7 @@ export class OpChk {
     private MCurOT: ICurOddsT[] = [];
     private AvgT: INumAvgle[] = [];
     private UnT: IUnionTotal[] = [];
-    constructor(private ops: IBasePayRateItm[], private isParlay: boolean,private NumAvg?:INumAvg[] ) {}
+    constructor(private ops: IBasePayRateItm[], private isParlay: boolean, private NumAvg?: INumAvg[] ) {}
     public ChkData(dt: INumData , Odds: ICurOddsData) {
         let BT: number = 0;
         let chkAmt = 0;
@@ -72,8 +72,8 @@ export class OpChk {
         chk = this.overMaxHand(chkAmt);
         if (chk !== ErrCode.PASS) { return chk; }
         chk = this.overSingleNum(chkAmt, Odds.tolS);
-        if (chk !== ErrCode.PASS) { return chk; }
-        chk = this.doBetForChange(chkAmt);        
+        // if (chk !== ErrCode.PASS) { return chk; }
+        // chk = this.doBetForChange(dt,Odds);
         return chk;
     }
     /**
@@ -120,7 +120,7 @@ export class OpChk {
     }
     public overUnionNum(itms: IBetTable[], UnionTotals: IStrKeyNumer): number {
         if (this.op.UnionNum) {
-            const UnionNum:number = this.op.UnionNum;
+            const UnionNum: number = this.op.UnionNum;
             itms.map((itm) => {
                 if (itm.Amt + UnionTotals[itm.Num] > UnionNum) {
                     return ErrCode.OVER_UNION_NUM;
@@ -240,10 +240,43 @@ export class OpChk {
         tmpM.UpId = itm.UpId;
         this.UnT.push(tmpM);
     }
-    private doBetForChange(amt:number):number{
-        if(!this.op.NoAdjust){
+    /*
+    private doBetForChange(dt: INumData , Odds: ICurOddsData): number {
+        if (!this.op.NoAdjust) {
+            if (this.op.BetForChange) {
+                let avg: number = 0;
+                let base: number = 0;
+                if (this.op.UseAvg) {
+                    avg = this.getAvg(dt.BetType as number);
+                    base = dt.Amt + Odds.tolS;
+                    if (base < avg) {
+                        return ErrCode.PASS;
+                    }
+                }
+                if (this.op.StepsGroup) {
+                    const StG: IStepG[] = JSON.parse(this.op.StepsGroup);
+                    if (StG.length > 0) {
 
+                    } else {
+                        const ChgBase: number = this.op.ChangeStart ? this.op.ChangeStart : 0;
+                    }
+                }
+            }
         }
         return ErrCode.PASS;
+    }
+    */
+    private getAvg(bt: number): number {
+        let avg: number = 0;
+        if (this.NumAvg) {
+            const f = this.NumAvg.find((itm) => itm.BetType === bt);
+            if (f) {
+                avg = f.Amount;
+            }
+        }
+        return avg;
+    }
+    private chkStepsG(stg: IStepG[], avg: number, totS: number, amt: number) {
+        const base = totS - avg;
     }
 }

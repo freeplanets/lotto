@@ -132,7 +132,8 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         ans = false;
     });
     if (ans) {
-        sql = `update BetTable set WinLose=Amt*-1,OpNums=0,OpSP=0,isSettled=${SettleStatus} where tid=${tid} and GameID=${GameID} and isCancled=0`;
+        // 還原結帳檢查結果,併預設會員為輸 WinLose=Amt*-1
+        sql = `update BetTable set WinLose=Amt*-1,validAmt=Amt,OpNums=0,OpSP=0,isSettled=${SettleStatus} where tid=${tid} and GameID=${GameID} and isCancled=0`;
         console.log("Update Settle Status", sql);
         await conn.query(sql).then((res) => {
             // console.log("WinLose=Amt*-1", sql, res);
@@ -366,7 +367,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
     if (itm.TieNum) {
         if (itm.TieNum === imsr.SPNo) {
             // sql = `update BetTable set WinLose=Amt,isSettled=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
-            sql = `update BetTable set WinLose=Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
+            sql = `update BetTable set WinLose=Amt,validAmt=0 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
             sqls.common.push(sql);
             return sqls;
             }
