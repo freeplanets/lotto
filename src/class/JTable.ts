@@ -25,6 +25,21 @@ interface ITBIdxes {
 const ED = new eds();
 export default class JTable<T extends IHasID> {
     constructor(private conn: mariadb.PoolConnection, private TableName: string) {}
+    public async getOne(id: number): Promise<T|undefined> {
+        const sql = `select * from ${this.TableName} where id=${id}`;
+        let mb: T | undefined;
+        await this.conn.query(sql).then((row) => {
+            if (row.length > 0) {
+                mb = row[0];
+                return mb;
+            }
+        }).catch((err) => {
+            // mb = err;
+            console.log("JTable getOne", err);
+        });
+        // console.log("JTable List mb", mb);
+        return mb;
+    }
     public async List() {
         const sql = `select * from ${this.TableName} where 1`;
         let mb: T[] | any;

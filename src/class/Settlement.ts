@@ -364,13 +364,13 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
         sqls.common.push(sql);
         return sqls;
     }
-    if (itm.TieNum) {
+    if (itm.TieNum && !itm.Position) {
         if (itm.TieNum === imsr.SPNo) {
             // sql = `update BetTable set WinLose=Amt,isSettled=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
             sql = `update BetTable set WinLose=Amt,validAmt=0 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
             sqls.common.push(sql);
             return sqls;
-            }
+        }
     }
     if (itm.Position !== undefined) {
         // nn = console.log(typeof(itm.Position));
@@ -394,7 +394,11 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
                 } else {
                     nn = imsr[itm.NumTarget][itm.Position];
                 }
-                sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num = '${nn}' and isCancled=0`;
+                if (itm.TieNum && itm.TieNum === nn) {
+                    sql = `update BetTable set WinLose=Amt,validAmt=0 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
+                } else {
+                    sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num = '${nn}' and isCancled=0`;
+                }
                 // sqls.push(sql);
                 sqls.common.push(sql);
             }

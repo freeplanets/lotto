@@ -1,5 +1,8 @@
 import mariadb from "mariadb";
 import {IBasePayRateItm, IBetTable, ICurOddsData, INumAvg, INumData, IStepG, IStrKeyNumer} from "../DataSchema/if";
+import {IGame} from "../DataSchema/user";
+import {doQuery} from "../func/db";
+import {getOtherSide} from "./Func";
 import JTable, {IHasID} from "./JTable";
 interface ICurOddsT {
     id: 0;
@@ -41,25 +44,27 @@ export const enum ErrCode {
     OVER_UNION_NUM = 4,
     NUM_STOPED = 5,
 }
+/**
+ * 六合彩類 BetType:8,72,10,73 有雙賠率,第二賠號碼加 100
+ */
 export class OpChk {
     private iniop: IBasePayRateItm = {
         id: 0
     };
     private op: IBasePayRateItm = Object.assign({}, this.iniop);
+    private op2: IBasePayRateItm = Object.assign({}, this.iniop);
     private CurOT: ICurOddsT[] = [];
     private MCurOT: ICurOddsT[] = [];
     private AvgT: INumAvgle[] = [];
     private UnT: IUnionTotal[] = [];
-    constructor(private ops: IBasePayRateItm[], private isParlay: boolean, private NumAvg?: INumAvg[] ) {}
+    private BetC: string[] = [];
+    private MoreOdds: number[] = [8, 72, 10, 73];
+    constructor(private GInfo: IGame, private tid: number, private UserID: number, private ops: IBasePayRateItm[], private isParlay: boolean, private NumAvg?: INumAvg[] ) {}
     public ChkData(dt: INumData , Odds: ICurOddsData) {
-        let BT: number = 0;
         let chkAmt = 0;
         chkAmt = dt.Amt;
-        if (dt.BetType) {
-            BT = dt.BetType;
-        }
-        if (this.op.BetType !== BT) {
-            const f = this.ops.find((itm) => itm.BetType === BT);
+        if (this.op.BetType !== Odds.BetType && this.op.SubType !== Odds.SubType) {
+            const f = this.ops.find((itm) => itm.BetType === Odds.BetType && itm.SubType === Odds.SubType);
             if (f) {
                 this.op = Object.assign({}, f);
             } else {
@@ -72,8 +77,8 @@ export class OpChk {
         chk = this.overMaxHand(chkAmt);
         if (chk !== ErrCode.PASS) { return chk; }
         chk = this.overSingleNum(chkAmt, Odds.tolS);
-        // if (chk !== ErrCode.PASS) { return chk; }
-        // chk = this.doBetForChange(dt,Odds);
+        if (chk !== ErrCode.PASS) { return chk; }
+        chk = this.chkBetForChange(dt, Odds);
         return chk;
     }
     /**
@@ -116,7 +121,8 @@ export class OpChk {
                 return false;
             }
         }
-        return true;
+        const doBFC = await this.doBetForChagne(conn);
+        return !!doBFC;
     }
     public overUnionNum(itms: IBetTable[], UnionTotals: IStrKeyNumer): number {
         if (this.op.UnionNum) {
@@ -240,8 +246,7 @@ export class OpChk {
         tmpM.UpId = itm.UpId;
         this.UnT.push(tmpM);
     }
-    /*
-    private doBetForChange(dt: INumData , Odds: ICurOddsData): number {
+    private chkBetForChange(dt: INumData , Odds: ICurOddsData): number {
         if (!this.op.NoAdjust) {
             if (this.op.BetForChange) {
                 let avg: number = 0;
@@ -253,19 +258,19 @@ export class OpChk {
                         return ErrCode.PASS;
                     }
                 }
-                if (this.op.StepsGroup) {
-                    const StG: IStepG[] = JSON.parse(this.op.StepsGroup);
-                    if (StG.length > 0) {
-
-                    } else {
-                        const ChgBase: number = this.op.ChangeStart ? this.op.ChangeStart : 0;
+                const letfAmt = (Odds.tolS - avg) % this.op.BetForChange;
+                if ((letfAmt + dt.Amt) >= this.op.BetForChange) {
+                    const chgOdds = Odds.Odds + this.calBetforChange(Odds.tolS + dt.Amt);
+                    this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${dt.Num},${chgOdds}`);
+                    if (this.GInfo.BothSideAdjust && this.op.TotalNums === 2) {  // 雙面連動
+                        const xNum: number = getOtherSide(dt.Num);
+                        this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${xNum},${-chgOdds}`);
                     }
                 }
             }
         }
         return ErrCode.PASS;
     }
-    */
     private getAvg(bt: number): number {
         let avg: number = 0;
         if (this.NumAvg) {
@@ -276,7 +281,32 @@ export class OpChk {
         }
         return avg;
     }
-    private chkStepsG(stg: IStepG[], avg: number, totS: number, amt: number) {
-        const base = totS - avg;
+    private calBetforChange(tolSPlusAmt: number) {
+        const pSt = this.op.PerStep ? this.op.PerStep : 0;
+        const st = this.op.Steps ? this.op.Steps : 0;
+        if (this.op.StepsGroup) {
+            const StG: IStepG[] = JSON.parse(this.op.StepsGroup);
+            if (StG.length > 0) {
+                const steps = this.getStepsFromSG(StG, tolSPlusAmt);
+                return steps * pSt;
+            }
+        }
+        return pSt * st;
+    }
+    private getStepsFromSG(stg: IStepG[], v: number): number {
+        let steps: number = 0;
+        for (let i = 0, n = stg.length; i < n; i++) {
+            if (stg[i].Start > v) { break; }
+            steps = stg[i].Start;
+        }
+        return steps;
+    }
+    private async doBetForChagne(conn: mariadb.PoolConnection): Promise<any> {
+        if (this.BetC.length > 0) {
+            const sql: string = `insert into CurOddsInfo(tid,GameID,BetType,Num,Odds)
+                values(${this.BetC.join("),(")}) on duplicate key update Odds=values(Odds)`;
+            return await doQuery(sql, conn);
+        }
+        return true;
     }
 }

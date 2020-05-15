@@ -1,6 +1,7 @@
 import mariadb from "mariadb";
 import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
     IBetTable, ICurOddsData, IMsg, INumAvg, INumData, IStrKeyNumer} from "../DataSchema/if";
+import {IGame} from "../DataSchema/user";
 import {getUserCredit, ModifyCredit} from "../func/Credit";
 import {BetParam} from "./BetParam";
 import {C} from "./Func";
@@ -38,14 +39,22 @@ export interface IExProc {
  *
  */
 export class Bet implements IBet {
+    private GameInfo: IGame|undefined;
     constructor(private UserID: number, private Account: string, private UpId: number,
                 private tid: number, private GameID: number,
-                private PayClassID: number, private conn: mariadb.PoolConnection) {}
+                private PayClassID: number, private conn: mariadb.PoolConnection) {
+                    this.getGameInfo(GameID, conn);
+                }
     public async AnaNum(nums: string) {
         // const SNB: ISingleNumBet[] = [];
         const msg: IMsg = {
             ErrNo: 0
         };
+        if (!this.GameInfo) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Game data error!!";
+            return msg;
+        }
         const SNB: IBetContent = {
             Content: []
         };
@@ -80,7 +89,7 @@ export class Bet implements IBet {
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetTypes);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
-            Chker = new OpChk(opParams, false, navg);
+            Chker = new OpChk(this.GameInfo, this.tid, this.UserID, opParams, false, navg);
         }
         let total: number = 0;
         let payouts: number = 0;
@@ -209,6 +218,11 @@ export class Bet implements IBet {
         const msg: IMsg = {
             ErrNo: 0
         };
+        if (!this.GameInfo) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Game data error!!";
+            return msg;
+        }
         const BetTypes: number[] = [BetType];
         let Chker: OpChk | undefined;
         const Odd: string[] = Odds.split(",");
@@ -258,7 +272,7 @@ export class Bet implements IBet {
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetTypes);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
-            Chker = new OpChk(opParams, true, navg);
+            Chker = new OpChk(this.GameInfo, this.tid, this.UserID, opParams, true, navg);
             /*
             const chkans = Chker.ChkData(Amt, BetType);
             if (chkans !== ErrCode.PASS) {
@@ -453,8 +467,12 @@ export class Bet implements IBet {
         return msg;
 
     }
+    private async getGameInfo(GameID: number, conn: mariadb.PoolConnection) {
+        const jt: JTable<IGame> = new JTable(conn, "Games");
+        this.GameInfo = await jt.getOne(GameID);
+    }
     private async getOddsData(nums: INum) {
-        let sql: string = `select c.BetType,UNIX_TIMESTAMP(c.OID) OID,c.Num,Odds+Rate Odds,tolS from CurOddsInfo c left join PayRate p
+        let sql: string = `select c.BetType,c.SubType,UNIX_TIMESTAMP(c.OID) OID,c.Num,Odds+Rate Odds,tolS from CurOddsInfo c left join PayRate p
         on c.GameID=p.GameID and c.BetType=p.BetType where p.SubType=0 and
         c.tid= ${this.tid} and c.GameID = ${this.GameID} and p.PayClassID= ${this.PayClassID} and `;
         const filters: string[] = [];

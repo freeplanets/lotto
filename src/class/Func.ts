@@ -15,3 +15,10 @@ export function BaNum(n: number): number {
     const p: number = s.length - (s.indexOf(".") + 1);
     return Math.pow(10, p);
 }
+
+export function getOtherSide(a: number): number {
+    const aa: string[] = a.toString().split("");
+    const k: number = parseInt(aa[aa.length - 1], 10) ^ 1;
+    aa[aa.length - 1] = k.toString();
+    return parseInt(aa.join(""), 10);
+}

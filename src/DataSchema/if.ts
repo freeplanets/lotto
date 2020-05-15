@@ -155,6 +155,7 @@ export interface IOparamG {
 }
 export interface ICurOddsData {
     BetType: number;
+    SubType: number;
     OID: number;
     Num: number;
     Odds: number;

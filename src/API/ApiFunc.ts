@@ -104,8 +104,8 @@ export async function CreateOddsData(GameID: string|number, tid: number, conn: m
       msg.debug =  sql + ">>" + params.join(",");
   });
   if (!isEmpty) {
-      sql = `insert into CurOddsInfo(tid,GameID,BetType,Num,Odds,MaxOdds)
-          SELECT ${tid} tid,d.GameID,d.BetType,d.Num,b.DfRate Odds,TopRate MaxOdds
+      sql = `insert into CurOddsInfo(tid,GameID,BetType,SubType,Num,Odds,MaxOdds)
+          SELECT ${tid} tid,d.GameID,d.BetType,d.SubType,d.Num,b.DfRate Odds,TopRate MaxOdds
       FROM dfOddsItems d left join BasePayRate b on d.GameID=b.GameID and d.BetType = b.BetType and d.SubType = b.SubType
       where d.GameID= ${GameID}
       `;
