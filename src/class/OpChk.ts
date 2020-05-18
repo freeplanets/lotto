@@ -260,11 +260,11 @@ export class OpChk {
                 }
                 const letfAmt = (Odds.tolS - avg) % this.op.BetForChange;
                 if ((letfAmt + dt.Amt) >= this.op.BetForChange) {
-                    const chgOdds = Odds.Odds + this.calBetforChange(Odds.tolS + dt.Amt);
+                    const chgOdds = this.calBetforChange(Odds.tolS + dt.Amt);
                     this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${dt.Num},${chgOdds}`);
                     if (this.GInfo.BothSideAdjust && this.op.TotalNums === 2) {  // 雙面連動
                         const xNum: number = getOtherSide(dt.Num);
-                        this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${xNum},${-chgOdds}`);
+                        this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${xNum},${-1*chgOdds}`);
                     }
                 }
             }
@@ -303,8 +303,8 @@ export class OpChk {
     }
     private async doBetForChagne(conn: mariadb.PoolConnection): Promise<any> {
         if (this.BetC.length > 0) {
-            const sql: string = `insert into CurOddsInfo(tid,GameID,BetType,Num,Odds)
-                values(${this.BetC.join("),(")}) on duplicate key update Odds=values(Odds)`;
+            const  sql: string = `insert into CurOddsInfo(tid,GameID,BetType,Num,Odds)
+                values(${this.BetC.join("),(")}) on duplicate key update Odds=Odds-values(Odds)`;
             return await doQuery(sql, conn);
         }
         return true;

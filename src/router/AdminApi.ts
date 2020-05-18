@@ -311,7 +311,7 @@ app.get("/getPayRate", async (req, res) => {
   }
   const param = req.query;
   const params = [param.PayClassID, param.GameID];
-  const sql = `select p.BetType,p.SubType,b.DfRate,p.Rate,b.Probability,b.Steps,b.OneHand
+  const sql = `select p.BetType,p.SubType,b.DfRate,p.Rate,b.Probability,b.PerStep
       from  BasePayRate b left join PayRate p on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType where p.PayClassID=? and p.GameID = ?`;
   await conn.query(sql, params).then((v) => {
       // console.log("getPayRate", v, params);
