@@ -43,13 +43,14 @@ export class Bet implements IBet {
     constructor(private UserID: number, private Account: string, private UpId: number,
                 private tid: number, private GameID: number,
                 private PayClassID: number, private conn: mariadb.PoolConnection) {
-                    this.getGameInfo(GameID, conn);
+
                 }
     public async AnaNum(nums: string) {
         // const SNB: ISingleNumBet[] = [];
         const msg: IMsg = {
             ErrNo: 0
         };
+        this.GameInfo = await this.getGameInfo(this.GameID, this.conn);
         if (!this.GameInfo) {
             msg.ErrNo = 9;
             msg.ErrCon = "Game data error!!";
@@ -218,6 +219,7 @@ export class Bet implements IBet {
         const msg: IMsg = {
             ErrNo: 0
         };
+        this.GameInfo = await this.getGameInfo(this.GameID, this.conn);
         if (!this.GameInfo) {
             msg.ErrNo = 9;
             msg.ErrCon = "Game data error!!";
@@ -469,7 +471,8 @@ export class Bet implements IBet {
     }
     private async getGameInfo(GameID: number, conn: mariadb.PoolConnection) {
         const jt: JTable<IGame> = new JTable(conn, "Games");
-        this.GameInfo = await jt.getOne(GameID);
+        // this.GameInfo =
+        return await jt.getOne(GameID);
     }
     private async getOddsData(nums: INum) {
         let sql: string = `select c.BetType,c.SubType,UNIX_TIMESTAMP(c.OID) OID,c.Num,Odds+Rate Odds,tolS from CurOddsInfo c left join PayRate p
