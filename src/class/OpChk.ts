@@ -264,7 +264,7 @@ export class OpChk {
                     this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${dt.Num},${chgOdds}`);
                     if (this.GInfo.BothSideAdjust && this.op.TotalNums === 2) {  // 雙面連動
                         const xNum: number = getOtherSide(dt.Num);
-                        this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${xNum},${-1*chgOdds}`);
+                        this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${xNum},${-1 * chgOdds}`);
                     }
                 }
             }
