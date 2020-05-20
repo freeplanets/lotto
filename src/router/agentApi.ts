@@ -275,21 +275,20 @@ async function getTicketDetail(req, res) {
         res.send(JSON.stringify(data));
         return;
     }
-    const UpId = params.agentId;
-    if (!UpId) {
+    if (!params.agentId || !params.param) {
         data.code = 9;
         data.ErrCon = "parameter is missing!!";
         conn.release();
         res.send(JSON.stringify(data));
         return;
     }
-    const Agent: IUser = await getAgent(UpId, conn);
+    const Agent: IUser = await getAgent(params.agentId, conn);
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
     // console.log("getTicketDetail param:", param);
     const sql = `select id,betid,Account userCode,tid TermID,GameID,BetType,Num,Odds,Amt,validAmt,WinLose,
         UNIX_TIMESTAMP(CreateTime) CreateTime,UNIX_TIMESTAMP(ModifyTime) ModifyTime,case isCancled when 1 then 3 else isSettled+1 end as \`status\`
-        from BetTable where UpId=${UpId} and isCancled=0 and
+        from BetTable where UpId=${params.agentId} and isCancled=0 and
         ModifyTime between from_unixtime(${param.startTime}) and from_unixtime(${param.endTime})`;
     console.log("getTicketDetail", sql);
     await conn.query(sql).then((rows) => {
