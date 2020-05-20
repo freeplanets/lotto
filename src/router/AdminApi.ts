@@ -12,9 +12,27 @@ import {SaveNums} from "../class/Settlement";
 import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IGameItem, IMOdds, IMsg } from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
-import apiRouter from "./api";
 
 const app: Router = express.Router();
+app.get("/getSysInfo", async (req, res) => {
+    const conn = await getConnection();
+    const msg: IMsg = {ErrNo: 0};
+    if (conn) {
+        const sql = "select * from SysInfo limit 0,1";
+        const ans = await doQuery(sql, conn);
+        if (ans) {
+            msg.data = ans[0];
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "SysInfo not found!!";
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
 app.get("/getGames", async (req, res) => {
   // const conn = await dbPool.getConnection();
   const conn = await getConnection();

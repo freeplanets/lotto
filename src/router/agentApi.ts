@@ -276,6 +276,13 @@ async function getTicketDetail(req, res) {
         return;
     }
     const UpId = params.agentId;
+    if (!UpId) {
+        data.code = 9;
+        data.ErrCon = "parameter is missing!!";
+        conn.release();
+        res.send(JSON.stringify(data));
+        return;
+    }
     const Agent: IUser = await getAgent(UpId, conn);
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
