@@ -285,7 +285,7 @@ async function getTicketDetail(req, res) {
     const Agent: IUser = await getAgent(params.agentId, conn);
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
-    // console.log("getTicketDetail param:", param);
+    console.log("getTicketDetail param:", param);
     const sql = `select id,betid,Account userCode,tid TermID,GameID,BetType,Num,Odds,Amt,validAmt,WinLose,
         UNIX_TIMESTAMP(CreateTime) CreateTime,UNIX_TIMESTAMP(ModifyTime) ModifyTime,case isCancled when 1 then 3 else isSettled+1 end as \`status\`
         from BetTable where UpId=${params.agentId} and isCancled=0 and
@@ -297,7 +297,7 @@ async function getTicketDetail(req, res) {
     }).catch((err) => {
         data.code = 9;
         data.error = err;
-        // console.log("getTicketDetail error", data);
+        console.log("getTicketDetail error", data);
         // res.send(JSON.stringify(data));
     });
     conn.release();
