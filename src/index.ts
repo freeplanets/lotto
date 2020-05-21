@@ -20,25 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cors(crosOption));
 app.get("/", async (req: Request, res: Response) => {
-        /*
-        const conn = await dbPool.getConnection();
-        let tmp: string = "";
-        conn.query("select * from User").then((rows: IUser[]) => {
-            rows.map((u: IUser) => {
-                if (u.Account) {
-                    tmp += u.Account + ",";
-                    u.CDate = new Date(u.CreateTime);
-                    console.log("getUserCrateTime",
-                        u.Account, u.CDate.getFullYear(), u.CDate.getMonth() + 1, u.CDate.getDate());
-                }
-            });
-            // const str: string = JSON.stringify(rows);
-            conn.release();
-            res.send(tmp);
-        }).catch((err) => {
-            console.log("query error:", err);
-        });
-        */
+
        res.send("ok");
     });
 app.get("/login", async (req, res) => {
@@ -73,7 +55,7 @@ app.get("/saveGames", async (req, res) => {
         const params = [param.id, param.name];
         const sql = `insert into Games(id,name) values(?,?)`;
         console.log(sql, params);
-        await conn.query(sql, params).then((v) => {
+        conn.query(sql, params).then((v) => {
             conn.release();
             res.send(JSON.stringify(v));
         }).catch((err) => {

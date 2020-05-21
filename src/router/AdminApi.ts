@@ -52,15 +52,6 @@ app.get("/getGames", async (req, res) => {
       msg.ErrCon = "get connection error!!";
   }
   res.send(JSON.stringify(msg));
-  /*
-  await conn.query(sql).then((v) => {
-      conn.release();
-      res.send(JSON.stringify(v));
-  }).catch((err) => {
-      console.log("saveGames", err);
-      res.send(err);
-  });
-  */
 });
 app.post("/saveBtClass", async (req, res) => {
   const conn = await getConnection();
@@ -606,9 +597,15 @@ app.post("/UpdateGame", async (req, res) => {
   const jt: JTable<IGame> = new JTable(conn, "Games");
   const param: IGame = req.body;
   const ans = await jt.Update(param);
-  console.log("UpdateGame", ans);
+  if (ans) {
+      msg.data = ans;
+  } else {
+     msg.ErrNo = 9;
+     msg.ErrCon = "Game data update error!!";
+  }
+  // console.log("UpdateGame", ans);
   conn.release();
-  res.send(JSON.stringify(ans));
+  res.send(JSON.stringify(msg));
 });
 app.post("/Save/:TableName", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -915,18 +912,21 @@ app.get("/CurOddsInfo", async (req, res) => {
       if (ans) {
         msg.data = ans;
         // console.log("CurOddsInfo MaxOdDsID:", typeof MaxOddsID, MaxOddsID);
+        /*
         if (MaxOddsID === 0) {
           const stp = await afunc.getOpStep(param.GameID, conn);
           if (stp) {
               msg.Steps = stp;
           }
         }
+        */
       } else {
           msg.ErrNo = 9;
           msg.ErrCon = "Get Odds error!";
       }
       conn.release();
   }
+  // console.log("CurOddsInfo", JSON.stringify(msg));
   res.send(JSON.stringify(msg));
 });
 app.get("/setOdds", async (req, res) => {

@@ -80,9 +80,11 @@ export default class JTable<T extends IHasID> {
         const sql = `update ${this.TableName} set ` + fields.join(",") + " where id = ?";
         await this.conn.query(sql, params).then((row) => {
             ans = row;
+            // console.log("JTable Upate ans:", ans);
         }).catch((err) => {
             ans = err;
         });
+        // console.log("JTable Upate after:", ans);
         return ans;
     }
     public async Insert(v: T) {

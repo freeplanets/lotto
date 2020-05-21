@@ -104,8 +104,8 @@ export async function CreateOddsData(GameID: string|number, tid: number, conn: m
       msg.debug =  sql + ">>" + params.join(",");
   });
   if (!isEmpty) {
-      sql = `insert into CurOddsInfo(tid,GameID,BetType,SubType,Num,Odds,MaxOdds)
-          SELECT ${tid} tid,d.GameID,d.BetType,d.SubType,d.Num,b.DfRate Odds,TopRate MaxOdds
+      sql = `insert into CurOddsInfo(tid,GameID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps)
+          SELECT ${tid} tid,d.GameID,d.BetType,d.SubType,d.Num,b.DfRate Odds,TopRate MaxOdds,1 isStop,b.Steps
       FROM dfOddsItems d left join BasePayRate b on d.GameID=b.GameID and d.BetType = b.BetType and d.SubType = b.SubType
       where d.GameID= ${GameID}
       `;
@@ -234,10 +234,11 @@ export async function getCurTermId(GameID: number|string, conn: mariadb.PoolConn
 export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: number, conn: mariadb.PoolConnection): Promise<any> {
   const gameStoped: boolean = await chkTermIsSettled(GameID, conn, tid);
   // console.log("getCurOddsInfo gameStoped:", gameStoped);
-  const sql = `select UNIX_TIMESTAMP(OID) OID,BetType,SubType,Num,Odds,MaxOdds,isStop,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and UNIX_TIMESTAMP(OID) > ?`;
+  const sql = `select UNIX_TIMESTAMP(OID) OID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and UNIX_TIMESTAMP(OID) > ?`;
   const ans = {};
   const res = await doQuery(sql, conn, [tid, GameID, MaxOddsID]);
   if (res) {
+      // console.log("getCurOddsInfo", res);
       res.map((itm) => {
           if (!ans[itm.BetType]) { ans[itm.BetType] = {}; }
           const tmp = {
@@ -246,6 +247,7 @@ export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOdds
               MaxOdds: itm.MaxOdds,
               SubType: itm.SubType,
               isStop: itm.isStop | (gameStoped ? 1 : 0),
+              Steps: itm.Steps,
               tolW: itm.tolW,
               tolS: itm.tolS,
               tolP: itm.tolP,
