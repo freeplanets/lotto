@@ -86,7 +86,7 @@ function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConne
         nn: "",
         ns: ""
     };
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         conn.query(sql, [GameID, tid]).then((rows) => {
             if (rows.length > 0) {
                 lg.sno = rows[0].TermID;
@@ -96,6 +96,7 @@ function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConne
             resolve(lg);
         }).catch((err) => {
             console.log("getLastGame:", err);
+            reject(err);
         });
     });
 }

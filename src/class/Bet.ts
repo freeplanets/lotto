@@ -511,14 +511,14 @@ export class Bet implements IBet {
             isParlay,NoAdjust,TopRate,Steps,TopPay,TotalNums,UseAvg,
             SingleNum,UnionNum,MinHand,MaxHand,BetForChange,ChangeStart,PerStep,StepsGroup
             from BasePayRate where GameID=${this.GameID} and BetType in (${BetTypes.join(",")})`;
-        return new Promise(async (resolve) => {
+        return new Promise(async (resolve, reject) => {
             // console.log("getOpParams", sql);
-            await this.conn.query(sql).then((res) => {
+            this.conn.query(sql).then((res) => {
                 // console.log("getOpParams", res);
                 resolve(res);
             }).catch((err) => {
                 console.log("getOpParams error:", err);
-                resolve();
+                reject(err);
             });
         });
     }
