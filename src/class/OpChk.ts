@@ -282,16 +282,16 @@ export class OpChk {
         return avg;
     }
     private calBetforChange(tolSPlusAmt: number) {
-        const pSt = this.op.PerStep ? this.op.PerStep : 0;
+        //const pSt = this.op.PerStep ? this.op.PerStep : 0;
         const st = this.op.Steps ? this.op.Steps : 0;
         if (this.op.StepsGroup) {
             const StG: IStepG[] = JSON.parse(this.op.StepsGroup);
             if (StG.length > 0) {
                 const steps = this.getStepsFromSG(StG, tolSPlusAmt);
-                return steps * pSt;
+                return steps;
             }
         }
-        return pSt * st;
+        return st;
     }
     private getStepsFromSG(stg: IStepG[], v: number): number {
         let steps: number = 0;
