@@ -36,6 +36,13 @@ interface IUnionTotal {
     Num: string;
     Amount: number;
 }
+interface IUdOdds {
+    tid: number;
+    GameID: number;
+    BetType: number;
+    Num: number;
+    Odds: number;
+}
 export const enum ErrCode {
     PASS = 0,
     LESS_MIN_HAND = 1,
@@ -57,7 +64,7 @@ export class OpChk {
     private MCurOT: ICurOddsT[] = [];
     private AvgT: INumAvgle[] = [];
     private UnT: IUnionTotal[] = [];
-    private BetC: string[] = [];
+    private BetC: IUdOdds[] = [];
     private MoreOdds: number[] = [8, 72, 10, 73];
     constructor(private GInfo: IGame, private tid: number, private UserID: number, private ops: IBasePayRateItm[], private isParlay: boolean, private NumAvg?: INumAvg[] ) {}
     public ChkData(dt: INumData , Odds: ICurOddsData) {
@@ -247,7 +254,7 @@ export class OpChk {
         this.UnT.push(tmpM);
     }
     private chkBetForChange(dt: INumData , Odds: ICurOddsData): number {
-        // console.log("chkBetForChange", dt, Odds, this.op);
+        //console.log("chkBetForChange", dt, Odds, this.op);
         if (!this.op.NoAdjust) {
             if (this.op.BetForChange) {
                 let avg: number = 0;
@@ -255,21 +262,37 @@ export class OpChk {
                 if (this.op.UseAvg) {
                     avg = this.getAvg(dt.BetType as number);
                     base = dt.Amt + Odds.tolS;
-                    console.log("chkavg", base, avg);
+                    //console.log("chkavg", base, avg);
                     if (base < avg) {
                         return ErrCode.PASS;
                     }
                 }
                 const ChangeStart: number = this.op.ChangeStart ? this.op.ChangeStart : 0;
                 const letfAmt = (Odds.tolS - avg - ChangeStart) % this.op.BetForChange;
-                // console.log("chkchange", letfAmt , dt.Amt, ChangeStart, this.op.BetForChange);
+                //console.log("chkchange", letfAmt , dt.Amt, ChangeStart, this.op.BetForChange);
                 if ((letfAmt + dt.Amt) >= this.op.BetForChange) {
                     const chgOdds = this.calBetforChange(Odds.tolS + dt.Amt);
-                    // console.log("chgOdds", chgOdds);
-                    this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${dt.Num},${chgOdds}`);
+                    //console.log("chgOdds", chgOdds);
+                    const udodd: IUdOdds = {
+                        tid: this.tid,
+                        GameID: this.op.GameID as number,
+                        BetType: this.op.BetType as number,
+                        Num: dt.Num,
+                        Odds: chgOdds,
+                    };
+                    this.BetC.push(udodd);
+                    // this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${dt.Num},${chgOdds}`);
                     if (this.GInfo.BothSideAdjust && this.op.TotalNums === 2) {  // 雙面連動
                         const xNum: number = getOtherSide(dt.Num);
-                        this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${xNum},${-1 * chgOdds}`);
+                        const xudodd: IUdOdds = {
+                            tid: this.tid,
+                            GameID: this.op.GameID as number,
+                            BetType: this.op.BetType as number,
+                            Num: xNum,
+                            Odds: -1 * chgOdds,
+                        };
+                        this.BetC.push(xudodd);
+                        // this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${xNum},${-1 * chgOdds}`);
                     }
                 }
             }
@@ -308,11 +331,22 @@ export class OpChk {
         return steps;
     }
     private async doBetForChagne(conn: mariadb.PoolConnection): Promise<any> {
-        // console.log("doBetForChagne", this.BetC);
+        //console.log("doBetForChagne", this.BetC);
         if (this.BetC.length > 0) {
+            let chk: boolean = true;
+            await Promise.all(this.BetC.map(async (itm: IUdOdds) => {
+                if (chk) {
+                    const sql = `Update CurOddsInfo set Odds=Odds-${itm.Odds} where
+                        tid=${itm.tid} and GameID=${itm.GameID} and BetType=${itm.BetType} and Num=${itm.Num} and MaxOdds>=Odds-${itm.Odds}`;
+                    const ans = await doQuery(sql, conn);
+                    chk = !!ans;
+                }
+            }));
+            /*
             const  sql: string = `insert into CurOddsInfo(tid,GameID,BetType,Num,Odds)
-                values(${this.BetC.join("),(")}) on duplicate key update Odds=Odds-values(Odds)`;
+                values(${this.BetC.join("),(")}) on duplicate key update Odds=values(Odds)`;
             return await doQuery(sql, conn);
+            */
         }
         return true;
     }
