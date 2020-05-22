@@ -258,7 +258,7 @@ export class OpChk {
                         return ErrCode.PASS;
                     }
                 }
-                let ChangeStart:number= this.op.ChangeStart ? this.op.ChangeStart : 0;
+                const ChangeStart: number = this.op.ChangeStart ? this.op.ChangeStart : 0;
                 const letfAmt = (Odds.tolS - avg - ChangeStart) % this.op.BetForChange;
                 if ((letfAmt + dt.Amt) >= this.op.BetForChange) {
                     const chgOdds = this.calBetforChange(Odds.tolS + dt.Amt);
