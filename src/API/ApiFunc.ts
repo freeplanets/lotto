@@ -104,8 +104,8 @@ export async function CreateOddsData(GameID: string|number, tid: number, conn: m
       msg.debug =  sql + ">>" + params.join(",");
   });
   if (!isEmpty) {
-      sql = `insert into CurOddsInfo(tid,GameID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps)
-          SELECT ${tid} tid,d.GameID,d.BetType,d.SubType,d.Num,b.DfRate Odds,TopRate MaxOdds,1 isStop,b.Steps
+      sql = `insert into CurOddsInfo(tid,GameID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps,PerStep)
+          SELECT ${tid} tid,d.GameID,d.BetType,d.SubType,d.Num,b.DfRate Odds,TopRate MaxOdds,1 isStop,b.Steps,b.PerStep
       FROM dfOddsItems d left join BasePayRate b on d.GameID=b.GameID and d.BetType = b.BetType and d.SubType = b.SubType
       where d.GameID= ${GameID}
       `;
@@ -234,7 +234,7 @@ export async function getCurTermId(GameID: number|string, conn: mariadb.PoolConn
 export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: number, conn: mariadb.PoolConnection): Promise<any> {
   const gameStoped: boolean = await chkTermIsSettled(GameID, conn, tid);
   // console.log("getCurOddsInfo gameStoped:", gameStoped);
-  const sql = `select UNIX_TIMESTAMP(OID) OID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and UNIX_TIMESTAMP(OID) > ?`;
+  const sql = `select UNIX_TIMESTAMP(OID) OID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps,PerStep,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and UNIX_TIMESTAMP(OID) > ?`;
   const ans = {};
   const res = await doQuery(sql, conn, [tid, GameID, MaxOddsID]);
   if (res) {
@@ -248,6 +248,7 @@ export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOdds
               SubType: itm.SubType,
               isStop: itm.isStop | (gameStoped ? 1 : 0),
               Steps: itm.Steps,
+              PerStep: itm.PerStep,
               tolW: itm.tolW,
               tolS: itm.tolS,
               tolP: itm.tolP,
