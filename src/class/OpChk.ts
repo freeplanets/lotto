@@ -254,7 +254,7 @@ export class OpChk {
         this.UnT.push(tmpM);
     }
     private chkBetForChange(dt: INumData , Odds: ICurOddsData): number {
-        //console.log("chkBetForChange", dt, Odds, this.op);
+        // console.log("chkBetForChange", dt, Odds, this.op);
         if (!this.op.NoAdjust) {
             if (this.op.BetForChange) {
                 let avg: number = 0;
@@ -262,17 +262,17 @@ export class OpChk {
                 if (this.op.UseAvg) {
                     avg = this.getAvg(dt.BetType as number);
                     base = dt.Amt + Odds.tolS;
-                    //console.log("chkavg", base, avg);
+                    // console.log("chkavg", base, avg);
                     if (base < avg) {
                         return ErrCode.PASS;
                     }
                 }
                 const ChangeStart: number = this.op.ChangeStart ? this.op.ChangeStart : 0;
                 const letfAmt = (Odds.tolS - avg - ChangeStart) % this.op.BetForChange;
-                //console.log("chkchange", letfAmt , dt.Amt, ChangeStart, this.op.BetForChange);
+                // console.log("chkchange", letfAmt , dt.Amt, ChangeStart, this.op.BetForChange);
                 if ((letfAmt + dt.Amt) >= this.op.BetForChange) {
                     const chgOdds = this.calBetforChange(Odds.tolS + dt.Amt);
-                    //console.log("chgOdds", chgOdds);
+                    // console.log("chgOdds", chgOdds);
                     const udodd: IUdOdds = {
                         tid: this.tid,
                         GameID: this.op.GameID as number,
@@ -331,7 +331,7 @@ export class OpChk {
         return steps;
     }
     private async doBetForChagne(conn: mariadb.PoolConnection): Promise<any> {
-        //console.log("doBetForChagne", this.BetC);
+        // console.log("doBetForChagne", this.BetC);
         if (this.BetC.length > 0) {
             let chk: boolean = true;
             await Promise.all(this.BetC.map(async (itm: IUdOdds) => {
