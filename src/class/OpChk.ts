@@ -247,6 +247,7 @@ export class OpChk {
         this.UnT.push(tmpM);
     }
     private chkBetForChange(dt: INumData , Odds: ICurOddsData): number {
+        // console.log("chkBetForChange", dt, Odds, this.op);
         if (!this.op.NoAdjust) {
             if (this.op.BetForChange) {
                 let avg: number = 0;
@@ -254,14 +255,17 @@ export class OpChk {
                 if (this.op.UseAvg) {
                     avg = this.getAvg(dt.BetType as number);
                     base = dt.Amt + Odds.tolS;
+                    console.log("chkavg", base, avg);
                     if (base < avg) {
                         return ErrCode.PASS;
                     }
                 }
                 const ChangeStart: number = this.op.ChangeStart ? this.op.ChangeStart : 0;
                 const letfAmt = (Odds.tolS - avg - ChangeStart) % this.op.BetForChange;
+                // console.log("chkchange", letfAmt , dt.Amt, ChangeStart, this.op.BetForChange);
                 if ((letfAmt + dt.Amt) >= this.op.BetForChange) {
                     const chgOdds = this.calBetforChange(Odds.tolS + dt.Amt);
+                    // console.log("chgOdds", chgOdds);
                     this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${dt.Num},${chgOdds}`);
                     if (this.GInfo.BothSideAdjust && this.op.TotalNums === 2) {  // 雙面連動
                         const xNum: number = getOtherSide(dt.Num);
@@ -289,6 +293,7 @@ export class OpChk {
             const StG: IStepG[] = JSON.parse(this.op.StepsGroup);
             if (StG.length > 0) {
                 const steps = this.getStepsFromSG(StG, tolSPlusAmt);
+                // console.log("calBetforChange", st, steps, StG);
                 return steps;
             }
         }
@@ -298,11 +303,12 @@ export class OpChk {
         let steps: number = 0;
         for (let i = 0, n = stg.length; i < n; i++) {
             if (stg[i].Start > v) { break; }
-            steps = stg[i].Start;
+            steps = stg[i].Step;
         }
         return steps;
     }
     private async doBetForChagne(conn: mariadb.PoolConnection): Promise<any> {
+        // console.log("doBetForChagne", this.BetC);
         if (this.BetC.length > 0) {
             const  sql: string = `insert into CurOddsInfo(tid,GameID,BetType,Num,Odds)
                 values(${this.BetC.join("),(")}) on duplicate key update Odds=Odds-values(Odds)`;
