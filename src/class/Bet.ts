@@ -264,7 +264,7 @@ export class Bet implements IBet {
             const iNumD: INumData = {
                 Num: parseInt(tmp[0], 10),
                 OddsID: parseInt(tmp[1], 10),
-                Amt: 0
+                Amt
             };
             arrNum[BetType].push(iNumD.Num);
             // SNB.Content.push(iNumD);
@@ -283,7 +283,7 @@ export class Bet implements IBet {
             }
             */
         }
-        console.log("Parlay data:", tmpNums, ans);
+        // console.log("Parlay data:", tmpNums, ans);
         // tmpNums.map((itm) => {
         for (let i = 0, n = tmpNums.length; i < n; i++) {
             const itm = tmpNums[i];
@@ -370,7 +370,7 @@ export class Bet implements IBet {
                         odds = odds + NumOdd[n];
                         oddsg.push(NumOdd[n]);
                         if (arrNum[BetType].length > setsN.length) {
-                            console.log("Odds1", nn, NumOdd[100 + nn], NumOdd);
+                            //console.log("Odds1", nn, NumOdd[100 + nn], NumOdd);
                             odds1 = odds1 + NumOdd[100 + nn];
                             oddsg1.push(NumOdd[100 + nn]);
                             // 三中二額外處理

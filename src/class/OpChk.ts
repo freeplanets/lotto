@@ -79,6 +79,7 @@ export class OpChk {
             }
         }
         let chk: number;
+        console.log("ChkData", dt);
         chk = this.lessMinHand(chkAmt);
         if (chk !== ErrCode.PASS) { return chk; }
         chk = this.overMaxHand(chkAmt);
@@ -132,19 +133,21 @@ export class OpChk {
         return !!doBFC;
     }
     public overUnionNum(itms: IBetTable[], UnionTotals: IStrKeyNumer): number {
+        let err: number = ErrCode.PASS;
         if (this.op.UnionNum) {
             const UnionNum: number = this.op.UnionNum;
             itms.map((itm) => {
                 if (itm.Amt + UnionTotals[itm.Num] > UnionNum) {
-                    return ErrCode.OVER_UNION_NUM;
+                    err = ErrCode.OVER_UNION_NUM;
                 }
             });
         }
-        return ErrCode.PASS;
+        return err;
     }
     private lessMinHand(v: number): number {
         if (this.op.MinHand) {
             if (v < this.op.MinHand) {
+                console.log("lessMinHand", this.op.MinHand, v);
                 return ErrCode.LESS_MIN_HAND;
             }
         }
@@ -161,6 +164,7 @@ export class OpChk {
     private overSingleNum(v: number, NumTotal: number): number {
         if (this.op.SingleNum) {
             if ((v + NumTotal) > this.op.SingleNum) {
+                // console.log("overSingleNum", v, typeof(v), NumTotal, typeof(NumTotal), this.op.SingleNum, typeof(this.op.SingleNum));
                 return ErrCode.OVER_SINGLE_NUM;
             }
         }

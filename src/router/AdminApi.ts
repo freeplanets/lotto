@@ -724,7 +724,7 @@ app.post("/member/mwagerjn", async (req, res) => {
   // const btrans = await conn.beginTransaction();
   // console.log("Begin:", btrans);
   const snb: Bet = new Bet(UserID, Account, UpId, tid, GameID, PayClassID, conn);
-  const ans: IMsg = await snb.Parlay(param.wgtype, param.OddsID, param.JoinNumber, param.StakeMoney);
+  const ans: IMsg = await snb.Parlay(parseInt(param.wgtype, 10), param.OddsID, param.JoinNumber, parseInt(param.StakeMoney, 10));
   // if (ans.warningStatus === 0) {
       /*
   if (ans.ErrNo === 0) {
