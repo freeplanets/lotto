@@ -50,6 +50,7 @@ export const enum ErrCode {
     OVER_SINGLE_NUM = 3,
     OVER_UNION_NUM = 4,
     NUM_STOPED = 5,
+    NO_CREDIT = 6
 }
 /**
  * 六合彩類 BetType:8,72,10,73 有雙賠率,第二賠號碼加 100
@@ -258,7 +259,7 @@ export class OpChk {
         this.UnT.push(tmpM);
     }
     private chkBetForChange(dt: INumData , Odds: ICurOddsData): number {
-        // console.log("chkBetForChange", dt, Odds, this.op);
+        console.log("chkBetForChange", dt, Odds, this.op);
         if (!this.op.NoAdjust) {
             if (this.op.BetForChange) {
                 let avg: number = 0;
@@ -273,10 +274,10 @@ export class OpChk {
                 }
                 const ChangeStart: number = this.op.ChangeStart ? this.op.ChangeStart : 0;
                 const letfAmt = (Odds.tolS - avg - ChangeStart) % this.op.BetForChange;
-                // console.log("chkchange", letfAmt , dt.Amt, ChangeStart, this.op.BetForChange);
+                console.log("chkchange", letfAmt , dt.Amt, ChangeStart, this.op.BetForChange, avg);
                 if ((letfAmt + dt.Amt) >= this.op.BetForChange) {
                     const chgOdds = this.calBetforChange(Odds.tolS + dt.Amt);
-                    // console.log("chgOdds", chgOdds);
+                    console.log("chgOdds", chgOdds);
                     const udodd: IUdOdds = {
                         tid: this.tid,
                         GameID: this.op.GameID as number,
@@ -320,8 +321,8 @@ export class OpChk {
             const StG: IStepG[] = JSON.parse(this.op.StepsGroup);
             if (StG.length > 0) {
                 const steps = this.getStepsFromSG(StG, tolSPlusAmt);
-                // console.log("calBetforChange", st, steps, StG);
-                return steps;
+                console.log("calBetforChange", st, steps, StG);
+                if (steps) { return steps; }
             }
         }
         return st;
@@ -329,6 +330,7 @@ export class OpChk {
     private getStepsFromSG(stg: IStepG[], v: number): number {
         let steps: number = 0;
         for (let i = 0, n = stg.length; i < n; i++) {
+            stg[i].Start = typeof(stg[i].Start) === "string" ?  parseInt(stg[i].Start + "" , 10) : stg[i].Start;
             if (stg[i].Start > v) { break; }
             steps = stg[i].Step;
         }

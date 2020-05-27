@@ -521,8 +521,16 @@ app.get("/getTerms", async (req, res) => {
     return;
   }
   const param = req.query;
-  const sql = "select * from Terms where GameID=? order by id desc limit 0,10";
-  await conn.query(sql, [param.GameID]).then((rows) => {
+  const pa: string[] = [];
+  let sql = "select * from Terms where GameID=? ";
+  pa.push(param.GameID);
+  if (param.SDate) {
+      sql = sql + " and PDate=? ";
+      pa.push(param.SDate);
+  }
+  sql = sql + "order by id desc limit 0,10";
+  console.log("getTerms", sql, pa);
+  await conn.query(sql, pa).then((rows) => {
       // console.log("getTerms", rows);
       msg.data = rows;
   }).catch((err) => {

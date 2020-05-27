@@ -333,7 +333,7 @@ export class Bet implements IBet {
         };
         const balance = await getUserCredit(this.UserID, this.conn);
         if (bh.Total > balance) {
-            msg.ErrNo = 3;
+            msg.ErrNo = ErrCode.NO_CREDIT;
             msg.ErrCon = "Insufficient credit";
             return msg;
         }
@@ -370,7 +370,7 @@ export class Bet implements IBet {
                         odds = odds + NumOdd[n];
                         oddsg.push(NumOdd[n]);
                         if (arrNum[BetType].length > setsN.length) {
-                            //console.log("Odds1", nn, NumOdd[100 + nn], NumOdd);
+                            // console.log("Odds1", nn, NumOdd[100 + nn], NumOdd);
                             odds1 = odds1 + NumOdd[100 + nn];
                             oddsg1.push(NumOdd[100 + nn]);
                             // 三中二額外處理
