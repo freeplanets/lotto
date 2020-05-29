@@ -31,7 +31,7 @@ app.get("/login", async (req, res) => {
             const param = req.query;
             let sql: string = "";
             const params = [param.Account, param.Password];
-            sql = `Select * from User where Account= ? and Password=Password(?)`;
+            sql = `Select * from Member where Account= ? and Password=Password(?)`;
             const ans = await doQuery(sql, conn, params);
             if (ans) {
                 if (ans.length > 0) {
@@ -39,7 +39,7 @@ app.get("/login", async (req, res) => {
                 }
             } else {
                 msg.ErrNo = 9;
-                msg.ErrCon = "User not found";
+                msg.ErrCon = "Member not found";
             }
             conn.release();
         } else {

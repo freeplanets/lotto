@@ -26,7 +26,7 @@ export async function ModifyCredit(uid: number, Account: string,
     return false;
 }
 async function ModifyUserCredit(uid: number, balance: number, conn: Connection) {
-    const sql = `update User set Balance=${balance} where id=${uid}`;
+    const sql = `update Member set Balance=${balance} where id=${uid}`;
     const ans: IDbAns = await conn.query(sql);
     if (ans.affectedRows > 0) { return true; }
     return false;

@@ -5,15 +5,103 @@ import * as afunc from "../API/ApiFunc";
 import {getOddsData, getPayClass, getUsers} from "../API/MemberApi";
 import Zadic from "../class/Animals";
 import {Bet} from "../class/Bet";
+import EDS from "../class/EncDecString";
 import {Gets} from "../class/Gets";
 import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
-import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IGameItem, IMOdds, IMsg } from "../DataSchema/if";
+import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameItem, IMOdds , IMsg } from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
+import {addLoginInfo} from "./agentApi";
 
 const app: Router = express.Router();
+const eds = new EDS(process.env.NODE_ENV);
+interface ILoginInfo {
+    id: number;
+    Account: string;
+    sid?: string;
+}
+app.get("/login", async (req, res) => {
+    // console.log(req.query);
+    const conn: mariadb.PoolConnection|undefined =  await getConnection();
+    const msg: IMsg = { ErrNo: 0};
+    if (conn) {
+        const param = req.query;
+        let sql: string = "";
+        const params = [param.Account, param.Password];
+        sql = `Select * from User where Account= ? and Password=Password(?)`;
+        const ans = await doQuery(sql, conn, params);
+        if (ans) {
+            if (ans.length > 0) {
+                const user: IUser = ans.pop();
+                const info: ILoginInfo = {
+                    id: user.id,
+                    Account: user.Account,
+                };
+                const skey = eds.KeyString;
+                console.log("login skey", skey);
+                const addlog = await addLoginInfo(user.id, user.Account, "0", skey, conn, true);
+                if (addlog) {
+                    if (typeof(addlog) === "object") {
+                        info.sid = addlog.logkey ;
+                    }
+                    msg.data = info;
+                } else {
+                    msg.ErrNo = 9;
+                    msg.ErrCon = "login error!!";
+                }
+            }
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "user not found";
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/logout", async (req, res) => {
+    const conn: mariadb.PoolConnection|undefined =  await getConnection();
+    const msg: IMsg = { ErrNo: 0};
+    if (conn) {
+        const param = req.query;
+        const sql = `update LoginInfo set isActive=0 where uid=? and logkey=?`;
+        const ans = await doQuery(sql, conn, [param.id, param.sid]);
+        if (ans) {
+            msg.data = ans;
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/ChangePassword", async (req, res) => {
+    const conn: mariadb.PoolConnection|undefined =  await getConnection();
+    const msg: IMsg = { ErrNo: 0};
+    if (conn) {
+        const param = req.query;
+        const sql = `update User set Password=PASSWORD(?) where uid=? and Password=PASSWORD(?)`;
+        const ans = await doQuery(sql, conn, [param.NPass, param.id, param.OPass]);
+        if (ans) {
+            msg.data = ans;
+            const dbAns: IDbAns = ans as IDbAns;
+            if (dbAns.affectedRows < 1) {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Fail!!";
+            }
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
 app.get("/getSysInfo", async (req, res) => {
     const conn = await getConnection();
     const msg: IMsg = {ErrNo: 0};
@@ -774,7 +862,7 @@ app.post("/SaveUser", async (req, res) => {
     res.send(JSON.stringify(msg));
     return;
   }
-  const jt: JTable<IUser> = new JTable(conn, "User");
+  const jt: JTable<IUser> = new JTable(conn, "Member");
   const param: IUser = req.body;
   console.log("SaveUser", param);
   let ans;
@@ -1115,7 +1203,7 @@ app.get("/getBetTotal", async (req, res) => {
             });
         }
         if (ids.length > 0) {
-            const sqlusr = `select id,Account from User where id in (${ids.join(",")})`;
+            const sqlusr = `select id,Account from Member where id in (${ids.join(",")})`;
             const usr = await doQuery(sqlusr, conn);
             if (usr) {
                 msg.User = usr;
@@ -1189,5 +1277,8 @@ function getCondTSE(field: string, start?: string, end?: string): string|undefin
         return;
     }
     return ` ${field} BETWEEN '${start} 00:00:00' and '${end} 23:59:59' `;
+}
+async function loginChk(uid: number, Account: string, sid: string, conn: mariadb.PoolConnection, UpId?: number|string) {
+    const sql = `insert into LoginInfo(uid,Account,AgentID,logkey,isActive) value()`;
 }
 export default app;

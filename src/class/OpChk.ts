@@ -259,7 +259,7 @@ export class OpChk {
         this.UnT.push(tmpM);
     }
     private chkBetForChange(dt: INumData , Odds: ICurOddsData): number {
-        console.log("chkBetForChange", dt, Odds, this.op);
+        // console.log("chkBetForChange", dt, Odds, this.op);
         if (!this.op.NoAdjust) {
             if (this.op.BetForChange) {
                 let avg: number = 0;
@@ -273,9 +273,10 @@ export class OpChk {
                     }
                 }
                 const ChangeStart: number = this.op.ChangeStart ? this.op.ChangeStart : 0;
-                const letfAmt = (Odds.tolS - avg - ChangeStart) % this.op.BetForChange;
-                console.log("chkchange", letfAmt , dt.Amt, ChangeStart, this.op.BetForChange, avg);
-                if ((letfAmt + dt.Amt) >= this.op.BetForChange) {
+                const leftAmt = (Odds.tolS - avg - ChangeStart) % this.op.BetForChange;
+                console.log("chkchange", leftAmt , dt.Amt, ChangeStart, this.op.BetForChange, avg, Odds.tolS, Odds.Odds);
+                console.log("Chk Types", typeof(leftAmt), typeof(dt.Amt), typeof(ChangeStart), typeof(this.op.BetForChange), typeof(avg), typeof(Odds.tolS));
+                if ((leftAmt + dt.Amt) >= this.op.BetForChange) {
                     const chgOdds = this.calBetforChange(Odds.tolS + dt.Amt);
                     console.log("chgOdds", chgOdds);
                     const udodd: IUdOdds = {
@@ -344,6 +345,7 @@ export class OpChk {
                 if (chk) {
                     const sql = `Update CurOddsInfo set Odds=Odds-${itm.Odds} where
                         tid=${itm.tid} and GameID=${itm.GameID} and BetType=${itm.BetType} and Num=${itm.Num} and MaxOdds>=Odds-${itm.Odds}`;
+                    console.log("doBetForChange:", sql);
                     const ans = await doQuery(sql, conn);
                     chk = !!ans;
                 }

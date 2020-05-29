@@ -337,7 +337,7 @@ function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, conn: mari
         from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group by UserID,GameID,tid`;
     sql = sql + " on duplicate key update DepWD=values(DepWD)";
     ans.common.push(sql);
-    sql = "insert into User(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid";
+    sql = "insert into Member(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid";
     sql = sql + " on duplicate key update Balance=values(Balance)";
     ans.common.push(sql);
 

@@ -185,7 +185,7 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
     const usr: IUser | boolean = await getUser(param.userCode, AgentId, conn);
     // console.log("addUser getUser:", usr);
     if (usr) { return true; }
-    const sql = `Insert into User(Account,Password,Nickname,Types,UpId,PayClassID) values(
+    const sql = `Insert into Member(Account,Password,Nickname,Types,UpId,PayClassID) values(
         '${param.userCode}',Password('${new Date().getTime()}'),'${param.nickName}',0,${AgentId},${PayClassID}
     )`;
     const ans: IDbAns = await conn.query(sql);
@@ -196,11 +196,11 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
         return false;
     }
 }
-async function addLoginInfo(uid: number, Account: string, AgentId: string, skey: string, conn: Connection) {
-    const act1 = await chkLoginAction(uid, conn);
+export async function addLoginInfo(uid: number, Account: string, AgentId: string, skey: string, conn: Connection, isAdmin?: boolean) {
+    const act1 = await chkLoginAction(uid, conn, isAdmin);
     console.log("after chkLoginAction", act1);
     if (act1) {
-        const act2 = await chkLogin(uid, conn);
+        const act2 = await chkLogin(uid, conn, isAdmin);
         if (act2) {
             console.log("after chkLogin", act2);
             return {logkey: act2.logkey};
@@ -218,7 +218,7 @@ async function addLoginInfo(uid: number, Account: string, AgentId: string, skey:
 function getUser(Account: string, AgentId: string, conn: Connection ): Promise<IUser|boolean> {
     return new Promise(async (resolve, reject) => {
         const param: {[key: number]: any} = [Account, AgentId];
-        const sql = "select * from User where Account=? and UpId=?";
+        const sql = "select * from Member where Account=? and UpId=?";
         conn.query(sql, param).then((rows) => {
             console.log("getUser:", rows.length, sql, param);
             if (rows.length === 0) {
@@ -231,8 +231,8 @@ function getUser(Account: string, AgentId: string, conn: Connection ): Promise<I
         });
     });
 }
-async function getUserLogin( Account: string, skey: string, conn: Connection) {
-    const sql = "select * from LoginInfo where Account=?  and logkey=? and isActive=1";
+async function getUserLogin( Account: string, skey: string, conn: Connection, isAdmin?: boolean) {
+    const sql = `select * from LoginInfo where Account=?  and logkey=? and isActive=1 and AgentID${isAdmin ? "=" : "<>"}0`;
     const rows = await conn.query(sql, [Account, skey]);
     // console.log("getUserLogin", rows, sql);
     if (rows[0]) {
@@ -241,14 +241,14 @@ async function getUserLogin( Account: string, skey: string, conn: Connection) {
         return false;
     }
 }
-async function chkLogin(uid: number, conn: Connection) {
-    const sql = "select * from LoginInfo where uid=? and isActive=1";
+async function chkLogin(uid: number, conn: Connection, isAdmin?: boolean) {
+    const sql = `select * from LoginInfo where uid=? and isActive=1 and AgentID${isAdmin ? "=" : "<>"}0`;
     const ans = await conn.query(sql, [uid]);
-    // console.log("chkLogin", ans);
+    console.log("chkLogin", sql);
     if (ans.length > 0) { return ans[0]; }
     return false;
 }
-async function chkLoginAction(uid: number, conn: Connection) {
+async function chkLoginAction(uid: number, conn: Connection, isAdmin?: boolean) {
     /*
     const ts = new Date().getTime();
     let sql: string = `select * from LoginInfo where uid=${uid} order by id desc limit 0,1`;
@@ -257,7 +257,9 @@ async function chkLoginAction(uid: number, conn: Connection) {
         console.log(rows, ts, rows[0].timeproc - ts);
     }
     */
-    const sql = `update LoginInfo set isActive=0 where uid=${uid} and isActive=1 and CURRENT_TIMESTAMP-timeproc>${staytime}`;
+    const sql = `update LoginInfo set isActive=0 where uid=${uid} and isActive=1
+        and AgentID${isAdmin ? "=" : "<>"}0
+        and CURRENT_TIMESTAMP-timeproc>${staytime}`;
     const ans: IDbAns = await conn.query(sql);
     console.log("chkLoginAction", sql, ans);
     if (ans) { return true; }

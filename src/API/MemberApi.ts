@@ -167,14 +167,14 @@ export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonPara
     if (param?.OnlyID) {
         exFields = "";
     }
-    const sql = `select id${exFields} from User where ${cond.join("and")}`;
+    const sql = `select id${exFields} from Member where ${cond.join("and")}`;
     let ans;
     // console.log("getUsers:", sql, param, params);
     await conn.query(sql, params).then((rows) => {
         // console.log("getUsers", rows);
         ans = rows;
     }).catch((err) => {
-        console.log("getUsers error", err);
+        console.log("getMember error", err);
     });
     return ans;
 }
