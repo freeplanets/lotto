@@ -53,6 +53,7 @@ export interface INumData {
     Odds?: string | number;
     Amt: number;
     BetType?: number;
+    TNums?: number;
 }
 export interface IBetContent {
     BetType?: number;

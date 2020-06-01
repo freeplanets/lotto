@@ -229,7 +229,7 @@ export class Bet implements IBet {
         let Chker: OpChk | undefined;
         const Odd: string[] = Odds.split(",");
         const arrNum: INum = {};
-        let BNum = BetParam[BetType];
+        let BNum: number = BetParam[BetType];
         const setsN = Nums.split("|");
         const tmpNums: INumData[] = [];
         const SNB: IBetContent = {
@@ -264,6 +264,7 @@ export class Bet implements IBet {
             const iNumD: INumData = {
                 Num: parseInt(tmp[0], 10),
                 OddsID: parseInt(tmp[1], 10),
+                TNums: BNum,
                 Amt
             };
             arrNum[BetType].push(iNumD.Num);

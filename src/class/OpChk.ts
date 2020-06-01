@@ -277,10 +277,11 @@ export class OpChk {
                 const chkAmt = Odds.tolS - avg - ChangeStart;
                 if (chkAmt < 0 ) { return ErrCode.PASS; }
                 const leftAmt = chkAmt % this.op.BetForChange;
-                console.log("chkchange", leftAmt , dt.Amt, ChangeStart, this.op.BetForChange, avg, Odds.tolS, Odds.Odds);
+                const Amt = dt.TNums ? dt.Amt / dt.TNums : dt.Amt;
+                console.log("chkchange", leftAmt , Amt, dt.Amt, dt.TNums, ChangeStart, this.op.BetForChange, avg, Odds.tolS, Odds.Odds);
                 // console.log("Chk Types", typeof(leftAmt), typeof(dt.Amt), typeof(ChangeStart), typeof(this.op.BetForChange), typeof(avg), typeof(Odds.tolS));
-                if ((leftAmt + dt.Amt) >= this.op.BetForChange) {
-                    const chgOdds = this.calBetforChange(Odds.tolS + dt.Amt);
+                if ((leftAmt + Amt) >= this.op.BetForChange) {
+                    const chgOdds = this.calBetforChange(Odds.tolS + Amt);
                     console.log("chgOdds", chgOdds);
                     const udodd: IUdOdds = {
                         tid: this.tid,
