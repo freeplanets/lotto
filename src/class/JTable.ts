@@ -151,7 +151,7 @@ export default class JTable<T extends IHasID> {
         const sql = `
             insert into ${this.TableName}(${fields.join(",")}) values${vals.join(",")}
         `;
-        //console.log("JTable Multi Insert:", sql);
+        // console.log("JTable Multi Insert:", sql);
         let ans: IDbAns|undefined;
         await this.conn.query(sql).then((rows) => {
             ans = rows as IDbAns;

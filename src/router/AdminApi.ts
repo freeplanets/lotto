@@ -9,12 +9,13 @@ import EDS from "../class/EncDecString";
 import {Gets} from "../class/Gets";
 import JDate from "../class/JDate";
 import JTable from "../class/JTable";
+import {ErrCode} from "../class/OpChk";
 import {SaveNums} from "../class/Settlement";
 import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameItem, IMOdds , IMsg } from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
-import {addLoginInfo} from "./agentApi";
 
+const staytime: number = 300;   // sec
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
 interface ILoginInfo {
@@ -39,18 +40,17 @@ app.get("/login", async (req, res) => {
                     id: user.id,
                     Account: user.Account,
                 };
-                const skey = eds.KeyString;
-                console.log("login skey", skey);
-                const addlog = await addLoginInfo(user.id, user.Account, "0", skey, conn, true);
-                if (addlog) {
-                    if (typeof(addlog) === "object") {
-                        info.sid = addlog.logkey ;
-                    }
+                const logkey: string|undefined = await setLogin(user.id, user.Account, conn);
+                if (logkey) {
+                    info.sid = logkey ;
                     msg.data = info;
                 } else {
                     msg.ErrNo = 9;
                     msg.ErrCon = "login error!!";
                 }
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "user not found";
             }
         } else {
             msg.ErrNo = 9;
@@ -69,7 +69,7 @@ app.get("/logout", async (req, res) => {
     if (conn) {
         const param = req.query;
         const sql = `update LoginInfo set isActive=0 where uid=? and logkey=?`;
-        const ans = await doQuery(sql, conn, [param.id, param.sid]);
+        const ans = await doQuery(sql, conn, [param.UserID, param.sid]);
         if (ans) {
             msg.data = ans;
         }
@@ -80,20 +80,28 @@ app.get("/logout", async (req, res) => {
     }
     res.send(JSON.stringify(msg));
 });
-app.get("/ChangePassword", async (req, res) => {
+app.post("/ChangePassword", async (req, res) => {
     const conn: mariadb.PoolConnection|undefined =  await getConnection();
     const msg: IMsg = { ErrNo: 0};
     if (conn) {
-        const param = req.query;
-        const sql = `update User set Password=PASSWORD(?) where uid=? and Password=PASSWORD(?)`;
-        const ans = await doQuery(sql, conn, [param.NPass, param.id, param.OPass]);
-        if (ans) {
-            msg.data = ans;
-            const dbAns: IDbAns = ans as IDbAns;
-            if (dbAns.affectedRows < 1) {
-                msg.ErrNo = 9;
-                msg.ErrCon = "Fail!!";
+        const param = req.body;
+        console.log("ChangePassword param", param);
+        const chk = await chkLogin(param.UserID, param.sid, conn);
+        if (chk) {
+            const sql = `update User set Password=PASSWORD(?) where id=? and Password=PASSWORD(?)`;
+            const ans = await doQuery(sql, conn, [param.NPassword, param.UserID, param.OPassword]);
+            if (ans) {
+                console.log("ChangePassword", ans);
+                msg.data = ans;
+                const dbAns: IDbAns = ans as IDbAns;
+                if (dbAns.affectedRows < 1) {
+                    msg.ErrNo = 9;
+                    msg.ErrCon = "Fail!!";
+                }
             }
+        } else {
+            msg.ErrNo = ErrCode.NO_LOGIN;
+            msg.ErrCon = "NO LOGIN INFO";
         }
         conn.release();
     } else {
@@ -678,8 +686,11 @@ app.get("/GameList", async (req, res) => {
   const jt: JTable<IGame> = new JTable(conn, "Games");
   const games: IGame[] = await jt.List();
   // console.log("AdminApi /GameList", JSON.stringify(games));
+  if (games) {
+      msg.data = games;
+  }
   conn.release();
-  res.send(JSON.stringify(games));
+  res.send(JSON.stringify(msg));
 });
 app.post("/UpdateGame", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1153,7 +1164,7 @@ app.get("/getBetHeaders", async (req, res) => {
             }
             param.UpId = upid;
         }
-        const users = await getUsers(conn, param);
+        const users = await getUsers(conn, param, "Member");
         if (users) {
             users.map((itm) => {
                 uids.push(itm.id);
@@ -1203,7 +1214,8 @@ app.get("/getBetTotal", async (req, res) => {
             });
         }
         if (ids.length > 0) {
-            const sqlusr = `select id,Account from Member where id in (${ids.join(",")})`;
+            const sqlusr = `select id,Account from User where id in (${ids.join(",")})`;
+            // console.log("getBetTotal user", sql);
             const usr = await doQuery(sqlusr, conn);
             if (usr) {
                 msg.User = usr;
@@ -1278,7 +1290,37 @@ function getCondTSE(field: string, start?: string, end?: string): string|undefin
     }
     return ` ${field} BETWEEN '${start} 00:00:00' and '${end} 23:59:59' `;
 }
-async function loginChk(uid: number, Account: string, sid: string, conn: mariadb.PoolConnection, UpId?: number|string) {
-    const sql = `insert into LoginInfo(uid,Account,AgentID,logkey,isActive) value()`;
+async function setLogin(uid: number, Account: string, conn: mariadb.PoolConnection, UpId?: number): Promise<string|undefined> {
+    const upid: number = UpId ? UpId : 0;
+    let sql: string = `update LoginInfo set isActive=0 where uid=${uid} and AgentID=${upid}`;
+    let ans = await doQuery(sql, conn);
+    const logkey = eds.KeyString;
+    if (ans) {
+        sql = `insert into LoginInfo(uid,Account,AgentID,logkey,isActive) value(${uid},'${Account}',${upid},'${logkey}',1)`;
+        ans = await doQuery(sql, conn);
+        if (ans) {
+            return logkey;
+        }
+    }
+    return;
+}
+async function chkLogin(uid: number, sid: string, conn: mariadb.PoolConnection, UpId?: number) {
+    let ans = await setLoginStatus(uid, sid, conn, UpId);
+    if (ans) {
+        console.log("setLoginStatus ans", ans);
+        const sql = `select * from LoginInfo where uid=${uid} and isActive=1 and AgentID=${UpId ? UpId : 0} and logkey='${sid}'`;
+        ans = await doQuery(sql, conn);
+        if (ans) {
+            // console.log("chkLogin", sql, ans);
+            return true;
+        }
+    }
+    return false;
+}
+async function setLoginStatus(uid: number, sid: string, conn: mariadb.PoolConnection, UpId?: number) {
+    const sql = `update LoginInfo set isActive=0 where uid=${uid} and isActive=1
+        and AgentID=${UpId ? UpId : 0} and logkey='${sid}'
+        and CURRENT_TIMESTAMP-timeproc>${staytime}`;
+    return await doQuery(sql, conn);
 }
 export default app;

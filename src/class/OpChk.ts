@@ -50,7 +50,8 @@ export const enum ErrCode {
     OVER_SINGLE_NUM = 3,
     OVER_UNION_NUM = 4,
     NUM_STOPED = 5,
-    NO_CREDIT = 6
+    NO_CREDIT = 6,
+    NO_LOGIN = 7
 }
 /**
  * 六合彩類 BetType:8,72,10,73 有雙賠率,第二賠號碼加 100
@@ -273,9 +274,11 @@ export class OpChk {
                     }
                 }
                 const ChangeStart: number = this.op.ChangeStart ? this.op.ChangeStart : 0;
-                const leftAmt = (Odds.tolS - avg - ChangeStart) % this.op.BetForChange;
+                const chkAmt = Odds.tolS - avg - ChangeStart;
+                if (chkAmt < this.op.BetForChange ) { return ErrCode.PASS; }
+                const leftAmt = chkAmt % this.op.BetForChange;
                 console.log("chkchange", leftAmt , dt.Amt, ChangeStart, this.op.BetForChange, avg, Odds.tolS, Odds.Odds);
-                console.log("Chk Types", typeof(leftAmt), typeof(dt.Amt), typeof(ChangeStart), typeof(this.op.BetForChange), typeof(avg), typeof(Odds.tolS));
+                //console.log("Chk Types", typeof(leftAmt), typeof(dt.Amt), typeof(ChangeStart), typeof(this.op.BetForChange), typeof(avg), typeof(Odds.tolS));
                 if ((leftAmt + dt.Amt) >= this.op.BetForChange) {
                     const chgOdds = this.calBetforChange(Odds.tolS + dt.Amt);
                     console.log("chgOdds", chgOdds);

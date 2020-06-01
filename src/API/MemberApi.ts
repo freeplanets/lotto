@@ -140,7 +140,7 @@ async function getOddsItem(GameID: number|string, tid: string, isSettled: number
     return {MaxOID: MaxID, Odds: gameOdds};
 }
 
-export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonParams): Promise<any> {
+export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonParams, tb?: string): Promise<any> {
     const cond: string[] = [];
     const params: any[] = [];
     if (param) {
@@ -167,7 +167,10 @@ export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonPara
     if (param?.OnlyID) {
         exFields = "";
     }
-    const sql = `select id${exFields} from Member where ${cond.join("and")}`;
+    if (!tb) {
+        tb = "User";
+    }
+    const sql = `select id${exFields} from ${tb} where ${cond.join("and")}`;
     let ans;
     // console.log("getUsers:", sql, param, params);
     await conn.query(sql, params).then((rows) => {
