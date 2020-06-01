@@ -278,7 +278,7 @@ export class OpChk {
                 if (chkAmt < 0 ) { return ErrCode.PASS; }
                 const leftAmt = chkAmt % this.op.BetForChange;
                 console.log("chkchange", leftAmt , dt.Amt, ChangeStart, this.op.BetForChange, avg, Odds.tolS, Odds.Odds);
-                //console.log("Chk Types", typeof(leftAmt), typeof(dt.Amt), typeof(ChangeStart), typeof(this.op.BetForChange), typeof(avg), typeof(Odds.tolS));
+                // console.log("Chk Types", typeof(leftAmt), typeof(dt.Amt), typeof(ChangeStart), typeof(this.op.BetForChange), typeof(avg), typeof(Odds.tolS));
                 if ((leftAmt + dt.Amt) >= this.op.BetForChange) {
                     const chgOdds = this.calBetforChange(Odds.tolS + dt.Amt);
                     console.log("chgOdds", chgOdds);
