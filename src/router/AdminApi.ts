@@ -966,7 +966,7 @@ app.post("/SaveNums", async (req, res) => {
     res.send(JSON.stringify(msg));
     return;
   }
-  const param = req.body.params;
+  const param = req.body;
   console.log("SaveNums", param);
   if (!param.GameID) {
       msg.ErrNo = 9;
