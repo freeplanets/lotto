@@ -211,7 +211,7 @@ export interface ICommonParams {
     EDate?: string;
     UpId?: number;
     OnlyID?: boolean;
-    [key: string]: number|string|boolean|undefined;
+    [key: string]: number|string|boolean|IParamLog[]|undefined;
 }
 
 export interface IBasePayRateItm {
@@ -248,4 +248,13 @@ export interface IStepG {
 export interface INumAvg {
     BetType: number;
     Amount: number;
+}
+export interface IParamLog {
+    id: number;
+    tb: string;
+    uid: number;
+    mykey: string;
+    ovalue: string;
+    nvalue: string;
+    adminid: number;
 }

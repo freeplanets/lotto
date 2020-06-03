@@ -11,7 +11,7 @@ import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {ErrCode} from "../class/OpChk";
 import {SaveNums} from "../class/Settlement";
-import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameItem, IMOdds , IMsg } from "../DataSchema/if";
+import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameItem, IMOdds , IMsg , IParamLog} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 
@@ -518,11 +518,12 @@ app.post("/batch/savePayRate", async (req, res) => {
   });
 });
 app.post("/saveTerms", async (req, res) => {
-  const param: ITerms = req.body;
+  const param: ICommonParams = req.body;
   const msg: IMsg = {
       ErrNo: 0,
       ErrCon: ""
   };
+  let GameID: number|string = 0;
   let ans;
   if (param) {
       if (!param.TermID) {
@@ -532,6 +533,8 @@ app.post("/saveTerms", async (req, res) => {
       if (!param.GameID) {
           msg.ErrNo = 9;
           msg.ErrCon = "TermID is Empty!!";
+      } else {
+          GameID = param.GameID;
       }
   } else {
       msg.ErrNo = 9;
@@ -548,7 +551,7 @@ app.post("/saveTerms", async (req, res) => {
     res.send(JSON.stringify(msg));
     return;
   }
-  ans = await afunc.chkTermIsSettled(param.GameID, conn);
+  ans = await afunc.chkTermIsSettled(GameID, conn);
   // console.log("chkTermIsSettled", ans);
   // res.send(JSON.stringify(ans));
   if (!ans) {
@@ -572,11 +575,14 @@ app.post("/saveTerms", async (req, res) => {
       }
       let tid;
       await conn.beginTransaction();
-      await conn.query(sql, params).then((row) => {
+      await conn.query(sql, params).then(async (row) => {
           // res.send(JSON.stringify(row));
           ans = row;
           msg.ErrCon = row;
           tid = row.insertId;
+          if (param.ParamLog) {
+            await saveParamLog(param.ParamLog as IParamLog[], conn);
+          }
       }).catch((err) => {
           // ans=err;
           console.log(err);
@@ -587,7 +593,7 @@ app.post("/saveTerms", async (req, res) => {
       });
       if (ans) {
           if (!param.id) {
-              const codAns = await afunc.CreateOddsData(param.GameID, tid, conn);
+              const codAns = await afunc.CreateOddsData(GameID, tid, conn);
               if (codAns.ErrNo !== 0) {
                       await conn.rollback();
                       conn.release();
@@ -1246,6 +1252,25 @@ app.get("/getLastTerm", async (req, res) => {
     }
     res.send(JSON.stringify(msg));
 });
+app.get("/getEditRecord", async (req, res) => {
+    const msg: IMsg = { ErrNo: 0 };
+    const conn = await getConnection();
+    if (conn) {
+        const param = req.query;
+        const sql = "select * from ParamsLog where uid=? and tb=?";
+        const ans = await doQuery(sql, conn, [param.id, param.tb]);
+        if (ans) {
+            msg.data = ans;
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Data not found";
+        }
+    } else {
+        msg.ErrNo = 9;
+        msg.debug = "db connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
 async function getTermIds(GameID: number, conn: mariadb.PoolConnection): Promise<IMsg> {
     const msg: IMsg = { ErrNo: 0 };
     const sql = `select id,TermID from Terms where GameID=? order by id desc`;
@@ -1322,5 +1347,9 @@ async function setLoginStatus(uid: number, sid: string, conn: mariadb.PoolConnec
         and AgentID=${UpId ? UpId : 0} and logkey='${sid}'
         and CURRENT_TIMESTAMP-timeproc>${staytime}`;
     return await doQuery(sql, conn);
+}
+async function saveParamLog(PLog: IParamLog[], conn: mariadb.PoolConnection) {
+    const jt: JTable<IParamLog> = new JTable(conn, "ParamsLog");
+    return await jt.MultiInsert(PLog);
 }
 export default app;
