@@ -95,6 +95,11 @@ export async function CreateOddsData(GameID: string|number, tid: number, conn: m
       ErrNo: 0,
       ErrCon: "",
   };
+  let stop: number = 1;
+  const isAutoOpen = await isGameAutoOpen(GameID, conn);
+  if (isAutoOpen) {
+      stop = 0;
+  }
   await conn.query(sql, params).then((row) => {
       if (row.affectedRows > 0) { isEmpty = true; }
   }).catch((err) => {
@@ -105,7 +110,7 @@ export async function CreateOddsData(GameID: string|number, tid: number, conn: m
   });
   if (!isEmpty) {
       sql = `insert into CurOddsInfo(tid,GameID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps,PerStep)
-          SELECT ${tid} tid,d.GameID,d.BetType,d.SubType,d.Num,b.DfRate Odds,TopRate MaxOdds,1 isStop,b.Steps,b.PerStep
+          SELECT ${tid} tid,d.GameID,d.BetType,d.SubType,d.Num,b.DfRate Odds,TopRate MaxOdds,${stop} isStop,b.Steps,b.PerStep
       FROM dfOddsItems d left join BasePayRate b on d.GameID=b.GameID and d.BetType = b.BetType and d.SubType = b.SubType
       where d.GameID= ${GameID}
       `;
@@ -273,7 +278,15 @@ export async function getOddsInfo(tid: number, GameID: number, BT: number, Num: 
   }
   return undefined;
 }
-
+export async function isBothSideAdjust(GameID: number, BT: number, conn: mariadb.PoolConnection): Promise<boolean> {
+    const sql = "select g.BothSideAdjust,b.TotalNums from Games g,BasePayRate b where g.id=b.GameID and g.id=? and b.BetType=? order by b.id limit 0,1";
+    const ans = await doQuery(sql, conn, [GameID, BT]);
+    if (ans[0]) {
+        if (ans[0].TotalNums !== 2) { return false; }
+        return !!ans[0].BothSideAdjust;
+    }
+    return false;
+}
 export async function setOdds(tid: number, GameID: number, BT: number, Num: number, Odds: number, UserID: number, conn: mariadb.PoolConnection): Promise<any> {
     // const maxid = new Date().getTime();
     const sql = `update CurOddsInfo set Odds=? where tid=? and GameID=? and BetType=? and Num=?`;
@@ -409,4 +422,13 @@ export async function getLastTerm(GameID: number, conn: mariadb.PoolConnection) 
     const sql = "select * from Terms where GameID=? order by id desc limit 0,1";
     const ans = await doQuery(sql, conn, [GameID]);
     return ans;
+}
+
+async function isGameAutoOpen(GameID: number|string, conn: mariadb.PoolConnection): Promise<boolean> {
+    const sql = "select AutoOpen from Games where id = ?";
+    const ans = await doQuery(sql, conn, [GameID]);
+    if (ans[0]) {
+        if (ans[0].AutoOpen) { return true; }
+    }
+    return false;
 }

@@ -73,6 +73,7 @@ export interface ITerms {
 export interface IGame {
     id: number;
     name: string;
+    OfficeSite: string;
     StopBeforeEnd: string;
     BothSideAdjust: boolean;
     AutoOpen: boolean;
@@ -80,7 +81,8 @@ export interface IGame {
     PDiffColorWave: number;
     DelAfterBet: number;
     DelBeforeEnd: number;
-    LowestBet: number;
-    TopPay: number;
+    // LowestBet: number;
+    // TopPay: number;
+    UseAvgOdds: number;
     GType: string;
 }

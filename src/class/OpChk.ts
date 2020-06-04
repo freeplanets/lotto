@@ -51,7 +51,8 @@ export const enum ErrCode {
     OVER_UNION_NUM = 4,
     NUM_STOPED = 5,
     NO_CREDIT = 6,
-    NO_LOGIN = 7
+    NO_LOGIN = 7,
+    DELETE_TERM_ERR = 8
 }
 /**
  * 六合彩類 BetType:8,72,10,73 有雙賠率,第二賠號碼加 100

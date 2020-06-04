@@ -1,4 +1,6 @@
 import mariadb from "mariadb";
+import {IParamLog} from "../DataSchema/if";
+import {saveParamLog} from "../router/AdminApi";
 import {IExProc} from "./Bet";
 import MSNum, {IMarkSixNums} from "./MSNum";
 import SettleMethods, {GType, ISetl} from "./SettleMethods";
@@ -111,7 +113,7 @@ interface ISqlProc {
     common: string[];
 }
 // 重結 isSettled =3 轉成 status = 4 提供平台視別
-export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection, isSettled?: number) {
+export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection, isSettled?: number, PLog?: IParamLog[]) {
     const imsr: IMSResult = new CMarkSixMum(num).Nums;
     let ans;
     let sql: string = "";
@@ -123,9 +125,13 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     const SettleStatus: number = isSettled ? 3 : 1;
     await conn.beginTransaction();
     sql = `update BetTableEx set Opened=0 where tid=${tid} and GameID=${GameID}`;
-    await conn.query(sql).then((res) => {
+    await conn.query(sql).then(async (res) => {
         console.log("BetTableEx set open zero:", sql, res);
         ans = true;
+        if (PLog) {
+            console.log("SaveNums", PLog);
+            await saveParamLog(PLog, conn);
+        }
     }).catch(async (err) => {
         console.log("WinLose=Amt*-1 err 1", err);
         await conn.rollback();

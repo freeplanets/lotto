@@ -6,6 +6,7 @@ import {getOddsData, getPayClass, getUsers} from "../API/MemberApi";
 import Zadic from "../class/Animals";
 import {Bet} from "../class/Bet";
 import EDS from "../class/EncDecString";
+import {getOtherSide} from "../class/Func";
 import {Gets} from "../class/Gets";
 import JDate from "../class/JDate";
 import JTable from "../class/JTable";
@@ -708,8 +709,13 @@ app.post("/UpdateGame", async (req, res) => {
     return;
   }
   const jt: JTable<IGame> = new JTable(conn, "Games");
-  const param: IGame = req.body;
-  const ans = await jt.Update(param);
+  const param = req.body;
+  const UserID = param.UserID;
+  const sid = param.sid;
+  if (UserID) { delete param.UserID; }
+  if (sid) { delete param.sid; }
+  console.log("UpdateGame", param);
+  const ans = await jt.Update(param as IGame);
   if (ans) {
       msg.data = ans;
   } else {
@@ -983,8 +989,13 @@ app.post("/SaveNums", async (req, res) => {
       msg.ErrCon = "Nums is missing!!";
   }
   if (msg.ErrNo === 0) {
-      const Nums = SaveNums(param.tid, param.GameID, param.Nums, conn, param.isSettled);
+      const Nums = SaveNums(param.tid, param.GameID, param.Nums, conn, param.isSettled, param.ParamLog);
       msg.Data = Nums;
+      /*
+      if (param.ParamLog) {
+        await saveParamLog(param.ParamLog as IParamLog[], conn);
+      }
+      */
   }
   conn.release();
   res.send(JSON.stringify(msg));
@@ -1050,21 +1061,52 @@ app.get("/setOdds", async (req, res) => {
       msg.ErrCon = "Database busy!!";
   } else {
       const param = req.query;
-      console.log("setOdds param", param);
+      // console.log("setOdds param", param);
       if (param.Step) {
           const fOdds: IMOdds|undefined = await afunc.getOddsInfo(param.tid, param.GameID, param.BT, param.Num, conn);
           if (fOdds) {
               // msg.data = ans;
               // const step: number = param.Step;
-              let odds: number = fOdds.Odds + param.Add * param.Step;
-              console.log("before setOdds", odds, param.Add, param.Step);
+              let odds: number = 0;
+              let addOdds: number = 0;
+              if (param.Add) {
+                odds = fOdds.Odds + param.Add * param.Step;
+              } else {
+                addOdds = fOdds.Odds - param.Step;
+                addOdds = addOdds - (addOdds % fOdds.Steps);
+                odds = fOdds.Odds - addOdds;
+              }
+              // console.log("before setOdds", odds, param.Add, param.Step);
               if (odds > fOdds.MaxOdds) {
                   odds = fOdds.MaxOdds;
               }
+              if (odds < 1 ) { odds = 1; }
               if (odds !== fOdds.Odds) {
                   const ans = await afunc.setOdds(param.tid, param.GameID, param.BT, param.Num, odds, param.UserID, conn);
                   if (ans) {
                       msg.data = ans;
+                      const isBSA = await afunc.isBothSideAdjust(param.GameID, param.BT, conn);
+                      if (isBSA) {
+                        const OTNum = getOtherSide(param.Num);
+                        const OTOdds: IMOdds|undefined = await afunc.getOddsInfo(param.tid, param.GameID, param.BT, OTNum, conn);
+                        console.log("BothSideAdjust", param.BT, param.Num, OTNum, OTOdds);
+                        if (OTOdds) {
+                            if (addOdds) {
+                                odds = OTOdds.Odds + addOdds;
+                            } else {
+                                odds = OTOdds.Odds + param.Add * param.Step * -1;
+                            }
+                            if (odds > fOdds.MaxOdds) {
+                                odds = fOdds.MaxOdds;
+                            }
+                            if (odds < 1) {
+                                odds = 1;
+                            }
+                            if (odds !== OTOdds.Odds) {
+                                await afunc.setOdds(param.tid, param.GameID, param.BT, OTNum, odds, param.UserID, conn);
+                            }
+                        }
+                      }
                   } else {
                       msg.ErrNo = 9;
                       msg.ErrCon = "Set odds error!!";
@@ -1265,6 +1307,36 @@ app.get("/getEditRecord", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Data not found";
         }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.debug = "db connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/DelTerm", async (req, res) => {
+    const msg: IMsg = { ErrNo: 0 };
+    const param = req.query;
+    const tid = param.tid;
+    const conn = await getConnection();
+    if (conn) {
+        const isEmpty: boolean = await isTermEmpty(tid, conn);
+        console.log("after chk isTermEmpty", isEmpty);
+        if (isEmpty) {
+            let sql = "delete from Terms where id = ?";
+            let delChk = await doQuery(sql, conn, [tid]);
+            if (delChk) {
+                const ans: IDBAns = delChk as IDBAns;
+                if (ans.affectedRows > 0) {
+                    sql = "delete from CurOddsInfo where tid = ?";
+                    delChk = await doQuery(sql, conn, [tid]);
+                }
+            }
+        } else {
+            msg.ErrNo = ErrCode.DELETE_TERM_ERR;
+            msg.ErrCon = "Not Empty!!";
+        }
+        conn.release();
     } else {
         msg.ErrNo = 9;
         msg.debug = "db connection error!!";
@@ -1348,8 +1420,17 @@ async function setLoginStatus(uid: number, sid: string, conn: mariadb.PoolConnec
         and CURRENT_TIMESTAMP-timeproc>${staytime}`;
     return await doQuery(sql, conn);
 }
-async function saveParamLog(PLog: IParamLog[], conn: mariadb.PoolConnection) {
+export async function saveParamLog(PLog: IParamLog[], conn: mariadb.PoolConnection) {
     const jt: JTable<IParamLog> = new JTable(conn, "ParamsLog");
     return await jt.MultiInsert(PLog);
+}
+async function isTermEmpty(tid: number, conn: mariadb.PoolConnection): Promise<boolean> {
+    const sql = "select count(*) cnt from BetHeader where tid = ?";
+    const ans = await doQuery(sql, conn, [tid]);
+    console.log("isTermEmpty", ans);
+    if (ans[0]) {
+        if (ans[0].cnt === 0) { return true; }
+    }
+    return false;
 }
 export default app;

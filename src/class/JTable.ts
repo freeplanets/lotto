@@ -78,6 +78,7 @@ export default class JTable<T extends IHasID> {
         params.push(v.id);
         let ans;
         const sql = `update ${this.TableName} set ` + fields.join(",") + " where id = ?";
+        // console.log("JTable Update", sql, params);
         await this.conn.query(sql, params).then((row) => {
             ans = row;
             // console.log("JTable Upate ans:", ans);
