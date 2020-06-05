@@ -1198,19 +1198,24 @@ app.get("/getBetHeaders", async (req, res) => {
   const conn: mariadb.PoolConnection | undefined = await getConnection();
   if (conn) {
         const uids: number[] = [];
-        if (param.UpName) {
-            let upid: number[]|undefined = [];
-            const uparam = {
-                findString: param.UpName
-            };
-            upid = await getUsers(conn, uparam);
-            if (!upid || upid.length === 0) {
-                msg.ErrNo = 9;
-                msg.ErrCon = "Get BetLists error!";
-                conn.release();
-                res.send(JSON.stringify(msg));
-            }
-            param.UpId = upid;
+        let upid: number[]|undefined = [];
+        const uparam = {
+            findString: param.UpName ? param.UpName : "ALL"
+        };
+        upid = await getUsers(conn, uparam);
+        if (!upid || upid.length === 0) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Get BetLists error!";
+            conn.release();
+            res.send(JSON.stringify(msg));
+        }
+        msg.UpUser = upid;
+        if (upid) {
+            const tmpU: number[] = [];
+            upid.map((u: any) => {
+                tmpU.push(u.id);
+            });
+            param.UpId = tmpU.length === 1 ? tmpU[0] : tmpU ;
         }
         const users = await getUsers(conn, param, "Member");
         if (users) {

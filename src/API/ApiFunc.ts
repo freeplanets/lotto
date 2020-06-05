@@ -341,9 +341,11 @@ export async function getComments(pagename: string, conn: mariadb.PoolConnection
 
 export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConnection, uids?: number[]): Promise<any> {
     let cond: string[] = [];
+    /*
     if (param.SDate) {
         cond.push(` (b.CreateTime BETWEEN '${param.SDate}' AND '${param.SDate} 23:59:59') `);
     }
+    */
     if (uids) {
         cond.push(` UserID in (${uids.join(",")}) `);
     }
@@ -361,12 +363,22 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
     if (param.BetType) {
         cond.push(` BetContent like '%"BetType":${param.BetType}%'`);
     }
+    if (param.isCanceled !== undefined) {
+        cond.push(` isCancled = ${param.isCanceled} `);
+    }
     const f = getCond(param);
     if (f) {
         cond = cond.concat(f);
     }
-    const sql = `select b.*,t.TermID from BetHeader b left join Terms t on b.tid=t.id where ${cond.join(" and ")}`;
-    console.log("ApiFunc get getBetHeaders sql:", sql, cond);
+    let table = "BetHeader";
+    /*
+    if (param.Table) {
+        table = param.Table as string;
+    }
+    */
+    const sql = `select b.*,t.TermID from ${table} b left join Terms t on b.tid=t.id where ${cond.join(" and ")}`;
+    console.log("ApiFunc get getBetHeaders sql:", sql);
+    console.log("ApiFunc get getBetHeaders cond:", cond);
     let rr;
     await conn.query(sql).then((res) => {
         // console.log("ApiFunc get getBetHeaders res:", res);
@@ -390,7 +402,7 @@ function getCond(param: ICommonParams): string[]|undefined {
     if (param.SDate) {
         if (!param.STime) { param.STime = "00:00:00"; }
         if (!param.ETime) { param.ETime = "23:12:59"; }
-        tmp.push(`CreateTime BETWEEN '${param.SDate} ${param.STime}' and '${param.EDate} ${param.ETime}' `);
+        tmp.push(`(b.CreateTime BETWEEN '${param.SDate} ${param.STime}' and '${param.EDate} ${param.ETime}') `);
     }
     const f1 = getCondSE("Total", param.OrdAmtS as number, param.OrdAmtE as number);
     if (f1) {
