@@ -370,7 +370,7 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
     if (f) {
         cond = cond.concat(f);
     }
-    let table = "BetHeader";
+    const table = "BetHeader";
     /*
     if (param.Table) {
         table = param.Table as string;
