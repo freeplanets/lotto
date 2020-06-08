@@ -31,7 +31,8 @@ const mdOptions: mariadb.PoolConfig = {
     password: process.env.MDPASSWORD,
     database: process.env.MDDATABASE,
     port: process.env.MDPORT ? parseInt(process.env.MDPORT, 10) : 0,
-    timezone: "Asia/Taipei"
+    timezone: "Asia/Taipei",
+    charset: "UTF8"
 };
 const dbPool: mariadb.Pool = mariadb.createPool(mdOptions);
 

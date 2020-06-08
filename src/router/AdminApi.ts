@@ -1260,6 +1260,7 @@ app.get("/getBetTotal", async (req, res) => {
     if (conn) {
         // const tmp = await doQuery('show variables like "%time_zone%";', conn);
         // console.log("timezone chk:", tmp);
+        console.log("getBetTotal sql:", sql);
         const data = await doQuery(sql, conn);
         const ids: number[] = [];
         if (data) {
@@ -1378,7 +1379,7 @@ function getBetTotalSql(param: ICommonParams): string {
     if (param.Ledger === "1") {
         extField = ",BetType";
     }
-    const sql: string = `SELECT UpId${extField}${param.Ledger === "2" ? ",convert(CreateTime,DATE) SDate" : ""},sum(Amt) Total,sum(WinLose) WinLose FROM BetTable
+    const sql: string = `SELECT UpId${extField}${param.Ledger === "2" ? ",UNIX_TIMESTAMP(CreateTime) UXTimeStamp" : ""},sum(Amt) Total,sum(WinLose) WinLose FROM BetTable
         WHERE ${cond.length > 0 ? cond.join("and") : 1 }
         group by UpId${extField}${param.Ledger === "2" ? ",convert(CreateTime,DATE)" : ""}`;
     console.log("getBetTotalSql:", sql, param);

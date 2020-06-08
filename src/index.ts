@@ -3,11 +3,13 @@ import express, {Request, Response} from "express";
 import mariadb from "mariadb";
 import { IMsg} from "./DataSchema/if";
 import dbPool, {doQuery, getConnection, port} from "./func/db";
+import * as schedule from "./func/schedule";
 import adminRouter from "./router/AdminApi";
 import agentApi from "./router/agentApi";
 import apiRouter from "./router/api";
 // const args: minimist.ParsedArgs = minimist(process.argv.slice(2), {});
 // console.log("minimist:", args);
+schedule.scheduleTest();
 const app = express();
 /*
 dbPool.getConnection().then((conn) => {
