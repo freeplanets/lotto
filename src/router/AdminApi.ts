@@ -1258,10 +1258,13 @@ app.get("/getBetTotal", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
     const conn = await getConnection();
     if (conn) {
+        // const tmp = await doQuery('show variables like "%time_zone%";', conn);
+        // console.log("timezone chk:", tmp);
         const data = await doQuery(sql, conn);
         const ids: number[] = [];
         if (data) {
             msg.data = data;
+            // console.log("after doQuery:", data);
             data.map((itm) => {
                 ids.push(itm.UpId);
             });
@@ -1372,12 +1375,13 @@ function getBetTotalSql(param: ICommonParams): string {
     if (tse) {
         cond.push(tse);
     }
-    if (param.Ledger) {
+    if (param.Ledger === "1") {
         extField = ",BetType";
     }
-    const sql: string = `SELECT UpId${extField},sum(Amt) Total,sum(WinLose) WinLose FROM BetTable
+    const sql: string = `SELECT UpId${extField}${param.Ledger === "2" ? ",convert(CreateTime,DATE) SDate" : ""},sum(Amt) Total,sum(WinLose) WinLose FROM BetTable
         WHERE ${cond.length > 0 ? cond.join("and") : 1 }
-        group by UpId${extField}`;
+        group by UpId${extField}${param.Ledger === "2" ? ",convert(CreateTime,DATE)" : ""}`;
+    console.log("getBetTotalSql:", sql, param);
     return sql;
 }
 function getCondTSE(field: string, start?: string, end?: string): string|undefined {
@@ -1390,8 +1394,22 @@ function getCondTSE(field: string, start?: string, end?: string): string|undefin
     } else {
         return;
     }
+    return ` convert(${field},Date) BETWEEN '${start}' and '${end}' `;
+}
+/*
+function getCondTSE(field: string, start?: string, end?: string): string|undefined {
+    if (start) {
+        if (!end) {
+            end = start;
+        }
+    } else if (end) {
+            start = end;
+    } else {
+        return;
+    }
     return ` ${field} BETWEEN '${start} 00:00:00' and '${end} 23:59:59' `;
 }
+*/
 async function setLogin(uid: number, Account: string, conn: mariadb.PoolConnection, UpId?: number): Promise<string|undefined> {
     const upid: number = UpId ? UpId : 0;
     let sql: string = `update LoginInfo set isActive=0 where uid=${uid} and AgentID=${upid}`;

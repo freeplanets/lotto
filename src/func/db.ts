@@ -16,12 +16,22 @@ rowsAsArray: true };
 interface IAxParams {
     [key: number]: number|string|boolean;
 }
+/*
 const mdOptions: object = {
     host: process.env.MDHOST,
     user: process.env.MDUSER,
     password: process.env.MDPASSWORD,
     database: process.env.MDDATABASE,
-    port: process.env.MDPORT
+    port: process.env.MDPORT,
+};
+*/
+const mdOptions: mariadb.PoolConfig = {
+    host: process.env.MDHOST,
+    user: process.env.MDUSER,
+    password: process.env.MDPASSWORD,
+    database: process.env.MDDATABASE,
+    port: process.env.MDPORT ? parseInt(process.env.MDPORT, 10) : 0,
+    timezone: "Asia/Taipei"
 };
 const dbPool: mariadb.Pool = mariadb.createPool(mdOptions);
 
@@ -42,6 +52,7 @@ export function doQuery(sql: string, conn: mariadb.PoolConnection, params?: IAxP
     } else {
         query = conn.query(sql);
     }
+    // console.log("doQuery:", sql, params);
     return new Promise((resolve, reject) => {
         query.then((res) => {
             resolve(res);
