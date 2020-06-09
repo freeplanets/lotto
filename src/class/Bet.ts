@@ -1,12 +1,14 @@
 import mariadb from "mariadb";
 import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
-    IBetTable, ICurOddsData, IMsg, INumAvg, INumData, IStrKeyNumer} from "../DataSchema/if";
+    IBetTable, ICurOddsData, IMsg, INumAvg, INumData, IStrKeyNumer,IDayReport} from "../DataSchema/if";
 import {IGame} from "../DataSchema/user";
 import {getUserCredit, ModifyCredit} from "../func/Credit";
 import {BetParam} from "./BetParam";
 import {C} from "./Func";
 import JTable from "./JTable";
 import {ErrCode, OpChk} from "./OpChk";
+//import JDate from '../class/JDate';
+import {doQuery} from '../func/db';
 // import dbPool from "src/func/db";
 interface INum {
     [key: number]: any;
@@ -560,4 +562,42 @@ export class Bet implements IBet {
             return Math.min.apply(Math, dta);
         }
     }
+    /*
+    private async calDayReport(dt:IBetTable[]){
+        const sdate:string=JDate.LocalDateStr;
+        const dayR:IDayReport[]=[];
+        dt.map((itm:IBetTable)=>{
+            const f=dayR.find(dr=>dr.SDate===sdate && dr.UpId===itm.UpId 
+                && dr.UserID === itm.UserID && dr.GameID===itm.GameID && dr.BetType === itm.BetType);
+            if(f){
+                f.Total+=itm.Amt;
+            } else {
+                const tmp:IDayReport={
+                    SDate:sdate,
+                    UpId:itm.UpId,
+                    UserID:itm.UserID,
+                    GameID:itm.GameID,
+                    BetType:itm.BetType,
+                    Total:itm.Amt,
+                }
+                dayR.push(tmp);
+            }
+        })
+        return await this.saveDayReport(dayR)
+    }
+    private async saveDayReport(dayR:IDayReport[]){
+        let sql:string='insert into DayReport(SDate,UpId,UserID,GameID,BetType,Total) values';
+        const dta:string[]=[];
+        dayR.map(itm=>{
+            dta.push(`('${itm.SDate}',${itm.UpId},${itm.UserID},${itm.GameID},${itm.BetType},${itm.Total}`);
+        })
+        sql+=dta.join(",") + ' on duplicate key update Total=Total+values(Total)';
+        const ans = await doQuery(sql,this.conn);
+        const msg:IMsg={ErrNo:0}
+        if(!ans){
+            msg.ErrNo=9;
+        }
+        return msg;
+    }
+    */
 }

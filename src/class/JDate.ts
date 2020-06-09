@@ -29,5 +29,22 @@ class JDate {
         const reg1 = /(\d+-\d+-\d+).*/;
         return tmp.toJSON().replace(reg1, "$1");
     }
+    get LocalDateStr(){
+        let d =  this.curDate.toLocaleDateString("zh-TW", {timeZone: "Asia/Taipei"})
+        return this.dateAddZero(d);
+    }
+    private  dateAddZero(d: string): string {
+        const sep: string = d.indexOf("-") > -1 ? "-" : "/";
+        const dArr: string[] = d.split(sep);
+        const newA = dArr.map((s) => {
+            return this.addZeroIfUnderTen(s);
+        });
+        return newA.join(sep);
+    }
+    private addZeroIfUnderTen(v: string|number): string {
+        const i: number = typeof(v) === "string" ? parseInt(v, 10) : 0;
+        if (i < 10) { return "0" + i; }
+        return "" + i;
+    }
 }
 export default new JDate();

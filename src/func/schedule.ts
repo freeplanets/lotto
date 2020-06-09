@@ -1,9 +1,9 @@
 import mariadb from "mariadb";
 import schedule from "node-schedule";
 import * as db from "./db";
-
+// 秒 分 時 日 月 星期
 export function scheduleTest() {
-  schedule.scheduleJob("30 * * * * *", () => {
+  schedule.scheduleJob("30 50 23 * * *", () => {
     const d: string = dateAddZero(new Date().toLocaleDateString("zh-TW", {timeZone: "Asia/Taipei"}));
     doDayTotal(d);
     console.log("scheduleTest:", new Date().toLocaleString("zh-TW", {timeZone: "Asia/Taipei", hour12: false}));
@@ -15,13 +15,15 @@ async function doDayTotal(d: string) {
     const sqls: string[] = [];
     let sql: string;
     const  cond: string = d ? `and convert(CreateTime,Date)='${d}'` : "";
+    /*
     // UpId total
     sql = "insert into DayReport(SDate,UpId,UserID,tid,GameID,BetType,Total,WinLose)";
     sql += " select convert(CreateTime,Date) SDate,UpId,0,0,0,0,sum(Total) Total,sum(WinLose) WinLose ";
     sql += ` From BetHeader where isCancled = 0 ${cond} group by convert(CreateTime,Date),UpId`;
     sql += " on duplicate key update Total=values(Total),WinLose=values(WinLose)";
     sqls.push(sql);
-
+    */
+    /*
     // UpId total with GameID
     sql = "insert into DayReport(SDate,UpId,UserID,tid,GameID,BetType,Total,WinLose)";
     sql += " select convert(CreateTime,Date) SDate,UpId,0,0,GameID,0,sum(Total) Total,sum(WinLose) WinLose ";
@@ -29,7 +31,7 @@ async function doDayTotal(d: string) {
     sql += ` From BetHeader where isCancled = 0 ${cond} group by convert(CreateTime,Date),UpId,GameID `;
     sql += " on duplicate key update Total=values(Total),WinLose=values(WinLose)";
     sqls.push(sql);
-
+    */
     /*
     // UpId total with GameID,tid
     sql = "insert into DayReport(SDate,UpId,UserID,tid,GameID,BetType,Total,WinLose)";
@@ -39,6 +41,7 @@ async function doDayTotal(d: string) {
     sqls.push(sql);
     */
 
+    /*
     // UpId total with GameID,BetType
     sql = "insert into DayReport(SDate,UpId,UserID,tid,GameID,BetType,Total,WinLose)";
     sql += " select convert(CreateTime,Date) SDate,UpId,0,0,GameID,BetType,sum(Amt) Total,sum(WinLose) WinLose ";
@@ -46,7 +49,9 @@ async function doDayTotal(d: string) {
     sql += ` From BetTable where isCancled = 0 ${cond} group by convert(CreateTime,Date),UpId,GameID,BetType `;
     sql += " on duplicate key update Total=values(Total),WinLose=values(WinLose)";
     sqls.push(sql);
+    */
 
+    /*
     // Member(UserID) total
     sql = "insert into DayReport(SDate,UpId,UserID,tid,GameID,BetType,Total,WinLose)";
     sql += " select convert(CreateTime,Date) SDate,UpId,UserID,0,0,0,sum(Total) Total,sum(WinLose) WinLose ";
@@ -54,7 +59,9 @@ async function doDayTotal(d: string) {
     sql += ` From BetHeader where isCancled = 0  ${cond} group by convert(CreateTime,Date),UpId,UserID `;
     sql += " on duplicate key update Total=values(Total),WinLose=values(WinLose)";
     sqls.push(sql);
+    */
 
+    /*
     // Member(UserID) total with GameID
     sql = "insert into DayReport(SDate,UpId,UserID,tid,GameID,BetType,Total,WinLose)";
     sql += " select convert(CreateTime,Date) SDate,UpId,UserID,0,GameID,0,sum(Total) Total,sum(WinLose) WinLose ";
@@ -62,6 +69,7 @@ async function doDayTotal(d: string) {
     sql += ` From BetHeader where isCancled = 0 ${cond} group by convert(CreateTime,Date),UpId,UserID,GameID `;
     sql += " on duplicate key update Total=values(Total),WinLose=values(WinLose)";
     sqls.push(sql);
+    */
 
     // Member(UserID) total with GameID,BetType
     sql = "insert into DayReport(SDate,UpId,UserID,tid,GameID,BetType,Total,WinLose)";

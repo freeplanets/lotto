@@ -1372,6 +1372,28 @@ function getBetTotalSql(param: ICommonParams): string {
     if (param.GameID) {
         cond.push(` GameID = ${param.GameID} `);
     }
+    const tse: string|undefined = getCondTSE("SDate", param.SDate, param.EDate, true);
+    if (tse) {
+        cond.push(tse);
+    }
+    if (param.Ledger === "1") {
+        extField = ",BetType";
+    }
+    const sql: string = `SELECT UpId${extField}${param.Ledger === "2" ? ",SDate" : ""},sum(Total) Total,sum(WinLose) WinLose FROM DayReport
+        WHERE ${cond.length > 0 ? cond.join("and") : 1 }
+        group by UpId${extField}${param.Ledger === "2" ? ",SDate" : ""}`;
+    console.log("getBetTotalSql:", sql, param);
+    return sql;
+}
+function getBetTotalSql_back(param: ICommonParams): string {
+    const cond: string[] = [];
+    let extField: string = "";
+    if (param.UpId) {
+        cond.push(` UpId = ${param.UpId} `);
+    }
+    if (param.GameID) {
+        cond.push(` GameID = ${param.GameID} `);
+    }
     const tse: string|undefined = getCondTSE("CreateTime", param.SDate, param.EDate);
     if (tse) {
         cond.push(tse);
@@ -1385,7 +1407,7 @@ function getBetTotalSql(param: ICommonParams): string {
     console.log("getBetTotalSql:", sql, param);
     return sql;
 }
-function getCondTSE(field: string, start?: string, end?: string): string|undefined {
+function getCondTSE(field: string, start?: string, end?: string, noConv?: boolean): string|undefined {
     if (start) {
         if (!end) {
             end = start;
@@ -1395,7 +1417,13 @@ function getCondTSE(field: string, start?: string, end?: string): string|undefin
     } else {
         return;
     }
-    return ` convert(${field},Date) BETWEEN '${start}' and '${end}' `;
+    if (noConv) {
+        start = start.indexOf("/") > -1 ? start.split("/").join("-") : start;
+        end = end.indexOf("/") > -1 ? end.split("/").join("-") : end;
+        return ` ${field} BETWEEN '${start}' and '${end}' `;
+    } else {
+        return ` convert(${field},Date) BETWEEN '${start}' and '${end}' `;
+    }
 }
 /*
 function getCondTSE(field: string, start?: string, end?: string): string|undefined {
