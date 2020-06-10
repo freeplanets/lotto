@@ -29,8 +29,8 @@ class JDate {
         const reg1 = /(\d+-\d+-\d+).*/;
         return tmp.toJSON().replace(reg1, "$1");
     }
-    get LocalDateStr(){
-        let d =  this.curDate.toLocaleDateString("zh-TW", {timeZone: "Asia/Taipei"})
+    get LocalDateStr() {
+        const d =  this.curDate.toLocaleDateString("zh-TW", {timeZone: "Asia/Taipei"});
         return this.dateAddZero(d);
     }
     private  dateAddZero(d: string): string {

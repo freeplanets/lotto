@@ -1,14 +1,14 @@
 import mariadb from "mariadb";
 import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
-    IBetTable, ICurOddsData, IMsg, INumAvg, INumData, IStrKeyNumer,IDayReport} from "../DataSchema/if";
+    IBetTable, ICurOddsData, IDayReport, IMsg, INumAvg, INumData, IStrKeyNumer} from "../DataSchema/if";
 import {IGame} from "../DataSchema/user";
 import {getUserCredit, ModifyCredit} from "../func/Credit";
+// import JDate from '../class/JDate';
+import {doQuery} from "../func/db";
 import {BetParam} from "./BetParam";
 import {C} from "./Func";
 import JTable from "./JTable";
 import {ErrCode, OpChk} from "./OpChk";
-//import JDate from '../class/JDate';
-import {doQuery} from '../func/db';
 // import dbPool from "src/func/db";
 interface INum {
     [key: number]: any;
@@ -567,7 +567,7 @@ export class Bet implements IBet {
         const sdate:string=JDate.LocalDateStr;
         const dayR:IDayReport[]=[];
         dt.map((itm:IBetTable)=>{
-            const f=dayR.find(dr=>dr.SDate===sdate && dr.UpId===itm.UpId 
+            const f=dayR.find(dr=>dr.SDate===sdate && dr.UpId===itm.UpId
                 && dr.UserID === itm.UserID && dr.GameID===itm.GameID && dr.BetType === itm.BetType);
             if(f){
                 f.Total+=itm.Amt;

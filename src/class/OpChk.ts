@@ -1,11 +1,11 @@
 import mariadb from "mariadb";
-import {IBasePayRateItm, IBetTable, ICurOddsData, INumAvg, 
-    INumData, IStepG, IStrKeyNumer,IDayReport,IMsg} from "../DataSchema/if";
+import JDate from "../class/JDate";
+import {IBasePayRateItm, IBetTable, ICurOddsData, IDayReport,
+    IMsg, INumAvg, INumData, IStepG, IStrKeyNumer} from "../DataSchema/if";
 import {IGame} from "../DataSchema/user";
 import {doQuery} from "../func/db";
 import {getOtherSide} from "./Func";
 import JTable, {IHasID} from "./JTable";
-import JDate from '../class/JDate';
 interface ICurOddsT {
     id: 0;
     tid: number;
@@ -106,27 +106,27 @@ export class OpChk {
         this.MCurOT = [];
         this.AvgT = [];
         this.UnT = [];
-        const sdate:string=JDate.LocalDateStr;
-        const dayR:IDayReport[]=[];        
+        const sdate: string = JDate.LocalDateStr;
+        const dayR: IDayReport[] = [];
         data.map((itm) => {
             this.addCurOddT(itm);
             this.calAvg(itm);
             this.calUnionNumTotal(itm);
-            const f=dayR.find(dr=>dr.SDate===sdate && dr.UpId===itm.UpId 
-                && dr.UserID === itm.UserID && dr.GameID===itm.GameID && dr.BetType === itm.BetType);
-            if(f){
-                f.Total+=itm.Amt;
+            const f = dayR.find((dr) => dr.SDate === sdate && dr.UpId === itm.UpId
+                && dr.UserID === itm.UserID && dr.GameID === itm.GameID && dr.BetType === itm.BetType);
+            if (f) {
+                f.Total += itm.Amt;
             } else {
-                const tmp:IDayReport={
-                    SDate:sdate,
-                    UpId:itm.UpId,
-                    UserID:itm.UserID,
-                    GameID:itm.GameID,
-                    BetType:itm.BetType,
-                    Total:itm.Amt,
-                }
+                const tmp: IDayReport = {
+                    SDate: sdate,
+                    UpId: itm.UpId,
+                    UserID: itm.UserID,
+                    GameID: itm.GameID,
+                    BetType: itm.BetType,
+                    Total: itm.Amt,
+                };
                 dayR.push(tmp);
-            }            
+            }
         });
         let ans;
         if (this.CurOT.length > 0) {
@@ -152,21 +152,12 @@ export class OpChk {
             }
         }
         const doBFC = await this.doBetForChagne(conn);
-        if(!doBFC){
+        if (!doBFC) {
             return false;
         }
-        const doRpt=await this.saveDayReport(dayR,conn);
+        const doRpt = await this.saveDayReport(dayR, conn);
         return !!doRpt;
     }
-    private async saveDayReport(dayR:IDayReport[],conn:mariadb.PoolConnection){
-        let sql:string='insert into DayReport(SDate,UpId,UserID,GameID,BetType,Total) values';
-        const dta:string[]=[];
-        dayR.map(itm=>{
-            dta.push(`('${itm.SDate}',${itm.UpId},${itm.UserID},${itm.GameID},${itm.BetType},${itm.Total}`);
-        })
-        sql+=dta.join(",") + ' on duplicate key update Total=Total+values(Total)';
-        return await doQuery(sql,conn);
-    }    
     public overUnionNum(itms: IBetTable[], UnionTotals: IStrKeyNumer): number {
         let err: number = ErrCode.PASS;
         if (this.op.UnionNum) {
@@ -178,6 +169,15 @@ export class OpChk {
             });
         }
         return err;
+    }
+    private async saveDayReport(dayR: IDayReport[], conn: mariadb.PoolConnection) {
+        let sql: string = "insert into DayReport(SDate,UpId,UserID,GameID,BetType,Total) values";
+        const dta: string[] = [];
+        dayR.map((itm) => {
+            dta.push(`('${itm.SDate}',${itm.UpId},${itm.UserID},${itm.GameID},${itm.BetType},${itm.Total})`);
+        });
+        sql += dta.join(",") + " on duplicate key update Total=Total+values(Total)";
+        return await doQuery(sql, conn);
     }
     private lessMinHand(v: number): number {
         if (this.op.MinHand) {

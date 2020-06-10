@@ -259,11 +259,11 @@ export interface IParamLog {
     adminid: number;
 }
 export interface IDayReport {
-    SDate:string;
-    UpId:number;
-    UserID:number;
-    GameID:number;
-    BetType:number;
-    Total:number;
-    Winlose?:number;
+    SDate: string;
+    UpId: number;
+    UserID: number;
+    GameID: number;
+    BetType: number;
+    Total: number;
+    Winlose?: number;
 }
