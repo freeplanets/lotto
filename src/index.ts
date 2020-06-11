@@ -3,13 +3,14 @@ import express, {Request, Response} from "express";
 import mariadb from "mariadb";
 import { IMsg} from "./DataSchema/if";
 import dbPool, {doQuery, getConnection, port} from "./func/db";
-//import * as schedule from "./func/schedule";
+import {PreCheck} from "./func/middleware";
+// import * as schedule from "./func/schedule";
 import adminRouter from "./router/AdminApi";
 import agentApi from "./router/agentApi";
 import apiRouter from "./router/api";
 // const args: minimist.ParsedArgs = minimist(process.argv.slice(2), {});
 // console.log("minimist:", args);
-//schedule.scheduleTest();
+// schedule.scheduleTest();
 const app = express();
 /*
 dbPool.getConnection().then((conn) => {
@@ -21,6 +22,7 @@ const crosOption: cors.CorsOptions = {
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cors(crosOption));
+app.use(PreCheck);
 app.get("/", async (req: Request, res: Response) => {
 
        res.send("ok");

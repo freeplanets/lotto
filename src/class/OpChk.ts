@@ -1,5 +1,6 @@
 import mariadb from "mariadb";
 import JDate from "../class/JDate";
+import ErrCode from "../DataSchema/ErrCode";
 import {IBasePayRateItm, IBetTable, ICurOddsData, IDayReport,
     IMsg, INumAvg, INumData, IStepG, IStrKeyNumer} from "../DataSchema/if";
 import {IGame} from "../DataSchema/user";
@@ -44,17 +45,6 @@ interface IUdOdds {
     BetType: number;
     Num: number;
     Odds: number;
-}
-export const enum ErrCode {
-    PASS = 0,
-    LESS_MIN_HAND = 1,
-    OVER_MAX_HAND = 2,
-    OVER_SINGLE_NUM = 3,
-    OVER_UNION_NUM = 4,
-    NUM_STOPED = 5,
-    NO_CREDIT = 6,
-    NO_LOGIN = 7,
-    DELETE_TERM_ERR = 8
 }
 /**
  * 六合彩類 BetType:8,72,10,73 有雙賠率,第二賠號碼加 100
@@ -356,7 +346,7 @@ export class OpChk {
         // const pSt = this.op.PerStep ? this.op.PerStep : 0;
         const st = this.op.Steps ? this.op.Steps : 0;
         if (this.op.StepsGroup) {
-            const StG: IStepG[] = JSON.parse(this.op.StepsGroup);
+            const StG: IStepG[] = JSON.parse(this.op.StepsGroup.replace(/\\/g, ""));
             if (StG.length > 0) {
                 const steps = this.getStepsFromSG(StG, tolSPlusAmt);
                 console.log("calBetforChange", st, steps, StG);

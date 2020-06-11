@@ -51,7 +51,7 @@ export async function isPayClassUsed(GameID: string, PayClassID: string, conn: m
   await conn.query(sql).then((res) => {
       const iPID: number = parseInt(PayClassID, 10);
       res.map((itm) => {
-          const pc = JSON.parse(itm.PayClass);
+          const pc = JSON.parse(itm.PayClass.replace(/\\/g, ""));
           console.log("pc", pc);
           if (pc[GameID] === iPID) {
               ans = true;

@@ -42,7 +42,7 @@ export class Gets {
                     id: itm.id,
                     tid: itm.tid,
                     TermID: itm.TermID,
-                    con: JSON.parse(itm.BetContent),
+                    con: JSON.parse(itm.BetContent.replace(/\\/g, "")),
                     gold: itm.Total,
                     end: parseFloat(itm.WinLose ? itm.WinLose.toFixed(2) : "0"),
                     time: itm.CreateTime

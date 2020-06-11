@@ -10,19 +10,19 @@ import {getOtherSide} from "../class/Func";
 import {Gets} from "../class/Gets";
 import JDate from "../class/JDate";
 import JTable from "../class/JTable";
-import {ErrCode} from "../class/OpChk";
 import {SaveNums} from "../class/Settlement";
+import ErrCode from "../DataSchema/ErrCode";
 import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameItem, IMOdds , IMsg , IParamLog} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 
-const staytime: number = 300;   // sec
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
 interface ILoginInfo {
     id: number;
     Account: string;
     sid?: string;
+    Levels?: number;
 }
 app.get("/login", async (req, res) => {
     // console.log(req.query);
@@ -40,6 +40,7 @@ app.get("/login", async (req, res) => {
                 const info: ILoginInfo = {
                     id: user.id,
                     Account: user.Account,
+                    Levels: user.Levels
                 };
                 const logkey: string|undefined = await setLogin(user.id, user.Account, conn);
                 if (logkey) {
@@ -87,11 +88,11 @@ app.post("/ChangePassword", async (req, res) => {
     if (conn) {
         const param = req.body;
         console.log("ChangePassword param", param);
-        const chk = await chkLogin(param.UserID, param.sid, conn);
-        if (chk) {
-            const sql = `update User set Password=PASSWORD(?) where id=? and Password=PASSWORD(?)`;
-            const ans = await doQuery(sql, conn, [param.NPassword, param.UserID, param.OPassword]);
-            if (ans) {
+        // const chk = await chkLogin(param.UserID, param.sid, conn);
+        // if (chk) {
+        const sql = `update User set Password=PASSWORD(?) where id=? and Password=PASSWORD(?)`;
+        const ans = await doQuery(sql, conn, [param.NPassword, param.UserID, param.OPassword]);
+        if (ans) {
                 console.log("ChangePassword", ans);
                 msg.data = ans;
                 const dbAns: IDbAns = ans as IDbAns;
@@ -100,10 +101,10 @@ app.post("/ChangePassword", async (req, res) => {
                     msg.ErrCon = "Fail!!";
                 }
             }
-        } else {
-            msg.ErrNo = ErrCode.NO_LOGIN;
-            msg.ErrCon = "NO LOGIN INFO";
-        }
+        // } else {
+        //    msg.ErrNo = ErrCode.NO_LOGIN;
+        //    msg.ErrCon = "NO LOGIN INFO";
+        // }
         conn.release();
     } else {
         msg.ErrNo = 9;
@@ -262,7 +263,7 @@ app.post("/savePayClass", async (req, res) => {
   if (param.data) {
       ans = await afunc.setPayRateData(param.GameID, rlt.insertId, param.ModifyID, param.data, conn);
   } else {
-      const cond = JSON.parse(param.condition);
+      const cond = JSON.parse(param.condition.replace(/\\/g, ""));
       const p: IPayClassParam = {
           GameID: param.GameID,
           PayClassID : rlt.insertId,
@@ -419,6 +420,16 @@ app.get("/getPayRate", async (req, res) => {
   const params = [param.PayClassID, param.GameID];
   const sql = `select p.BetType,p.SubType,b.DfRate,p.Rate,b.Probability,b.PerStep,b.MinHand,b.MaxHand
       from  BasePayRate b left join PayRate p on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType where p.PayClassID=? and p.GameID = ?`;
+  const ans = await doQuery(sql, conn, params);
+  if (ans) {
+      msg.data = ans;
+  } else {
+      msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
+      msg.ErrCon = "getPayRate error";
+  }
+  conn.release();
+  res.send(JSON.stringify(msg));
+  /*
   await conn.query(sql, params).then((v) => {
       // console.log("getPayRate", v, params);
       conn.release();
@@ -428,6 +439,7 @@ app.get("/getPayRate", async (req, res) => {
       conn.release();
       res.send(JSON.stringify(err));
   });
+  */
 });
 app.post("/batch/saveBasePayRate", async (req, res) => {
     const conn = await getConnection();
@@ -439,7 +451,7 @@ app.post("/batch/saveBasePayRate", async (req, res) => {
       return;
     }
     const param = req.body;
-    const datas: IBasePayRateItm[] = JSON.parse(param.data);
+    const datas: IBasePayRateItm[] = JSON.parse(param.data.replace(/\\/g, ""));
     datas.map((itm) => {
         itm.GameID = param.GameID;
         itm.ModifyID = param.ModifyID;
@@ -464,7 +476,7 @@ app.post("/batch/saveBasePayRate1", async (req, res) => {
   }
   const param = req.body;
   // console.log(param);
-  param.data = JSON.parse(param.data);
+  param.data = JSON.parse(param.data.replace(/\\/g, ""));
   const valstr: string[] = [];
   param.data.map((itm: IBasePayRateItm) => {
       if (!itm.SubTitle) { itm.SubTitle = ""; }
@@ -500,7 +512,7 @@ app.post("/batch/savePayRate", async (req, res) => {
   }
   const param = req.body;
   console.log("savePayRate", req.body);
-  param.data = JSON.parse(param.data);
+  param.data = JSON.parse(param.data.replace(/\\/g, ""));
   const valstr: string[] = [];
   param.data.map((itm: IPayRateItm) => {
       const tmp = `(${param.PayClassID},${param.GameID},${itm.BetType},${itm.SubType},${itm.Rate})`;
@@ -656,7 +668,7 @@ app.post("/createBetItems", async (req, res) => {
   const GameID = param.GameID;
   const ModifyID = param.ModifyID;
   // console.log("createBetItems data:", param.data);
-  const data: IBetItem[] = JSON.parse(param.data);
+  const data: IBetItem[] = JSON.parse(param.data.replace(/\\/g, ""));
   const val: string[] = [];
   data.map((itm) => {
       const tmp: string = `(${GameID},${itm.BetType},'${itm.Num}',${ModifyID})`;
@@ -673,11 +685,14 @@ app.post("/createBetItems", async (req, res) => {
   sql = sql + val.join(",");
   console.log("sql:", sql);
   await conn.query(sql).then((row) => {
+      msg.data = row;
       conn.release();
-      res.send(JSON.stringify(row));
+      res.send(JSON.stringify(msg));
   }).catch((err) => {
+      msg.error = err;
+      msg.ErrNo = 9;
       conn.release();
-      res.send(JSON.stringify(err));
+      res.send(JSON.stringify(msg));
   });
 
 });
@@ -737,7 +752,7 @@ app.post("/Save/:TableName", async (req, res) => {
   }
   const TableName = req.params.TableName;
   // console.log("/api/Save/TableName param", req.body);
-  const data: IBasePayRateItm[] = JSON.parse(req.body.params.data);
+  const data: IBasePayRateItm[] = JSON.parse(req.body.params.data.replace(/\\/g, ""));
   const jt: JTable<IBasePayRateItm> = new JTable(conn, TableName);
   const ans = await jt.MultiUpdate(data);
   // console.log("/api/Save/:TableName ans:", ans);
@@ -1452,25 +1467,6 @@ async function setLogin(uid: number, Account: string, conn: mariadb.PoolConnecti
         }
     }
     return;
-}
-async function chkLogin(uid: number, sid: string, conn: mariadb.PoolConnection, UpId?: number) {
-    let ans = await setLoginStatus(uid, sid, conn, UpId);
-    if (ans) {
-        console.log("setLoginStatus ans", ans);
-        const sql = `select * from LoginInfo where uid=${uid} and isActive=1 and AgentID=${UpId ? UpId : 0} and logkey='${sid}'`;
-        ans = await doQuery(sql, conn);
-        if (ans) {
-            // console.log("chkLogin", sql, ans);
-            return true;
-        }
-    }
-    return false;
-}
-async function setLoginStatus(uid: number, sid: string, conn: mariadb.PoolConnection, UpId?: number) {
-    const sql = `update LoginInfo set isActive=0 where uid=${uid} and isActive=1
-        and AgentID=${UpId ? UpId : 0} and logkey='${sid}'
-        and CURRENT_TIMESTAMP-timeproc>${staytime}`;
-    return await doQuery(sql, conn);
 }
 export async function saveParamLog(PLog: IParamLog[], conn: mariadb.PoolConnection) {
     const jt: JTable<IParamLog> = new JTable(conn, "ParamsLog");

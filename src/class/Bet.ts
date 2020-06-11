@@ -1,4 +1,5 @@
 import mariadb from "mariadb";
+import ErrCode from "../DataSchema/ErrCode";
 import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
     IBetTable, ICurOddsData, IDayReport, IMsg, INumAvg, INumData, IStrKeyNumer} from "../DataSchema/if";
 import {IGame} from "../DataSchema/user";
@@ -8,7 +9,7 @@ import {doQuery} from "../func/db";
 import {BetParam} from "./BetParam";
 import {C} from "./Func";
 import JTable from "./JTable";
-import {ErrCode, OpChk} from "./OpChk";
+import {OpChk} from "./OpChk";
 // import dbPool from "src/func/db";
 interface INum {
     [key: number]: any;
