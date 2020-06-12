@@ -2,7 +2,7 @@ import express, {Request, Response, Router } from "express";
 import mariadb from "mariadb";
 // import {setPayRateData,setPayRate,isPayClassUsed,chkTermIsSettled,CreateOddsData,getGameList,getBtList} from '../API/ApiFunc';
 import * as afunc from "../API/ApiFunc";
-import {getOddsData, getPayClass, getUsers} from "../API/MemberApi";
+import {getGame, getOddsData, getPayClass, getTermDateNotSettled, getUsers} from "../API/MemberApi";
 import Zadic from "../class/Animals";
 import {Bet} from "../class/Bet";
 import EDS from "../class/EncDecString";
@@ -346,7 +346,7 @@ app.get("/delPayClass", async (req, res) => {
       warningStatus: 0
   };
   await conn.query(sql, params).then((v) => {
-      // console.log("savePayClass", v);
+      console.log("savePayClass", v);
       // res.send(JSON.stringify(v));
       rlt = v;
       if (rlt.affectedRows <= 0) {
@@ -361,13 +361,18 @@ app.get("/delPayClass", async (req, res) => {
   if (msg.ErrNo === 0) {
       sql = "delete from PayRate where PayClassID=?";
       await conn.query(sql, params).then((v) => {
-          rlt = v;
+          if (!v) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Delete PayRate Error!!";
+          }
+          /*
           if (rlt.affectedRows <= 0) {
               msg.ErrNo = 9;
-              msg.ErrCon = "Delete PayClass Error!!";
+              msg.ErrCon = "Delete PayRate Error!!";
           }
+          */
       }).catch((err) => {
-          console.log("savePayClass error", err);
+          console.log("savePayRate error", err);
           msg.ErrNo = 9;
           msg.debug = err;
       });
@@ -463,6 +468,7 @@ app.post("/batch/saveBasePayRate", async (req, res) => {
     } else {
         msg.ErrNo = 9;
     }
+    conn.release();
     res.send(JSON.stringify(msg));
 });
 app.post("/batch/saveBasePayRate1", async (req, res) => {
@@ -637,6 +643,14 @@ app.get("/getTerms", async (req, res) => {
   }
   const param = req.query;
   const pa: string[] = [];
+  const ans = await getGame(param.GameID, conn);
+  if (ans) {
+      msg.Game = ans;
+  }
+  const pdate = await getTermDateNotSettled(param.GameID, conn);
+  if (pdate) {
+      msg.PDate = pdate;
+  }
   let sql = "select * from Terms where GameID=? ";
   pa.push(param.GameID);
   if (param.SDate) {
@@ -645,6 +659,11 @@ app.get("/getTerms", async (req, res) => {
   }
   sql = sql + "order by id desc limit 0,10";
   console.log("getTerms", sql, pa);
+  const tans = await doQuery(sql, conn, pa);
+  if (tans) {
+      msg.data = tans;
+  }
+  /*
   await conn.query(sql, pa).then((rows) => {
       // console.log("getTerms", rows);
       msg.data = rows;
@@ -652,6 +671,7 @@ app.get("/getTerms", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = err;
   });
+  */
   conn.release();
   res.send(JSON.stringify(msg));
 });

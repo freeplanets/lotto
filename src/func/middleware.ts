@@ -155,7 +155,7 @@ const setLoginStatus = (uid: number, sid: string, conn: mariadb.PoolConnection, 
       const cond: string = key ? "timeproc=CURRENT_TIMESTAMP" : "isActive=0";
       const sql = `update LoginInfo set ${cond} where uid=${uid} and isActive=1
       and logkey='${sid}'
-      and CURRENT_TIMESTAMP-timeproc${key ? "<" : ">"}>${staytime}`;
+      and CURRENT_TIMESTAMP-timeproc${key ? "<" : ">"}${staytime}`;
       await db.doQuery(sql, conn).then(async (res) => {
         console.log("setLoginStatus", sql, res);
         if (!key) {
