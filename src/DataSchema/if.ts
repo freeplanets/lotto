@@ -267,3 +267,23 @@ export interface IDayReport {
     Total: number;
     Winlose?: number;
 }
+export interface ISetl {
+    BetTypes: number;
+    NumTarget: string;
+    SubName?: string;
+    Position?: number[] | number;   // -1 表示對該項目所有號碼
+    OpenAll: number;           // 須開出號數
+    OpenLess?: number;          // 最少開出號數
+    OneToGo?: boolean;
+    TieNum?: number;             // 平手
+    ExSP?: string;               // 中特
+    OpenSP?: number;
+    NumMove?: number;            // 號碼和結果差
+    PType?: string;              // EACH 多項目對一個結果
+    ExtBT?: number;              // 比對附加下注方式
+}
+
+export interface ISqlProc {
+    pre: string[];
+    common: string[];
+}
