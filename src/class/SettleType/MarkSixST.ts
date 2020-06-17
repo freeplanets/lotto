@@ -1,4 +1,4 @@
-import {ISetl} from '../../DataSchema/if'
+import {ISetl} from "../../DataSchema/if";
 const SettleNums: ISetl[] = [
   {
       BetTypes: 1,              // 特碼A

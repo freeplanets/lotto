@@ -1,9 +1,9 @@
 import mariadb from "mariadb";
 import {IParamLog, ISqlProc} from "../DataSchema/if";
 import {saveParamLog} from "../router/AdminApi";
-import {CMarkSixMum,IMSResult} from "./Settlement/CMarkSixMum";
-import {doBT,getEx} from "./Settlement/MarkSixSetl";
-//const SettleMethods=MarkSixST['MarkSix'];
+import {CMarkSixMum, IMSResult} from "./Settlement/CMarkSixMum";
+import {doBT, getEx} from "./Settlement/MarkSixSetl";
+// const SettleMethods=MarkSixST['MarkSix'];
 
 // 重結 isSettled =3 轉成 status = 4 提供平台視別
 export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection, isSettled?: number, PLog?: IParamLog[]) {
@@ -57,7 +57,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     }
     if (!ans) {
         return imsr;
-        //return ans;
+        // return ans;
     }
     // 搜尋有下注的BetType
     sql = `SELECT BetType,COUNT(*) cnt FROM BetTable WHERE tid=${tid} and GameID=${GameID} and isCancled=0 group by BetType order by BetType`;
@@ -131,7 +131,6 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     // console.log("SQL:", ans);
     return imsr;
 }
-
 
 async function doSql(sql: string, conn: mariadb.PoolConnection): Promise<boolean> {
     return new Promise((resolve, reject) => {

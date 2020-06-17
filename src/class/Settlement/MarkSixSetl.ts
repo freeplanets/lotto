@@ -1,10 +1,10 @@
-import mariadb from 'mariadb';
-import {ISetl,ISqlProc} from "../../DataSchema/if";
-import MarkSixST from "../SettleType/MarkSixST";
-import MSNum, {IMarkSixNums} from "../MSNum";
+import mariadb from "mariadb";
+import {ISetl, ISqlProc} from "../../DataSchema/if";
 import {IExProc} from "../Bet";
-import {CMarkSixMum,IMSResult} from "./CMarkSixMum";
-const SettleMethods=MarkSixST['MarkSix'];
+import MSNum, {IMarkSixNums} from "../MSNum";
+import MarkSixST from "../SettleType/MarkSixST";
+import {CMarkSixMum, IMSResult} from "./CMarkSixMum";
+// const SettleMethods = MarkSixST;
 export function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
   // let ans: string[] = [];
   const ans: ISqlProc = {
@@ -14,7 +14,7 @@ export function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, con
   // let sqls: string[];
   let sqls: ISqlProc;
   rtn.map((rd) => {
-      const found: ISetl | undefined = SettleMethods.find((el) => el.BetTypes === rd.BetType);
+      const found: ISetl | undefined = MarkSixST.find((el) => el.BetTypes === rd.BetType);
       if (found) {
           sqls = CreateSql(tid, GameID, found, imsr, conn);
           if (sqls.pre.length > 0) {
