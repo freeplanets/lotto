@@ -5,11 +5,13 @@ import MSNum, {IMarkSixNums} from "../MSNum";
 import MarkSixST from "../SettleType/MarkSixST";
 import {CMarkSixMum, IMSResult} from "./CMarkSixMum";
 // const SettleMethods = MarkSixST;
-export function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
+export function MarkSixSetl(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
   // let ans: string[] = [];
+  const imsr: IMSResult = imsra as IMSResult;
   const ans: ISqlProc = {
       pre: [],
-      common: []
+      common: [],
+      final: ""
   };
   // let sqls: string[];
   let sqls: ISqlProc;
@@ -25,32 +27,17 @@ export function doBT(tid: number, GameID: number, imsr: IMSResult, rtn: any, con
           }
       }
   });
-  /**
-   * update header
-   */
-  let sql = `insert into BetHeader(id,WinLose,isSettled) select betid id,sum(WinLose) WinLose,isSettled from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 group by betid`;
-  sql = sql + " on duplicate key update WinLose=values(WinLose),isSettled=values(isSettled)";
-  // ans = ans.concat([sql]);
-  ans.common.push(sql);
-  // 損益歸戶
-  sql = `insert into UserCredit(uid,GameID,tid,DepWD)
-      select UserID uid,GameID,tid,sum(Total + WinLose) DepWD
-      from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group by UserID,GameID,tid`;
-  sql = sql + " on duplicate key update DepWD=values(DepWD)";
-  ans.common.push(sql);
-  sql = "insert into Member(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid";
-  sql = sql + " on duplicate key update Balance=values(Balance)";
-  ans.common.push(sql);
-
   return ans;
 }
+
 function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, conn: mariadb.PoolConnection): ISqlProc {
   let nn: number|number[];
   let sql: string = "";
   // const sqls: string[] = [];
   const sqls: ISqlProc = {
       pre: [],
-      common: []
+      common: [],
+      final: ""
   };
   if (itm.NumTarget === "PASS") {
       imsr.RGNums.map((rgn: IMarkSixNums, idx: number) => {

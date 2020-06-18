@@ -286,4 +286,5 @@ export interface ISetl {
 export interface ISqlProc {
     pre: string[];
     common: string[];
+    final: string;
 }

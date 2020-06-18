@@ -9,6 +9,7 @@ export interface IUser {
     DfKey: string;
     UpId: number;
     PayClassID: number;
+    PayClass?: string;
     Balance?: number;
     CreateTime: string;
     ModifyTime: string;

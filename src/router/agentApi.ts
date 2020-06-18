@@ -218,7 +218,7 @@ export async function addLoginInfo(uid: number, Account: string, AgentId: string
 function getUser(Account: string, AgentId: string, conn: Connection ): Promise<IUser|boolean> {
     return new Promise(async (resolve, reject) => {
         const param: {[key: number]: any} = [Account, AgentId];
-        const sql = "select * from Member where Account=? and UpId=?";
+        const sql = "select m.*,u.PayClass from Member m,User u where m.UpId=u.id and m.Account=? and m.UpId=?";
         conn.query(sql, param).then((rows) => {
             console.log("getUser:", rows.length, sql, param);
             if (rows.length === 0) {

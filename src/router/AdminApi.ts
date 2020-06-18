@@ -920,8 +920,14 @@ app.post("/SaveUser", async (req, res) => {
     res.send(JSON.stringify(msg));
     return;
   }
-  const jt: JTable<IUser> = new JTable(conn, "Member");
-  const param: IUser = req.body;
+  const qstring = req.body;
+  if (qstring.UserID) {
+      delete qstring.UserID;
+      delete qstring.sid;
+  }
+  const param: IUser = qstring as IUser;
+  const TableName: string = param.TableName ? param.TableName : "Member";
+  const jt: JTable<IUser> = new JTable(conn, TableName);
   console.log("SaveUser", param);
   let ans;
   if (param.id) {
@@ -1025,7 +1031,12 @@ app.post("/SaveNums", async (req, res) => {
   }
   if (msg.ErrNo === 0) {
       const Nums = SaveNums(param.tid, param.GameID, param.Nums, conn, param.isSettled, param.ParamLog);
-      msg.Data = Nums;
+      if (Nums) {
+        msg.Data = Nums;
+      } else {
+          msg.ErrNo = 9;
+          msg.ErrCon = "Settle error!!";
+      }
       /*
       if (param.ParamLog) {
         await saveParamLog(param.ParamLog as IParamLog[], conn);

@@ -1,19 +1,29 @@
 import mariadb from "mariadb";
+import {getGame} from "../API/MemberApi";
 import {IParamLog, ISqlProc} from "../DataSchema/if";
+import {doQuery} from "../func/db";
 import {saveParamLog} from "../router/AdminApi";
-import {CMarkSixMum, IMSResult} from "./Settlement/CMarkSixMum";
-import {doBT, getEx} from "./Settlement/MarkSixSetl";
+import {D3DSetl} from "./Settlement/D3DSetl";
+// import {CMarkSixMum, IMSResult} from "./Settlement/CMarkSixMum";
+import {getEx, MarkSixSetl} from "./Settlement/MarkSixSetl";
 // const SettleMethods=MarkSixST['MarkSix'];
 
 // 重結 isSettled =3 轉成 status = 4 提供平台視別
 export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection, isSettled?: number, PLog?: IParamLog[]) {
-    const imsr: IMSResult = new CMarkSixMum(num).Nums;
+    let GType: string|undefined;
+    const g = await getGame(GameID, conn);
+    if (g) {
+        GType = g.GType;
+    } else {
+        return false;
+    }
     let ans;
     let sql: string = "";
     // let sqls: string[];
     let sqls: ISqlProc = {
         pre: [],
-        common: []
+        common: [],
+        final: ""
     };
     const SettleStatus: number = isSettled ? 3 : 1;
     await conn.beginTransaction();
@@ -56,8 +66,8 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         });
     }
     if (!ans) {
-        return imsr;
-        // return ans;
+        // return imsr;
+        return ans;
     }
     // 搜尋有下注的BetType
     sql = `SELECT BetType,COUNT(*) cnt FROM BetTable WHERE tid=${tid} and GameID=${GameID} and isCancled=0 group by BetType order by BetType`;
@@ -70,53 +80,56 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         ans = false;
     });
     if (rtn) {
-        sqls = doBT(tid, GameID, imsr, rtn, conn);
+        sqls = doBT(tid, GameID, num, rtn, conn, GType);
         if (sqls.pre.length > 0) {
             await Promise.all(sqls.pre.map(async (itm) => {
-                ans = await doSql(itm, conn);
+                ans = await doQuery(itm, conn);
                 if (!ans) {
                     console.log("err rollback 0");
                     await conn.rollback();
-                    return imsr;
+                    return false;
                 }
             }));
-            sql = `select * from BetTableEx
-                where tid=${tid} and GameID=${GameID} `;
-            let strs: string[] = [];
-            await conn.query(sql).then((res) => {
-                strs = getEx(res);
-            }).catch(async (err) => {
-                console.log("Ex proc error", err);
-                await conn.rollback();
-                return imsr;
-            });
-            if (strs.length > 0) {
-                await Promise.all(strs.map(async (str) => {
-                    ans = await doSql(str, conn);
-                    if (!ans) {
-                        console.log("err rollback ex modify:");
-                        await conn.rollback();
-                        return imsr;
-                    }
-                }));
+            if (GType === "MarkSix") {  // 六合彩類 3中2 2中特 均成賠率或最小賠率檢查
+                sql = `select * from BetTableEx
+                    where tid=${tid} and GameID=${GameID} `;
+                let strs: string[] = [];
+                await conn.query(sql).then((res) => {
+                    strs = getEx(res);
+                }).catch(async (err) => {
+                    console.log("Ex proc error", err);
+                    await conn.rollback();
+                    return false;
+                });
+                if (strs.length > 0) {
+                    await Promise.all(strs.map(async (str) => {
+                        ans = await doQuery(str, conn);
+                        if (!ans) {
+                            console.log("err rollback ex modify:");
+                            await conn.rollback();
+                            return false;
+                        }
+                    }));
+                }
             }
         }
         let needBreak: boolean = false;
         await Promise.all(sqls.common.map(async (itm) => {
             if (needBreak) { return; }
-            ans = await doSql(itm, conn);
+            ans = await doQuery(itm, conn);
             if (!ans) {
                 console.log("err rollback 1");
                 needBreak = true;
                 await conn.rollback();
-                return imsr;
+                return false;
             }
         }));
     }
     console.log("batch:", ans);
     if (ans) {
-        sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=${SettleStatus} where id=${tid}`;
-        ans = await doSql(sql, conn);
+        // sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=${SettleStatus} where id=${tid}`;
+        sql = sqls.final;
+        ans = await doQuery(sql, conn, [SettleStatus]);
         if (ans) {
             console.log("commit 1");
             await conn.commit();
@@ -127,11 +140,12 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     } else {
         console.log("err rollback 3");
         await conn.rollback();
+        return false;
     }
     // console.log("SQL:", ans);
-    return imsr;
+    return true;
 }
-
+/*
 async function doSql(sql: string, conn: mariadb.PoolConnection): Promise<boolean> {
     return new Promise((resolve, reject) => {
         conn.query(sql).then((res) => {
@@ -144,6 +158,7 @@ async function doSql(sql: string, conn: mariadb.PoolConnection): Promise<boolean
         });
     });
 }
+*/
 /*
 async function doSql(sql: string, conn: mariadb.PoolConnection) {
     let ans: boolean = false;
@@ -158,3 +173,28 @@ async function doSql(sql: string, conn: mariadb.PoolConnection) {
     return ans;
 }
 */
+function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.PoolConnection, GType?: string): ISqlProc {
+    let ans: ISqlProc|undefined;
+    if (GType === "3D") {
+        ans = D3DSetl(tid, GameID, imsra, rtn, conn);
+    } else {
+        ans = MarkSixSetl(tid, GameID, imsra, rtn, conn);
+    }
+    /**
+     * update header
+     */
+    let sql = `insert into BetHeader(id,WinLose,isSettled) select betid id,sum(WinLose) WinLose,isSettled from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 group by betid`;
+    sql = sql + " on duplicate key update WinLose=values(WinLose),isSettled=values(isSettled)";
+    // ans = ans.concat([sql]);
+    ans.common.push(sql);
+    // 損益歸戶
+    sql = `insert into UserCredit(uid,GameID,tid,DepWD)
+        select UserID uid,GameID,tid,sum(Total + WinLose) DepWD
+        from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group by UserID,GameID,tid`;
+    sql = sql + " on duplicate key update DepWD=values(DepWD)";
+    ans.common.push(sql);
+    sql = "insert into Member(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid";
+    sql = sql + " on duplicate key update Balance=values(Balance)";
+    ans.common.push(sql);
+    return ans;
+}
