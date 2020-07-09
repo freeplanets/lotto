@@ -32,6 +32,24 @@ export function Combs(num: string[]) {
   });
   return tmp;
 }
+export function PairAndNum(num: string[]) {
+  const tmp: string[] = [];
+  const ans = {isSet3: false, isSet6: false, Num: ""};
+  num.map((n) => {
+    if (tmp.indexOf(n) < 0) { tmp.push(n); } else {
+      ans.Num = n;
+    }
+  });
+  if (tmp.length === 3) {
+    ans.isSet6 = true;
+  } else if (tmp.length === 2) {
+    ans.isSet3 = true;
+  } else {
+    ans.Num = "";
+  }
+  return ans;
+}
+
 export function D3Set3All(num: string|string[], type?: number): number|string[] {
   if (typeof(num) === "string") { num = num.split(","); }
   const tmp: string[] = Combs(num);

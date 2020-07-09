@@ -136,7 +136,7 @@ app.get("/getGames", async (req, res) => {
   const conn = await getConnection();
   const msg: IMsg = {ErrNo: 0};
   if (conn) {
-      const sql = "select id,name,GType from Games order by id";
+      const sql = "select id,name,GType,OpenNums from Games order by id";
       const ans = await doQuery(sql, conn);
       if (ans) {
           msg.data = ans;
@@ -858,6 +858,40 @@ app.post("/member/mwagermulti", async (req, res) => {
   conn.release();
   res.send(JSON.stringify(ans));
 });
+app.post("/member/mwagerone", async (req, res) => {
+    const msg: IMsg = { ErrNo: 0};
+    const conn = await getConnection();
+    if (!conn) {
+      msg.ErrNo = 9;
+      msg.ErrCon = "get connection error!!";
+      res.send(JSON.stringify(msg));
+      return;
+    }
+    const param = req.body;
+    // console.log("/api/member/mwagerjn", param);
+    const UserID = param.UserID;
+    const Account = param.Account;
+    const UpId = param.UpId;
+    const tid = param.LNoID;
+    const GameID = param.LottoID;
+    const PayClassID = param.PayClassID;
+    // const btrans = await conn.beginTransaction();
+    // console.log("Begin:", btrans);
+    const snb: Bet = new Bet(UserID, Account, UpId, tid, GameID, PayClassID, conn);
+    const ans: IMsg = await snb.ParOne(parseInt(param.wgtype, 10), param.OddsID, param.JoinNumber, parseInt(param.StakeMoney, 10));
+    // if (ans.warningStatus === 0) {
+        /*
+    if (ans.ErrNo === 0) {
+        const cmm = await conn.commit();
+        console.log("Commit:", cmm);
+    } else {
+        const rback = await conn.rollback();
+        console.log("Rollback:", rback);
+    }
+    */
+    conn.release();
+    res.send(JSON.stringify(ans));
+  });
 app.post("/member/mwagerjn", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
   const conn = await getConnection();

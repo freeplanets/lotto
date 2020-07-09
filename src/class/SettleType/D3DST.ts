@@ -65,7 +65,8 @@ const SettleNums: ISetl[] = [
   },
   {
       BetTypes: 10,             // 一字組合 - 中獎號碼為 1，2，3。下注 1 或 2 或 3 均為得獎。(重碼只算一組)
-      NumTarget: "Num",
+      NumTarget: "RGNums",
+      SubName: "Num",
       Position: [0, 1, 2],
       OpenAll: 1
   },

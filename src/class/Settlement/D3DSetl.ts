@@ -14,6 +14,7 @@ export function D3DSetl(tid: number, GameID: number, num: string, rtn: any, conn
   };
   // let sqls: string[];
   let sqls: ISqlProc;
+  // console.log("imsr:", imsr);
   rtn.map((rd) => {
       const found: ISetl | undefined = D3DST.find((el) => el.BetTypes === rd.BetType);
       if (found) {
@@ -64,6 +65,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, con
       } else {
           // const tmp: number[] = [];
           itm.Position.map(async (elm, idx) => {
+              // console.log("CreateSql Position not number", itm.NumTarget, elm, idx, itm);
               nn = (idx + 1) * 10 + imsr[itm.NumTarget][elm][itm.SubName];
               sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
               // sqls.push(sql);

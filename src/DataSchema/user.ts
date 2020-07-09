@@ -58,7 +58,7 @@ export interface IDBAns {
 }
 
 export interface ITerms {
-    id?: number;
+    id: number;
     GameID: number;
     TermID: string;
     TCenterID?: string;
@@ -68,6 +68,7 @@ export interface ITerms {
     StopTimeS: string;
     Result?: string;
     SpNo?: string;
+    isSettled?: number;
     ModifyID: number;
 }
 
@@ -86,4 +87,6 @@ export interface IGame {
     // TopPay: number;
     UseAvgOdds: number;
     GType: string;
+    hasSPNO: number;
+    OpenNums: number;
 }
