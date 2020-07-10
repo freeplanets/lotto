@@ -118,48 +118,66 @@ const SettleNums: ISetl[] = [
   },
   {
     BetTypes: 19,              // 組 3轉直-5
-    NumTarget: "Set3",
+    NumTarget: "C36S",
+    SubName: "isSet3",
     OpenAll: 2,
+    UseExTable: true
   },
   {
     BetTypes: 20,              // 組 3轉直-6
-    NumTarget: "Set3",
+    NumTarget: "C36S",
+    SubName: "isSet3",
     OpenAll: 2,
+    UseExTable: true
   },
   {
     BetTypes: 21,              // 組 3轉直-7
-    NumTarget: "Set3",
+    NumTarget: "C36S",
+    SubName: "isSet3",
     OpenAll: 2,
+    UseExTable: true
   },
   {
     BetTypes: 22,              // 組 3轉直-8
-    NumTarget: "Set3",
+    NumTarget: "C36S",
+    SubName: "isSet3",
     OpenAll: 2,
+    UseExTable: true
   },
   {
     BetTypes: 23,              // 組 6轉直-4
-    NumTarget: "Set6",
+    NumTarget: "C36S",
+    SubName: "isSet6",
     OpenAll: 3,
+    UseExTable: true
   },
   {
     BetTypes: 24,              // 組 6轉直-5
-    NumTarget: "Set6",
+    NumTarget: "C36S",
+    SubName: "isSet6",
     OpenAll: 3,
+    UseExTable: true
   },
   {
     BetTypes: 25,              // 組 6轉直-6
-    NumTarget: "Set6",
+    NumTarget: "C36S",
+    SubName: "isSet6",
     OpenAll: 3,
+    UseExTable: true
   },
   {
     BetTypes: 26,              // 組 6轉直-7
-    NumTarget: "Set6",
+    NumTarget: "C36S",
+    SubName: "isSet6",
     OpenAll: 3,
+    UseExTable: true
   },
   {
     BetTypes: 27,              // 組 6轉直-8
-    NumTarget: "Set6",
+    NumTarget: "C36S",
+    SubName: "isSet6",
     OpenAll: 3,
+    UseExTable: true
   },
   {
     BetTypes: 28,          // 3x3x3

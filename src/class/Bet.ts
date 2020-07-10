@@ -536,7 +536,7 @@ export class Bet implements IBet {
         // const BetTypes: number[] = [BetType];
         let Chker: OpChk | undefined;
         const OddsID: number = parseInt(Odds, 10);
-        const arrNum: INum = {};
+        // const arrNum: INum = {};
         const BNum: number = BetParam[GType][BetType];
         const setsN = Nums.split(",");
         // const tmpNums: INumData[] = [];
@@ -553,9 +553,11 @@ export class Bet implements IBet {
         if (BNum === 0) {
             isPASS = true;
         }
+        /*
         if (typeof arrNum[BetType] === "undefined") {
             arrNum[BetType] = [];
         }
+        */
         // arrNum[BetType] = Nums.split("|");
         // const total: number = 0;
         const NumOdd: INumOdd = {};
@@ -573,7 +575,8 @@ export class Bet implements IBet {
             tmpNums.push(iNumD);
         });
         */
-        const ans: ICurOddsData[] = await this.getOddsData(arrNum, BetType);
+        const ans: ICurOddsData[] = await this.getOddsData(Nums, BetType);
+        console.log("after getOddsData:", ans);
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetType);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetType);
         if (opParams) {
@@ -737,7 +740,7 @@ export class Bet implements IBet {
         on c.GameID=p.GameID and c.BetType=p.BetType where p.SubType=0 and
         c.tid= ${this.tid} and c.GameID = ${this.GameID} and p.PayClassID= ${this.PayClassID} and `;
         if (typeof(nums) === "string") {
-            sql = sql + ` c.BetType= ${BT} and Num in (${nums})`;
+            sql = sql + ` c.BetType = ${BT} and Num in (${nums})`;
         } else {
             const filters: string[] = [];
             Object.keys(nums).map((BetType) => {
@@ -747,6 +750,7 @@ export class Bet implements IBet {
             sql = sql + "(" + filters.join(" or ") + ")";
             // console.log("getOddsData:", sql);
         }
+        console.log("getOddsData:", sql);
         let ans;
         await this.conn.query(sql).then((rows) => {
             ans = rows;

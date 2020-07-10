@@ -1,3 +1,4 @@
+import {IC36S} from "./if";
 export function OddEven(num: number) {
   return num % 2 === 0 ? 1 : 0;
 }
@@ -32,21 +33,20 @@ export function Combs(num: string[]) {
   });
   return tmp;
 }
-export function PairAndNum(num: string[]) {
+export function PairAndNum(num: string[]): IC36S {
   const tmp: string[] = [];
-  const ans = {isSet3: false, isSet6: false, Num: ""};
+  const ans: IC36S = {isSame3: false, isSet3: false, isSet6: false, Num: ""};
   num.map((n) => {
-    if (tmp.indexOf(n) < 0) { tmp.push(n); } else {
-      ans.Num = n;
-    }
+    if (tmp.indexOf(n) < 0) { tmp.push(n); }
   });
   if (tmp.length === 3) {
     ans.isSet6 = true;
   } else if (tmp.length === 2) {
     ans.isSet3 = true;
   } else {
-    ans.Num = "";
+    ans.isSame3 = true;
   }
+  ans.Num = tmp.join(",");
   return ans;
 }
 

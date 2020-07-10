@@ -3,6 +3,7 @@ import {ISetl, ISqlProc} from "../../DataSchema/if";
 import {IExProc} from "../Bet";
 import D3DST from "../SettleType/D3DST";
 import {C3DNum, ID3Result} from "./C3DNum";
+import { IC36S } from "./if";
 // const SettleMethods = MarkSixST;
 export function D3DSetl(tid: number, GameID: number, num: string, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
   // let ans: string[] = [];
@@ -81,35 +82,48 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, con
           // nn = tmp;
       }
   } else {
-      if (itm.SubName) {
-          nn = imsr[itm.NumTarget][itm.SubName];
+      if (itm.UseExTable) {
+        const btS = imsr[itm.NumTarget];
+        if (btS[itm.SubName]) {
+            sql = `update BetTable set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in (${btS.Num}) and isCancled=0`;
+            sqls.pre.push(sql);
+            sql = `update BetTable b,
+            (SELECT betid,count(*) OpNums,CASE UseAvgOdds WHEN 1 then SUM(ODDS)/count(*) when 0 then MIN(Odds) end Odds FROM BetTableEx
+            where GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and Opened=1 group by betid) t set b.OpNums=t.OpNums,b.Payouts=b.Amt*t.Odds
+            where b.GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and b.betid=t.betid and b.isCancled=0`;
+            sqls.pre.push(sql);
+        }
       } else {
-          nn = imsr[itm.NumTarget];
-      }
-      if (itm.PType === "Multi") {
-        const tmpNN: number[] = nn  as number[];
-        tmpNN.map((opns, idx) => {
-          sql = `update BetTable set OpNums=${opns} where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${idx}' and isCancled=0`;
-          sqls.common.push(sql);
-        });
-      } else if (itm.PType === "EACH") {
-          if (itm.Position) {
-            const pos: number[] = itm.Position;
-            pos.map((p) => {
-              const num: number = nn[p];
-              sql = `update BetTableEx set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num=${num}`;
-              sqls.pre.push(sql);
-            });
-            sql = `update BetTable a,
-              (SELECT tid,GameID,BetType,betid,sum(Opened) OpNums FROM BetTableEx WHERE tid=${tid} and GameID=${GameID} and BetType=3 Group by tid,GameID,BetType,betid) b
-              set a.OpNums = b.OpNums where a.tid=b.tid and a.GameID = b.GameID and a.BetType=b.BetType and a.betid = b.betid
-              and a.tid=${tid} and a.GameID=${GameID} and a.BetType=${itm.BetTypes}`;
+        if (itm.SubName) {
+            nn = imsr[itm.NumTarget][itm.SubName];
+        } else {
+            nn = imsr[itm.NumTarget];
+        }
+        if (itm.PType === "Multi") {
+            const tmpNN: number[] = nn  as number[];
+            tmpNN.map((opns, idx) => {
+            sql = `update BetTable set OpNums=${opns} where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${idx}' and isCancled=0`;
             sqls.common.push(sql);
-          }
-      } else {
-          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
-          sqls.common.push(sql);
-      }
+            });
+        } else if (itm.PType === "EACH") {
+            if (itm.Position) {
+                const pos: number[] = itm.Position;
+                pos.map((p) => {
+                const num: number = nn[p];
+                sql = `update BetTableEx set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num=${num}`;
+                sqls.pre.push(sql);
+                });
+                sql = `update BetTable a,
+                (SELECT tid,GameID,BetType,betid,sum(Opened) OpNums FROM BetTableEx WHERE tid=${tid} and GameID=${GameID} and BetType=3 Group by tid,GameID,BetType,betid) b
+                set a.OpNums = b.OpNums where a.tid=b.tid and a.GameID = b.GameID and a.BetType=b.BetType and a.betid = b.betid
+                and a.tid=${tid} and a.GameID=${GameID} and a.BetType=${itm.BetTypes}`;
+                sqls.common.push(sql);
+            }
+        } else {
+            sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
+            sqls.common.push(sql);
+        }
+    }
       // sqls.push(sql);
   }
   if (itm.PType === "Multi") {

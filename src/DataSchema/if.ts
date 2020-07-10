@@ -277,10 +277,11 @@ export interface ISetl {
     OneToGo?: boolean;
     TieNum?: number;             // 平手
     ExSP?: string;               // 中特
-    OpenSP?: number;
+    OpenSP?: number;             // 開出特碼
     NumMove?: number;            // 號碼和結果差
     PType?: string;              // EACH 多項目對一個結果
     ExtBT?: number;              // 比對附加下注方式
+    UseExTable?: boolean;         // 使用BetTableEx進行比對 最小/平均賠率
 }
 
 export interface ISqlProc {

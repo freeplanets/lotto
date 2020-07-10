@@ -18,3 +18,9 @@ export interface ITwoNums {
   SumTailBS: number;
   SumTailPrime: number;
 }
+export interface IC36S {
+  isSame3: boolean;
+  isSet3: boolean;
+  isSet6: boolean;
+  Num: string;
+}

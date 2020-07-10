@@ -1,7 +1,7 @@
 import {D3OneNum} from "./D3OneNum";
 import {D3Sum3, } from "./D3Sum3";
 import {D3TwoNums} from "./D3TwoNums";
-import {ID3Nums, ISum3, ITwoNums} from "./if";
+import {IC36S, ID3Nums, ISum3, ITwoNums} from "./if";
 import * as SFunc from "./SFunc";
 
 export interface ID3Result {
@@ -14,8 +14,7 @@ export interface ID3Result {
   Pos01?: ITwoNums;
   TwoNums?: number[];
   Set3All?: number;   // 組 3全包 中0,不中1
-  C3S?: number|string[];
-  C6S?: number|string[];
+  C36S?: IC36S;
   OddEvenPass?: number;
   BigSmallPass?: number;
   PrimePass?: number;
@@ -67,9 +66,11 @@ export class C3DNum {
     this.NumSet.D3NotPos = this.getD3NoPos(nums);
     this.NumSet.CrossN = this.getCrossN(nums);
     this.NumSet.Straight = this.chkStraight(nums);
-    const cc = SFunc.Combs(anum);
-    this.NumSet.Same3 = cc.length === 1 ? 0 : 1;
-    this.NumSet.Pairs = cc.length === 2 ? 0 : 1;
+    // const cc = SFunc.Combs(anum);
+    const cc = SFunc.PairAndNum(anum);
+    this.NumSet.C36S = cc;
+    this.NumSet.Same3 = cc.isSame3 ? 0 : 1;
+    this.NumSet.Pairs = cc.isSet3 ? 0 : 1;
     this.NumSet.PairsNum = this.getPairsNum(nums);
     this.NumSet.StraightPart = this.chkStraightPart(nums);
     // 雜六 - 不包含豹子、順子、對子、半順
