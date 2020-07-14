@@ -5,7 +5,7 @@ import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
 import {IGame, ITerms} from "../DataSchema/user";
 import {getUserCredit, ModifyCredit} from "../func/Credit";
 // import JDate from '../class/JDate';
-import {doQuery} from "../func/db";
+import dbPool, {doQuery} from "../func/db";
 import BetParam from "./BetParam";
 import {C} from "./Func";
 import JTable from "./JTable";
@@ -49,7 +49,7 @@ export class Bet implements IBet {
                 private PayClassID: number, private conn: mariadb.PoolConnection) {
 
                 }
-    public async AnaNum(nums: string) {
+    public async AnaNum(nums: string, ExtNumInfo?: any) {
         // const SNB: ISingleNumBet[] = [];
         const msg: IMsg = {
             ErrNo: 0
@@ -158,6 +158,10 @@ export class Bet implements IBet {
                 };
                 total = total + amt;
                 payouts = payouts + (amt * itm.Odds);
+                if (ExtNumInfo) {
+                    bd.Num = this.rgExtNumInfo(ExtNumInfo);
+                    itm.Num = bd.Num;
+                }
                 SNB.Content.push(itm);
                 BetDetail.push(bd);
             } else {
@@ -210,6 +214,11 @@ export class Bet implements IBet {
             if (rlt1) {
                 if (Chker) {
                     // console.log("do Chker updateTotals");
+                    if (ExtNumInfo) {
+                        BetDetail.map((itm) => {
+                            itm.Num = "0";
+                        });
+                    }
                     const totchk = Chker.updateTotals(BetDetail, this.conn);
                     if (!totchk) {
                         await this.conn.rollback();
@@ -276,7 +285,7 @@ export class Bet implements IBet {
         console.log("Parlay", BNum);
         let isPASS: boolean = false;
         if (BNum > 0 && Odd.length < BNum) {
-            msg.ErrNo = 3;
+            msg.ErrNo = ErrCode.NOT_ENOUGH_NUM;
             msg.ErrCon = "Not enough num";
             return msg;
         }
@@ -331,7 +340,7 @@ export class Bet implements IBet {
                 itm.Odds = fnd.Odds;
                 NumOdd[itm.Num] = fnd.Odds;
                 if (itm.Num > 100 && !isPASS) {
-                    const tNum: number = itm.Num - 100;
+                    const tNum: number = itm.Num as number - 100;
                     SNB.Content.find((im) => {
                         if (im.Num === tNum) {
                             im.Odds += "," + fnd.Odds;
@@ -614,6 +623,7 @@ export class Bet implements IBet {
                 NumOdd[itm.Num] = fnd.Odds;
             } else {
                 msg.ErrNo = 9;
+                msg.ErrCon = `error: ${iNum} : OID= $`;
                 return msg;
             }
             SNB.Content.push(itm);
@@ -663,7 +673,7 @@ export class Bet implements IBet {
                     GameID: this.GameID,
                     BetType,
                     tGroup: idx,
-                    Num: set.Num,
+                    Num: set.Num as number,
                     Odds: tmpOdds,
                     Opened: 0,
                     UseAvgOdds
@@ -834,6 +844,18 @@ export class Bet implements IBet {
         } else {
             return Math.min.apply(Math, dta);
         }
+    }
+    private rgExtNumInfo(ext: any) {
+        const extmark = ["h", "t", "u"];    // 百,拾,個
+        const tmp: string[] = [];
+        for (let i = 0, n = ext.length; i < n; i++) {
+            const ln: string[] = ext[i];
+            for (let j = 0, jn = ln.length; j < jn; j++) {
+                ln[j] = extmark[i] + ln[j] + extmark[i];
+            }
+            tmp.push(ln.join(" "));
+        }
+        return tmp.join(" : ");
     }
     /*
     private async calDayReport(dt:IBetTable[]){

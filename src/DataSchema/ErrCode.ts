@@ -9,6 +9,7 @@ const enum ErrCode {
   NO_LOGIN = 7,
   DELETE_TERM_ERR = 8,
   NOT_DEFINED_ERR = 9,
-  MISS_PARAMETER = 10
+  MISS_PARAMETER = 10,
+  NOT_ENOUGH_NUM = 11
 }
 export default ErrCode;

@@ -65,20 +65,29 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, con
         }
       } else {
           // const tmp: number[] = [];
-          itm.Position.map(async (elm, idx) => {
-              // console.log("CreateSql Position not number", itm.NumTarget, elm, idx, itm);
-              nn = (idx + 1) * 10 + imsr[itm.NumTarget][elm][itm.SubName];
-              sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
-              // sqls.push(sql);
-              sqls.common.push(sql);
-              if (itm.ExtBT) {
-                  const num: number = nn as number;
-                  const exnn: number = itm.ExtBT * 100 + num;
-                  sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.ExtBT} and Num='${exnn}' and isCancled=0`;
-                  // sqls.push(sql);
-                  sqls.common.push(sql);
-              }
-          });
+          if (itm.PType === "M3POS") {
+            const nums = imsr[itm.NumTarget];
+            const mark = ["h", "t", "u"];
+            nums.map((elm, idx) => {
+                sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST ('${mark[idx] + elm + mark[idx]}' IN BOOLEAN MODE) and isCancled=0`;
+                sqls.common.push(sql);
+            });
+          } else {
+            itm.Position.map(async (elm, idx) => {
+                // console.log("CreateSql Position not number", itm.NumTarget, elm, idx, itm);
+                nn = (idx + 1) * 10 + imsr[itm.NumTarget][elm][itm.SubName];
+                sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
+                // sqls.push(sql);
+                sqls.common.push(sql);
+                if (itm.ExtBT) {
+                    const num: number = nn as number;
+                    const exnn: number = itm.ExtBT * 100 + num;
+                    sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.ExtBT} and Num='${exnn}' and isCancled=0`;
+                    // sqls.push(sql);
+                    sqls.common.push(sql);
+                }
+            });
+        }
           // nn = tmp;
       }
   } else {

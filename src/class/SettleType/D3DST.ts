@@ -184,35 +184,42 @@ const SettleNums: ISetl[] = [
     NumTarget: "Nums",
     Position: [0, 1, 2],
     OpenAll: 3,
-    PType: "EACH"
+    PType: "M3POS"
   },
   {
     BetTypes: 29,          // 4x4x4
     NumTarget: "Nums",
     Position: [0, 1, 2],
     OpenAll: 3,
-    PType: "EACH"
+    PType: "M3POS"
   },
   {
     BetTypes: 30,          // 5x5x5
     NumTarget: "Nums",
     Position: [0, 1, 2],
     OpenAll: 3,
-    PType: "EACH"
+    PType: "M3POS"
   },
   {
     BetTypes: 31,          // 6x6x6
     NumTarget: "Nums",
     Position: [0, 1, 2],
     OpenAll: 3,
-    PType: "EACH"
+    PType: "M3POS"
   },
   {
     BetTypes: 32,          // 7x7x7
     NumTarget: "Nums",
     Position: [0, 1, 2],
     OpenAll: 3,
-    PType: "EACH"
+    PType: "M3POS"
+  },
+  {
+    BetTypes: 33,          // 中3保3
+    NumTarget: "Nums",
+    Position: [0, 1, 2],
+    OpenAll: 3,
+    PType: "M3POS"
   },
   {
     BetTypes: 34,          // 一定位-個質合 質數 1,2,3,4,7 ,合數 其他

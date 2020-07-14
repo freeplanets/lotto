@@ -48,7 +48,7 @@ export interface IGameOdds {
 }
 
 export interface INumData {
-    Num: number;
+    Num: number | string;
     OddsID: number;
     Odds?: string | number;
     Amt: number;

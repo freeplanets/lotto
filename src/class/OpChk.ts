@@ -310,13 +310,13 @@ export class OpChk {
                         tid: this.tid,
                         GameID: this.op.GameID as number,
                         BetType: this.op.BetType as number,
-                        Num: dt.Num,
+                        Num: dt.Num as number,
                         Odds: chgOdds,
                     };
                     this.BetC.push(udodd);
                     // this.BetC.push(`${this.tid},${this.op.GameID},${this.op.BetType},${dt.Num},${chgOdds}`);
                     if (this.GInfo.BothSideAdjust && this.op.TotalNums === 2) {  // 雙面連動
-                        const xNum: number = getOtherSide(dt.Num);
+                        const xNum: number = getOtherSide(dt.Num as number);
                         const xudodd: IUdOdds = {
                             tid: this.tid,
                             GameID: this.op.GameID as number,

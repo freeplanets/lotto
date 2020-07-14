@@ -834,7 +834,7 @@ app.post("/member/mwagermulti", async (req, res) => {
     return;
   }
   const param = req.body;
-  // console.log("/api/member/mwagermulti", param);
+  console.log("/api/member/mwagermulti", param);
   const UserID = param.UserID;
   const Account = param.Account;
   const tid = param.LNoID;
@@ -844,7 +844,7 @@ app.post("/member/mwagermulti", async (req, res) => {
   // const btrans = await conn.beginTransaction();
   // console.log("Begin:", btrans);
   const snb: Bet = new Bet(UserID, Account, UpId , tid, GameID, PayClassID, conn);
-  const ans: IMsg = await snb.AnaNum(param.WagerContent);
+  const ans: IMsg = await snb.AnaNum(param.WagerContent, param.ExtNumInfo);
   // if (ans.warningStatus === 0) {
   /*
   if (ans.ErrNo === 0) {
