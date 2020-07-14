@@ -59,7 +59,7 @@ export function doQuery(sql: string, conn: mariadb.PoolConnection, params?: IAxP
             resolve(res);
         }).catch((err) => {
             // console.log("doQuery", sql, params, err);
-            console.log("doQuery:", err, "\nErrNo:", err.errno);
+            console.log("doQuery:", err, "SQL:", sql, "params:", params, "\nErrNo:", err.errno);
             Object.keys(err).map((key) => {
                 console.log(key, ">", err[key]);
             });

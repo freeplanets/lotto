@@ -94,7 +94,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, con
       if (itm.UseExTable) {
         const btS = imsr[itm.NumTarget];
         if (btS[itm.SubName]) {
-            sql = `update BetTable set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in (${btS.Num}) and isCancled=0`;
+            sql = `update BetTableEx set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in (${btS.Num})`;
             sqls.pre.push(sql);
             sql = `update BetTable b,
             (SELECT betid,count(*) OpNums,CASE UseAvgOdds WHEN 1 then SUM(ODDS)/count(*) when 0 then MIN(Odds) end Odds FROM BetTableEx
