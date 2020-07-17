@@ -24,3 +24,14 @@ export interface IC36S {
   isSet6: boolean;
   Num: string;
 }
+export interface IHRGNums {
+  Num: number;
+  Sum: number;
+  OddEven: number;
+  BigSmall: number;
+  C3Dragon: number;      // 中發白
+  Direction: number;     // 方位
+  SumOE: number;         // 合數單雙
+  TailBS: number;        // 尾數大小
+  DragonTiger: number;
+}

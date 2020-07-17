@@ -9,7 +9,7 @@ const SettleNums: ISetl[] = [
   },
   {
     BetTypes: 2,              // 一定位-個單雙
-    NumTarget: "PRGNums",
+    NumTarget: "RGNums",
     Position: 2,
     SubName: "OddEven",
     OpenAll: 1,
