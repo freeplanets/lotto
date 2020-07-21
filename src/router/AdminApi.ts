@@ -12,7 +12,7 @@ import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import ErrCode from "../DataSchema/ErrCode";
-import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameItem, IMOdds , IMsg , IParamLog} from "../DataSchema/if";
+import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameItem, IGameResult , IMOdds , IMsg, IParamLog} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 
@@ -150,6 +150,38 @@ app.get("/getGames", async (req, res) => {
       msg.ErrCon = "get connection error!!";
   }
   res.send(JSON.stringify(msg));
+});
+app.get("/member/GameResult", async (req, res) => {
+    const conn = await getConnection();
+    const msg: IMsg = {ErrNo: 0};
+    if (conn) {
+        const param = req.query;
+        console.log("/member/m_stirsbead_result", param);
+        const sql = "select TermID,PTime,Result,SpNo,isSettled from Terms where GameID = ? and isSettled order by id limit 0,20";
+        const ans = await doQuery(sql, conn, [param.GameID]);
+        if (ans) {
+            const gr: IGameResult[] = [];
+            ans.map((itm) => {
+                const tmp: IGameResult = {
+                    GameTime: itm.PTime,
+                    NumberNormal: itm.Result,
+                    NumberSpecial: itm.SpNo,
+                    SerialNo: itm.TermID,
+                    isCancel: itm.isSettled === 2 ? "1" : "0"
+                };
+                gr.push(tmp);
+            });
+            msg.data = gr;
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Games not found!!";
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
 });
 app.post("/saveBtClass", async (req, res) => {
   const conn = await getConnection();

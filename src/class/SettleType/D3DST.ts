@@ -65,8 +65,8 @@ const SettleNums: ISetl[] = [
   },
   {
       BetTypes: 10,             // 一字組合 - 中獎號碼為 1，2，3。下注 1 或 2 或 3 均為得獎。(重碼只算一組)
-      NumTarget: "RGNums",
-      SubName: "Num",
+      NumTarget: "Nums",
+      // SubName: "Num",
       Position: [0, 1, 2],
       OpenAll: 1
   },
@@ -109,7 +109,8 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 17,           // 二字组合 -依照開獎結果，由小至大重新排列，依序排出“兩號為一組”之數字為得獎號碼。(重碼只算一組)。此範例得獎彩票為：12，13，23。
     NumTarget: "TwoNums",
-    OpenAll: 1
+    OpenAll: 1,
+    PType: "ALL"
   },
   {
     BetTypes: 18,           // 組 3全包 -- 顧名思義，不用購買號碼，只買一個結果。就是只要開獎結果中有且只有兩個號碼重覆，下注 組 3 全包 就視為中獎。例如 112，344，446，233 等等，都是中獎。
@@ -119,35 +120,40 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 19,              // 組 3轉直-5
     NumTarget: "C36S",
-    SubName: "isSet3",
+    SubName: "Num",
+    ExChk: "isSet3",
     OpenAll: 2,
     UseExTable: true
   },
   {
     BetTypes: 20,              // 組 3轉直-6
     NumTarget: "C36S",
-    SubName: "isSet3",
+    SubName: "Num",
+    ExChk: "isSet3",
     OpenAll: 2,
     UseExTable: true
   },
   {
     BetTypes: 21,              // 組 3轉直-7
     NumTarget: "C36S",
-    SubName: "isSet3",
+    SubName: "Num",
+    ExChk: "isSet3",
     OpenAll: 2,
     UseExTable: true
   },
   {
     BetTypes: 22,              // 組 3轉直-8
     NumTarget: "C36S",
-    SubName: "isSet3",
+    SubName: "Num",
+    ExChk: "isSet3",
     OpenAll: 2,
     UseExTable: true
   },
   {
     BetTypes: 23,              // 組 6轉直-4
     NumTarget: "C36S",
-    SubName: "isSet6",
+    SubName: "Num",
+    ExChk: "isSet6",
     OpenAll: 3,
     UseExTable: true
   },
@@ -161,21 +167,24 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 25,              // 組 6轉直-6
     NumTarget: "C36S",
-    SubName: "isSet6",
+    SubName: "Num",
+    ExChk: "isSet6",
     OpenAll: 3,
     UseExTable: true
   },
   {
     BetTypes: 26,              // 組 6轉直-7
     NumTarget: "C36S",
-    SubName: "isSet6",
+    SubName: "Num",
+    ExChk: "isSet6",
     OpenAll: 3,
     UseExTable: true
   },
   {
     BetTypes: 27,              // 組 6轉直-8
     NumTarget: "C36S",
-    SubName: "isSet6",
+    SubName: "Num",
+    ExChk: "isSet6",
     OpenAll: 3,
     UseExTable: true
   },
@@ -357,7 +366,7 @@ const SettleNums: ISetl[] = [
     OpenAll: 1
   },
   {
-    BetTypes: 56,         // 佰個和數尾數質合
+    BetTypes: 57,         // 佰個和數尾數質合
     NumTarget: "Pos02",
     SubName: "SumTailPrime",
     OpenAll: 1
@@ -376,7 +385,6 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 60,         // 順子 -數位連號，不分順序(包含數位9.0.1)。例如：012、019，即為中獎。
     NumTarget: "Straight",
-    Position: 3,
     OpenAll: 1
   },
   {

@@ -33,7 +33,7 @@ export function D3DSetl(tid: number, GameID: number, num: string, rtn: any, conn
 }
 
 function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, conn?: mariadb.PoolConnection): ISqlProc {
-  let nn: number|number[];
+  let nn: any;
   let sql: string = "";
   // const sqls: string[] = [];
   const sqls: ISqlProc = {
@@ -65,6 +65,10 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, con
         }
       } else {
           // const tmp: number[] = [];
+          const nums = imsr[itm.NumTarget];
+          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join("','")}') and isCancled=0`;
+          sqls.common.push(sql);
+          /*
           if (itm.PType === "M3POS") {
             const nums = imsr[itm.NumTarget];
             const mark = ["h", "t", "u"];
@@ -88,18 +92,19 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, con
                 }
             });
         }
+        */
           // nn = tmp;
       }
   } else {
       if (itm.UseExTable) {
         const btS = imsr[itm.NumTarget];
-        if (btS[itm.SubName]) {
+        if (btS[itm.ExChk]) {
             sql = `update BetTableEx set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in (${btS.Num})`;
             sqls.pre.push(sql);
             sql = `update BetTable b,
-            (SELECT betid,count(*) OpNums,CASE UseAvgOdds WHEN 1 then SUM(ODDS)/count(*) when 0 then MIN(Odds) end Odds FROM BetTableEx
-            where GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and Opened=1 group by betid) t set b.OpNums=t.OpNums,b.Payouts=b.Amt*t.Odds
-            where b.GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and b.betid=t.betid and b.isCancled=0`;
+            (SELECT betid,tGroup,count(*) OpNums,CASE UseAvgOdds WHEN 1 then SUM(ODDS)/count(*) when 0 then MIN(Odds) end Odds FROM BetTableEx
+            where GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and Opened=1 group by betid,tGroup) t set b.OpNums=t.OpNums,b.Payouts=b.Amt*t.Odds
+            where b.betid=t.betid and b.tGroup=t.tGroup and b.GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and b.isCancled=0`;
             sqls.pre.push(sql);
         }
       } else {
@@ -128,6 +133,9 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, con
                 and a.tid=${tid} and a.GameID=${GameID} and a.BetType=${itm.BetTypes}`;
                 sqls.common.push(sql);
             }
+        } else if (itm.PType === "ALL") {
+            sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nn.join("','")}') and isCancled=0`;
+            sqls.common.push(sql);
         } else {
             sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
             sqls.common.push(sql);
@@ -136,7 +144,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, con
       // sqls.push(sql);
   }
   if (itm.PType === "Multi") {
-    sql = `update BetTable set WinLose=(Amt/12)*Payouts*OpNums-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums>${itm.OpenAll}`;
+    sql = `update BetTable set WinLose=(Payouts/12)*OpNums-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums>${itm.OpenAll}`;
     // sqls.push(sql);
     sqls.common.push(sql);
   } else {

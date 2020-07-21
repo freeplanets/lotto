@@ -22,7 +22,8 @@ interface IGameInfo {
     GType: string;
 }
 const GameTypes = {
-    MarkSix : "MarkSix"
+    MarkSix : "MarkSix",
+    D3 : "3D"
 };
 export interface IExProc {
     id: number;
@@ -402,14 +403,28 @@ export class Bet implements IBet {
                 const oddsg1: number[] = [];
                 set.map((n) => {
                     const nn: number = parseInt(n, 10);
+                    odds = odds + NumOdd[n];
+                    oddsg.push(NumOdd[n]);
                     if (isPASS) {
                         if (odds === 0) {
                             odds = 1;
                         }
                         odds = odds * NumOdd[n];
+                    } else if (GType === GameTypes.D3) {
+                        const tmp: IExProc = {
+                            id: 0,
+                            betid: rlt.insertId,
+                            tid: this.tid,
+                            GameID: this.GameID,
+                            BetType,
+                            tGroup: idx,
+                            Num: n,
+                            Odds: NumOdd[n],
+                            Opened: 0,
+                            UseAvgOdds
+                        };
+                        exproc.push(tmp);
                     } else {
-                        odds = odds + NumOdd[n];
-                        oddsg.push(NumOdd[n]);
                         if (arrNum[BetType].length > setsN.length) {
                             // console.log("Odds1", nn, NumOdd[100 + nn], NumOdd);
                             odds1 = odds1 + NumOdd[100 + nn];
@@ -443,6 +458,7 @@ export class Bet implements IBet {
                     UpId: this.UpId,
                     GameID: this.GameID,
                     BetType,
+                    tGroup: idx,
                     Num: "x" + set.join("x") + "x",
                     Odds: avgOdds,
                     Payouts: parseFloat((Amt * avgOdds).toFixed(2)),

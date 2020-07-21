@@ -125,6 +125,7 @@ export interface IBetTable {
     tid: number;
     GameID: number;
     BetType: number;
+    tGroup?: number;
     Num: string;
     Odds: number;
     Odds1?: number;
@@ -281,11 +282,20 @@ export interface ISetl {
     NumMove?: number;            // 號碼和結果差
     PType?: string;              // EACH 多項目對一個結果
     ExtBT?: number;              // 比對附加下注方式
-    UseExTable?: boolean;         // 使用BetTableEx進行比對 最小/平均賠率
+    UseExTable?: boolean;        // 使用BetTableEx進行比對 最小/平均賠率
+    ExChk?: string;              // 額外檢查欄位名稱,開出的碼是否為組3或是組6
 }
 
 export interface ISqlProc {
     pre: string[];
     common: string[];
     final: string;
+}
+
+export interface IGameResult {
+    GameTime: string;
+    NumberNormal: string;
+    NumberSpecial: string;
+    SerialNo: string;
+    isCancel: string;
 }
