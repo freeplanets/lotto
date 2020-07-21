@@ -39,7 +39,7 @@ export class C3DNum {
     Sum: 0
   };
   private getComb2 = SFunc.D3TwoNums;
-  private getSet3All = SFunc.D3Set3All;
+  // private getSet3All = SFunc.D3Set3All;
   private getOddEvenPass = SFunc.OddEvenPass;
   private getBigSmallPass = SFunc.BigSmallPass;
   private getPrimePass = SFunc.PrimePass;
@@ -58,7 +58,7 @@ export class C3DNum {
     this.NumSet.Pos01 = new D3TwoNums(anum[0], anum[1]).Nums;
     this.NumSet.Sum3 = new D3Sum3(this.NumSet.Sum).Nums;
     this.NumSet.TwoNums = this.getComb2(nums);
-    this.NumSet.Set3All = this.getSet3All(nums) as number;
+    // this.NumSet.Set3All = this.getSet3All(nums) as number;
     this.NumSet.OddEvenPass = this.getOddEvenPass(this.NumSet.Nums);
     this.NumSet.BigSmallPass = this.getBigSmallPass(this.NumSet.Nums);
     this.NumSet.PrimePass = this.getPrimePass(this.NumSet.Nums);
@@ -71,10 +71,11 @@ export class C3DNum {
     this.NumSet.C36S = cc;
     this.NumSet.Same3 = cc.isSame3 ? 0 : 1;
     this.NumSet.Pairs = cc.isSet3 ? 0 : 1;
+    this.NumSet.Set3All = this.NumSet.Pairs;
     this.NumSet.PairsNum = this.getPairsNum(nums);
     this.NumSet.StraightPart = this.chkStraightPart(nums);
     // 雜六 - 不包含豹子、順子、對子、半順
-    this.NumSet.Not6 = this.NumSet.Sum3 && this.NumSet.Pairs && this.NumSet.Straight && this.NumSet.StraightPart ? 0 : 1;
+    this.NumSet.Not6 = this.NumSet.Same3 && this.NumSet.Pairs && this.NumSet.Straight && this.NumSet.StraightPart ? 0 : 1;
     this.NumSet.KillNum = this.getKillNum(this.NumSet.Nums);
   }
   private getD3NoPos(n: string): number {
