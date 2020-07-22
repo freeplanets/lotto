@@ -1188,7 +1188,7 @@ app.get("/setOdds", async (req, res) => {
                 addOdds = addOdds - (addOdds % fOdds.Steps);
                 odds = fOdds.Odds - addOdds;
               }
-              // console.log("before setOdds", odds, param.Add, param.Step);
+              console.log("before setOdds", odds, param.Add, param.Step);
               if (odds > fOdds.MaxOdds) {
                   odds = fOdds.MaxOdds;
               }

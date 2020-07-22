@@ -95,6 +95,7 @@ export function Tail(num: number) {
   return parseInt((num + "").substr(-1), 10);
 }
 
+// 殺號
 const KillNum: string[][] = [];
 KillNum[0] = ["345789", "256789", "234678", "234569", "145678", "135689", "134679", "124689", "124579", "123789", "123567", "123458"];
 KillNum[1] = ["345789", "256789", "234678", "234569", "045689", "036789", "034567", "024679", "024578", "023579", "023568", "023489"];
@@ -137,3 +138,6 @@ function inNum(num: string, no: number[]): boolean {
   });
   return no.length === cnt;
 }
+
+// Happy
+//

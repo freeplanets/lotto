@@ -3,6 +3,13 @@ interface INumSet {
   OddEven: number;
   BigSmall: number;
 }
+export interface IHappyNums extends INumSet {
+  TailBS: number;
+  SumOE: number;
+  DragonTiger: number;  // 龍虎
+  Direction: number;   // 方位: 東南西北
+  C3Dragon: number;    // 中發白
+}
 export interface ID3Nums extends INumSet {
   Prime: number;
 }

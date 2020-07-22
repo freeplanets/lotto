@@ -73,7 +73,7 @@ export class C3DNum {
     this.NumSet.Pairs = cc.isSet3 ? 0 : 1;
     this.NumSet.Set3All = this.NumSet.Pairs;
     this.NumSet.PairsNum = this.getPairsNum(nums);
-    this.NumSet.StraightPart = this.chkStraightPart(nums);
+    this.NumSet.StraightPart = cc.isSet3 ? 1 : this.chkStraightPart(nums);
     // 雜六 - 不包含豹子、順子、對子、半順
     this.NumSet.Not6 = this.NumSet.Same3 && this.NumSet.Pairs && this.NumSet.Straight && this.NumSet.StraightPart ? 0 : 1;
     this.NumSet.KillNum = this.getKillNum(this.NumSet.Nums);
