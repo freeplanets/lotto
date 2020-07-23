@@ -459,7 +459,7 @@ export class Bet implements IBet {
                     GameID: this.GameID,
                     BetType,
                     tGroup: idx,
-                    Num: "x" + set.join("x") + "x",
+                    Num: "x" + set.join("x x") + "x",
                     Odds: avgOdds,
                     Payouts: parseFloat((Amt * avgOdds).toFixed(2)),
                     Amt,

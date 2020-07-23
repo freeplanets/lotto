@@ -1,12 +1,12 @@
 import mariadb from "mariadb";
 import {ISetl, ISqlProc} from "../../DataSchema/if";
 import {IExProc} from "../Bet";
-import Happy from "../SettleType/Happy";
-import {HappyResult, IHappyResult} from "./HappyResult";
+import Cars from "../SettleType/Cars";
+import {CarsResult, ICarsResult, IFirst2Sum} from "./CarsResult";
 // const SettleMethods = MarkSixST;
-export function HappySetl(tid: number, GameID: number, num: string, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
+export function CarsSetl(tid: number, GameID: number, num: string, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
   // let ans: string[] = [];
-  const imsr: IHappyResult = new HappyResult(num).Nums;
+  const imsr: ICarsResult = new CarsResult(num).Nums;
   const ans: ISqlProc = {
       pre: [],
       common: [],
@@ -16,7 +16,7 @@ export function HappySetl(tid: number, GameID: number, num: string, rtn: any, co
   let sqls: ISqlProc;
   // console.log("imsr:", imsr);
   rtn.map((rd) => {
-      const found: ISetl | undefined = Happy.find((el) => el.BetTypes === rd.BetType);
+      const found: ISetl | undefined = Cars.find((el) => el.BetTypes === rd.BetType);
       if (found) {
           sqls = CreateSql(tid, GameID, found, imsr, conn);
           if (sqls.pre.length > 0) {
@@ -31,7 +31,7 @@ export function HappySetl(tid: number, GameID: number, num: string, rtn: any, co
   return ans;
 }
 
-function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IHappyResult, conn?: mariadb.PoolConnection): ISqlProc {
+function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ICarsResult, conn?: mariadb.PoolConnection): ISqlProc {
   let nn: any;
   let sql: string = "";
   // const sqls: string[] = [];
@@ -42,23 +42,27 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IHappyResult, 
   };
   if (itm.Position !== undefined) {
     const nums = imsr[itm.NumTarget];
-    if (typeof(itm.Position) === "number") {
-        sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join("','")}') and isCancled=0`;
-        sqls.common.push(sql);
-    } else {
-        itm.Position.map((idx) => {
+    if (itm.PType === "EACH") {
+        const pos: number[] = itm.Position as number[];
+        pos.map((idx) => {
             sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST ('x${nums[idx]}x' IN BOOLEAN MODE) and isCancled=0`;
             sqls.common.push(sql);
         });
+        /*
+        nums.map((num) => {
+            sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST ('x${num}x' IN BOOLEAN MODE) and isCancled=0`;
+            sqls.common.push(sql);
+        });
+        */
+    } else {
+        // console.log("CreateSql nums", itm, nums, imsr);
+        sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join("','")}') and isCancled=0`;
+        sqls.common.push(sql);
     }
   } else {
     nn = imsr[itm.NumTarget];
     if (itm.SubName) { nn = imsr[itm.NumTarget][itm.SubName]; }
-    if (itm.TieNum && itm.TieNum === nn) {
-        sql = `update BetTable set WinLose=0,validAmt=0 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
-    } else {
-      sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
-    }
+    sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
     sqls.common.push(sql);
   }
   sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;

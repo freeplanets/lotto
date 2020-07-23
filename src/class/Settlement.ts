@@ -3,7 +3,9 @@ import {getGame} from "../API/MemberApi";
 import {IParamLog, ISqlProc} from "../DataSchema/if";
 import {doQuery} from "../func/db";
 import {saveParamLog} from "../router/AdminApi";
+import {CarsSetl} from "./Settlement/CarsSetl";
 import {D3DSetl} from "./Settlement/D3DSetl";
+import {HappySetl} from "./Settlement/HappySetl";
 // import {CMarkSixMum, IMSResult} from "./Settlement/CMarkSixMum";
 import {getEx, MarkSixSetl} from "./Settlement/MarkSixSetl";
 // const SettleMethods=MarkSixST['MarkSix'];
@@ -175,10 +177,18 @@ async function doSql(sql: string, conn: mariadb.PoolConnection) {
 */
 function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.PoolConnection, GType?: string): ISqlProc {
     let ans: ISqlProc|undefined;
-    if (GType === "3D") {
-        ans = D3DSetl(tid, GameID, imsra, rtn, conn);
-    } else {
-        ans = MarkSixSetl(tid, GameID, imsra, rtn, conn);
+    switch (GType) {
+        case "3D":
+            ans = D3DSetl(tid, GameID, imsra, rtn, conn);
+            break;
+        case "Happy":
+            ans = HappySetl(tid, GameID, imsra, rtn, conn);
+            break;
+        case "Cars":
+            ans = CarsSetl(tid, GameID, imsra, rtn, conn);
+            break;
+        default:
+            ans = MarkSixSetl(tid, GameID, imsra, rtn, conn);
     }
     /**
      * update header

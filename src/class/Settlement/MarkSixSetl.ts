@@ -41,11 +41,14 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
   };
   if (itm.NumTarget === "PASS") {
       imsr.RGNums.map((rgn: IMarkSixNums, idx: number) => {
-          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x12${idx + 1}${rgn.OddEven}x%' and isCancled=0`;
+          // sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x12${idx + 1}${rgn.OddEven}x%' and isCancled=0`;
+          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST('x12${idx + 1}${rgn.OddEven}x' IN BOOLEAN MODE) and isCancled=0`;
           sqls.common.push(sql);
-          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x13${idx + 1}${rgn.BigSmall}x%' and isCancled=0`;
+          // sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x13${idx + 1}${rgn.BigSmall}x%' and isCancled=0`;
+          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST('x13${idx + 1}${rgn.BigSmall}x' IN BOOLEAN MODE) and isCancled=0`;
           sqls.common.push(sql);
-          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x14${idx + 1}${rgn.ColorWave}x%' and isCancled=0`;
+          // sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x14${idx + 1}${rgn.ColorWave}x%' and isCancled=0`;
+          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} MATCH(and) Num AGAINST('x14${idx + 1}${rgn.ColorWave}x' IN BOOLEAN MODE) and isCancled=0`;
           sqls.common.push(sql);
       });
       sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=OpPASS and isCancled=0`;
@@ -55,7 +58,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
   if (itm.TieNum && !itm.Position) {
       if (itm.TieNum === imsr.SPNo) {
           // sql = `update BetTable set WinLose=Amt,isSettled=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
-          sql = `update BetTable set WinLose=Amt,validAmt=0 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
+          sql = `update BetTable set WinLose=0,validAmt=0 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
           sqls.common.push(sql);
           return sqls;
       }
@@ -72,7 +75,8 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
                   sqls.pre.push(sql);
               } else {
                   tmp.map((elm) => {
-                      sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${elm}x%' and isCancled=0`;
+                      // sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${elm}x%' and isCancled=0`;
+                      sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST('x${elm}x' IN BOOLEAN MODE) and isCancled=0`;
                       sqls.common.push(sql);
                   });
               }
@@ -83,7 +87,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
                   nn = imsr[itm.NumTarget][itm.Position];
               }
               if (itm.TieNum && itm.TieNum === nn) {
-                  sql = `update BetTable set WinLose=Amt,validAmt=0 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
+                  sql = `update BetTable set WinLose=0,validAmt=0 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and isCancled=0`;
               } else {
                   sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num = '${nn}' and isCancled=0`;
               }
@@ -121,7 +125,8 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
           sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nn.join("','")}') and isCancled=0`;
       } else {
           if (itm.PType === "EACH") {
-              sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${nn}x%' and isCancled=0`;
+              // sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${nn}x%' and isCancled=0`;
+              sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST('x${nn}x' IN BOOLEAN MODE) and isCancled=0`;
           } else {
               sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
           }
@@ -131,7 +136,8 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
   }
   if (itm.ExSP) {
       nn = imsr[itm.ExSP];
-      sql = `update BetTable set OpSP=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${nn}x%' and isCancled=0`;
+      // sql = `update BetTable set OpSP=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${nn}x%' and isCancled=0`;
+      sql = `update BetTable set OpSP=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST('x${nn}x' IN BOOLEAN MODE) and isCancled=0`;
       // sql = `update BetTableEx set OpSP=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num = ${nn}`;
       // sqls.push(sql);
       sqls.common.push(sql);
@@ -215,7 +221,7 @@ export function getEx(data: IExProc[]): string[] {
           nums.push(nm);
       });
       if (itm.Nums.length === itm.OpenNums.length) {
-          sql = `update BetTable set OpNums=${itm.OpenNums.length} where betid=${itm.betid} and Num='x${nums.join("x")}x'`;
+          sql = `update BetTable set OpNums=${itm.OpenNums.length} where betid=${itm.betid} and Num='x${nums.join("x x")}x'`;
       } else if (itm.OpenNums.length === (itm.Nums.length - 1)) {
           let odds: number = 0;
           if (itm.UseAvgOdds) {
@@ -232,9 +238,9 @@ export function getEx(data: IExProc[]): string[] {
                   }
               });
           }
-          sql = `update BetTable set OpNums=${itm.OpenNums.length},Payouts=ROUND(Amt*${odds},2) where betid=${itm.betid} and Num='x${nums.join("x")}x'`;
+          sql = `update BetTable set OpNums=${itm.OpenNums.length},Payouts=ROUND(Amt*${odds},2) where betid=${itm.betid} and Num='x${nums.join("x x")}x'`;
       } else {
-          sql = `update BetTable set OpNums=${itm.OpenNums.length} where betid=${itm.betid} and Num='x${nums.join("x")}x'`;
+          sql = `update BetTable set OpNums=${itm.OpenNums.length} where betid=${itm.betid} and Num='x${nums.join("x x")}x'`;
       }
       sqls.push(sql);
   });

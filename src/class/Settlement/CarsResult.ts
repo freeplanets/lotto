@@ -1,21 +1,19 @@
 import XFunc from "../XFunc";
 
-export interface IHappyResult {
+export interface IFirst2Sum {
+  Num: number;
+  OddEven: number;
+  BigSmall: number;
+}
+export interface ICarsResult {
   Nums: string[];
   RGNums: number[];
   OddEven: number[];
   BigSmall: number[];
-  SumOE: number[];
-  TailBS: number[];
   DragonTiger: number[];
-  Direction: number[];
-  C3Dragon: number[];
-  Sum: number;
-  SumTOE: number;
-  SumTBS: number;
-  SumTailBS: number;
+  First2Sum: IFirst2Sum;
 }
-export class HappyResult {
+export class CarsResult {
   private XF = new XFunc();
   private midNum = 11;
   private midTNum = 84;
@@ -23,63 +21,60 @@ export class HappyResult {
   get Nums() {
     return this.NumSet;
   }
-  private NumSet: IHappyResult = {
+  private NumSet: ICarsResult = {
     Nums: [],
     RGNums: [],
     OddEven: [],
     BigSmall: [],
-    SumOE: [],
-    TailBS: [],
     DragonTiger: [],
-    Direction: [],
-    C3Dragon: [],
-    Sum: 0,
-    SumTailBS: 0,
-    SumTBS: 0,
-    SumTOE: 0
+    First2Sum: {
+      Num: 0,
+      BigSmall: 0,
+      OddEven: 0
+    }
   };
   constructor(private nums: string) {
     const anums = nums.split(",");
     anums.map((snum, idx) => {
       // if(!this.NumSet.RGNums) this.NumSet.RGNums=[];
-      const HPre = (idx + 1) * 100;
+      const HPre = (idx + 1) * 10;
       const TPre = (idx + 1) * 10;
       const iNum = parseInt(snum, 10);
       this.NumSet.RGNums.push(HPre + iNum);
       this.NumSet.Nums.push(snum);
       this.NumSet.OddEven.push(TPre + this.XF.getOddEven(iNum));
       this.NumSet.BigSmall.push(TPre + this.XF.getBigSmall(iNum, this.midNum));
-      this.NumSet.SumOE.push(TPre + this.XF.getTotalOE(snum));
-      this.NumSet.TailBS.push(TPre + this.XF.getTailBS(snum));
-      this.NumSet.C3Dragon.push(TPre + this.getC3Dragon(iNum));
-      this.NumSet.Direction.push(TPre + this.getDirection(iNum));
-      this.NumSet.Sum += iNum;
     });
     this.NumSet.DragonTiger = this.getDragonTiger(anums);
-    this.NumSet.SumTOE = this.XF.getOddEven(this.NumSet.Sum);
-    this.NumSet.SumTBS = this.XF.getBigSmall(this.NumSet.Sum, this.midTNum, this.tieNum);
-    this.NumSet.SumTailBS = this.XF.getTailBS(this.NumSet.Sum);
+    this.NumSet.First2Sum = this.getFirst2Sum(anums[0], anums[1]);
   }
-  private getC3Dragon(v: string|number): number {
-    if (typeof(v) === "string") { v = parseInt(v, 10); }
-    return Math.ceil(v / 3) - 1;
+  private getFirst2Sum(v1: number|string, v2: number|string) {
+    const midNum = 12;
+    const f2: IFirst2Sum = {
+      Num: 0,
+      BigSmall: 0,
+      OddEven: 0
+    };
+    v1 = this.parseToInt(v1);
+    v2 = this.parseToInt(v2);
+    f2.Num = v1 + v2;
+    f2.BigSmall = this.XF.getBigSmall(f2.Num, midNum);
+    f2.OddEven = this.XF.getOddEven(f2.Num);
+    return f2;
   }
-  private getDirection(v: string|number): number {
+  private parseToInt(v: number|string): number {
     if (typeof(v) === "string") { v = parseInt(v, 10); }
-    let a: number = (v % 4) - 1;
-    a = a < 0 ? 3 : a;
-    return a;
+    return v;
   }
   private getDragonTiger(v: string[]) {
-    const key = 4;
+    const key = 5;
     const n = v.length;
-    const ans: number[] = new Array(n);
+    const ans: number[] = new Array(key);
     for (let i = 0; i < key; i++) {
       const lt = n - i - 1;
       const a = parseInt(v[i], 10);
       const b = parseInt(v[lt], 10);
       ans[i] = (i + 1) * 10 + (a > b ? 0 : 1);
-      ans[lt] = (n - i) * 10 + (ans[i] ? 0 : 1 );
     }
     return ans;
   }
