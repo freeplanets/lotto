@@ -192,6 +192,7 @@ export interface ICommonParams {
     id?: number;
     tid?: number;
     GameID?: number|string;
+    GType?: string;
     BT?: number;
     Num?: number;
     Step?: number;

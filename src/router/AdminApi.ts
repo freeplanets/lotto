@@ -575,6 +575,7 @@ app.post("/saveTerms", async (req, res) => {
       ErrCon: ""
   };
   let GameID: number|string = 0;
+  let GType: string = "";
   let ans;
   if (param) {
       if (!param.TermID) {
@@ -583,7 +584,7 @@ app.post("/saveTerms", async (req, res) => {
       }
       if (!param.GameID) {
           msg.ErrNo = 9;
-          msg.ErrCon = "TermID is Empty!!";
+          msg.ErrCon = "GameID is Empty!!";
       } else {
           GameID = param.GameID;
       }
@@ -606,6 +607,17 @@ app.post("/saveTerms", async (req, res) => {
   // console.log("chkTermIsSettled", ans);
   // res.send(JSON.stringify(ans));
   if (!ans) {
+      const gans = await getGame(GameID as number, conn);
+      if (gans) {
+          GType = gans.GType;
+      }
+      if (!GType) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "find GType error!!";
+        conn.release();
+        res.send(JSON.stringify(msg));
+        return;
+    }
       const params = [
           param.GameID, param.TermID, param.PDate, param.PTime, param.StopTime, param.StopTimeS, param.ModifyID];
       const fields = ["GameID", "TermID", "PDate", "PTime", "StopTime", "StopTimes", "ModifyID"];
@@ -644,7 +656,7 @@ app.post("/saveTerms", async (req, res) => {
       });
       if (ans) {
           if (!param.id) {
-              const codAns = await afunc.CreateOddsData(GameID, tid, conn);
+              const codAns = await afunc.CreateOddsData(GameID, GType, tid, conn);
               if (codAns.ErrNo !== 0) {
                       await conn.rollback();
                       conn.release();
@@ -717,13 +729,19 @@ app.post("/createBetItems", async (req, res) => {
     return;
   }
   const param = req.body;
-  const GameID = param.GameID;
+  if (!param.GType) {
+    msg.ErrNo = 9;
+    msg.ErrCon = "Miss param GType!!";
+    res.send(JSON.stringify(msg));
+    return;
+  }
+  const GType = param.GType;
   const ModifyID = param.ModifyID;
   // console.log("createBetItems data:", param.data);
   const data: IBetItem[] = JSON.parse(param.data.replace(/\\/g, ""));
   const val: string[] = [];
   data.map((itm) => {
-      const tmp: string = `(${GameID},${itm.BetType},'${itm.Num}',${ModifyID})`;
+      const tmp: string = `(${GType},${itm.BetType},'${itm.Num}',${ModifyID})`;
       // console.log(tmp);
       val.push(tmp);
   });
@@ -733,7 +751,7 @@ app.post("/createBetItems", async (req, res) => {
       conn.release();
       res.send(JSON.stringify(msg));
   }
-  let sql = "insert into dfOddsItems(GameID,BetType,Num,ModifyID) values";
+  let sql = "insert into dfOddsItems(GType,BetType,Num,ModifyID) values";
   sql = sql + val.join(",");
   console.log("sql:", sql);
   await conn.query(sql).then((row) => {

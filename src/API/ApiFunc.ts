@@ -86,7 +86,7 @@ export async function chkTermIsSettled(GameID: string|number, conn: mariadb.Pool
   });
   return ans;
 }
-export async function CreateOddsData(GameID: string|number, tid: number, conn: mariadb.PoolConnection) {
+export async function CreateOddsData(GameID: string|number, GType: string, tid: number, conn: mariadb.PoolConnection) {
   let sql: string = "";
   sql = "select * from CurOddsInfo where tid = ? and GameID= ? limit 0,1";
   const params = [tid, GameID];
@@ -110,10 +110,10 @@ export async function CreateOddsData(GameID: string|number, tid: number, conn: m
   });
   if (!isEmpty) {
       sql = `insert into CurOddsInfo(tid,GameID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps,PerStep)
-          SELECT ${tid} tid,d.GameID,d.BetType,d.SubType,d.Num,b.DfRate Odds,TopRate MaxOdds,${stop} isStop,b.Steps,b.PerStep
-      FROM dfOddsItems d left join BasePayRate b on d.GameID=b.GameID and d.BetType = b.BetType and d.SubType = b.SubType
-      where d.GameID= ${GameID}
+          SELECT ${tid} tid,b.GameID,d.BetType,d.SubType,d.Num,b.DfRate Odds,TopRate MaxOdds,${stop} isStop,b.Steps,b.PerStep
+      FROM dfOddsItems d, BasePayRate b where b.GameID= ${GameID} and d.GType='${GType}' and d.BetType = b.BetType and d.SubType = b.SubType
       `;
+      console.log("CreateOddsData dfOddsItems chk:", sql);
       await conn.query(sql).then((row) => {
           msg.ErrCon = JSON.stringify(row);
       }).catch((err) => {
