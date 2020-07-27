@@ -43,13 +43,18 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IHappyResult, 
   if (itm.Position !== undefined) {
     const nums = imsr[itm.NumTarget];
     if (typeof(itm.Position) === "number") {
-        sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join("','")}') and isCancled=0`;
+        sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num ='${nums}' and isCancled=0`;
         sqls.common.push(sql);
     } else {
+      if (itm.PType === "EACH") {
         itm.Position.map((idx) => {
             sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST ('x${nums[idx]}x' IN BOOLEAN MODE) and isCancled=0`;
             sqls.common.push(sql);
         });
+      } else {
+        sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join("','")}') and isCancled=0`;
+        sqls.common.push(sql);
+      }
     }
   } else {
     nn = imsr[itm.NumTarget];
