@@ -3,8 +3,10 @@ import {getGame} from "../API/MemberApi";
 import {IParamLog, ISqlProc} from "../DataSchema/if";
 import {doQuery} from "../func/db";
 import {saveParamLog} from "../router/AdminApi";
+import {AlwaysSetl} from "./Settlement/AlwaysSetl";
 import {CarsSetl} from "./Settlement/CarsSetl";
 import {D3DSetl} from "./Settlement/D3DSetl";
+import {Happy8Setl} from "./Settlement/Happy8Setl";
 import {HappySetl} from "./Settlement/HappySetl";
 // import {CMarkSixMum, IMSResult} from "./Settlement/CMarkSixMum";
 import {getEx, MarkSixSetl} from "./Settlement/MarkSixSetl";
@@ -184,8 +186,14 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
         case "Happy":
             ans = HappySetl(tid, GameID, imsra, rtn, conn);
             break;
+        case "Happy8":
+            ans = Happy8Setl(tid, GameID, imsra, rtn, conn);
+            break;
         case "Cars":
             ans = CarsSetl(tid, GameID, imsra, rtn, conn);
+            break;
+        case "Always":
+            ans = AlwaysSetl(tid, GameID, imsra, rtn, conn);
             break;
         default:
             ans = MarkSixSetl(tid, GameID, imsra, rtn, conn);

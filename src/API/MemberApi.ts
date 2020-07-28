@@ -63,20 +63,20 @@ export async function getGameInfo(GameID: number|string, conn: mariadb.PoolConne
     await conn.query(sql, [GameID]).then((rows) => {
         if (rows) {
             row = rows[0];
+            if (row.id) {
+                gf.id = row.id;
+                gf.sNo = row.TermID;
+                gf.name = row.name;
+                if (!row.isSettled) {
+                    gf.endSec = JDate.LeftSec(row.StopTime);
+                    gf.endSecSN = JDate.LeftSec(row.StopTimeS);
+                }
+                gf.isSettled = row.isSettled;
+            }
         }
     }).catch((err) => {
         row = err;
     });
-    if (row.id) {
-        gf.id = row.id;
-        gf.sNo = row.TermID;
-        gf.name = row.name;
-        if (!row.isSettled) {
-            gf.endSec = JDate.LeftSec(row.StopTime);
-            gf.endSecSN = JDate.LeftSec(row.StopTimeS);
-        }
-        gf.isSettled = row.isSettled;
-    }
     return gf;
 }
 function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConnection) {
