@@ -10,6 +10,7 @@ import {Happy8Setl} from "./Settlement/Happy8Setl";
 import {HappySetl} from "./Settlement/HappySetl";
 // import {CMarkSixMum, IMSResult} from "./Settlement/CMarkSixMum";
 import {getEx, MarkSixSetl} from "./Settlement/MarkSixSetl";
+import {Speed3Setl} from "./Settlement/Speed3Setl";
 // const SettleMethods=MarkSixST['MarkSix'];
 
 // 重結 isSettled =3 轉成 status = 4 提供平台視別
@@ -194,6 +195,9 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
             break;
         case "Always":
             ans = AlwaysSetl(tid, GameID, imsra, rtn, conn);
+            break;
+        case "Speed3":
+            ans = Speed3Setl(tid, GameID, imsra, rtn, conn);
             break;
         default:
             ans = MarkSixSetl(tid, GameID, imsra, rtn, conn);

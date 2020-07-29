@@ -12,7 +12,7 @@ import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import ErrCode from "../DataSchema/ErrCode";
-import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameItem, IGameResult , IMOdds , IMsg, IParamLog} from "../DataSchema/if";
+import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameDataCaption, IGameItem , IGameResult , IMOdds, IMsg, IParamLog} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 
@@ -765,6 +765,55 @@ app.post("/createBetItems", async (req, res) => {
       res.send(JSON.stringify(msg));
   });
 
+});
+app.get("/getDfOddsItem", async (req, res) => {
+    const msg: IMsg = { ErrNo: 0};
+    const conn = await getConnection();
+    if (!conn) {
+      msg.ErrNo = 9;
+      msg.ErrCon = "get connection error!!";
+      res.send(JSON.stringify(msg));
+      return;
+    }
+    const sql = "select * from dfOddsItems where 1";
+    const ans = await doQuery(sql, conn);
+    if (ans) {
+        msg.data = ans;
+    } else {
+        console.log(ans);
+    }
+    conn.release();
+    res.send(JSON.stringify(msg));
+});
+app.post("/saveGameCaption", async (req, res) => {
+    const msg: IMsg = { ErrNo: 0};
+    const conn = await getConnection();
+    if (!conn) {
+      msg.ErrNo = 9;
+      msg.ErrCon = "get connection error!!";
+      res.send(JSON.stringify(msg));
+      return;
+    }
+    const jt: JTable<IGameDataCaption> = new JTable(conn, "GameDataCaption");
+    const param = req.body;
+    const Game = param.Game;
+    const BetType = param.BetType;
+    const gdc: IGameDataCaption = {
+        id: 1,
+        Game: param.Game.replace(/\\"/g, '"'),
+        BetType: param.BetType.replace(/\\"/g, '"')
+    };
+    // console.log("UpdateGame", param);
+    const ans = await jt.Update(gdc);
+    if (ans) {
+        msg.data = ans;
+    } else {
+       msg.ErrNo = 9;
+       msg.ErrCon = "GameDataCaption update error!!";
+    }
+    // console.log("UpdateGame", ans);
+    conn.release();
+    res.send(JSON.stringify(msg));
 });
 app.get("/GameList", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};

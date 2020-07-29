@@ -3,7 +3,7 @@ import {ISetl, ISqlProc} from "../../DataSchema/if";
 import Speed3 from "../SettleType/Speed3";
 import {ISpeed3Result, Speed3Result} from "./Speed3Result";
 // const SettleMethods = MarkSixST;
-export function Happy8Setl(tid: number, GameID: number, num: string, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
+export function Speed3Setl(tid: number, GameID: number, num: string, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
   // let ans: string[] = [];
   const imsr: ISpeed3Result = new Speed3Result(num).Nums;
   const ans: ISqlProc = {
@@ -65,7 +65,11 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ISpeed3Result,
     }
     sqls.common.push(sql);
   }
-  sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
+  if (itm.PType === "Multi") {
+    sql = `update BetTable set WinLose=Payouts*OpNums-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums>=${itm.OpenAll}`;
+  } else {
+    sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
+  }
   sqls.common.push(sql);
   return sqls;
 }

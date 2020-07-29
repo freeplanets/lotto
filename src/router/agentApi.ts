@@ -108,6 +108,9 @@ agentApi.get("/3", async (req: Request, res: Response) => {
 agentApi.get("/4", async (req: Request, res: Response) => {
     await CreditAC(req, res, 4);
 });
+agentApi.get("/GCaption", async (req: Request, res: Response) => {
+    await getGameDataCaption(req, res);
+});
 agentApi.get("/logHandle", async (req: Request, res: Response) => {
     await getTicketDetail(req, res);
 });
@@ -302,6 +305,48 @@ async function getTicketDetail(req, res) {
         console.log("getTicketDetail error", data);
         // res.send(JSON.stringify(data));
     });
+    conn.release();
+    res.send(JSON.stringify(data));
+}
+async function getGameDataCaption(req, res) {
+    const params = req.query;
+    // console.log("getTicketDetail:", params);
+    const data: IAnsData = {code: 0};
+    // const conn = await dbPool.getConnection();
+    const conn = await getConnection();
+    if (!conn) {
+        data.code = 9;
+        data.ErrCon = "system busy!!";
+        res.send(JSON.stringify(data));
+        return;
+    }
+    if (!params.agentId || !params.param) {
+        data.code = 9;
+        data.ErrCon = "parameter is missing!!";
+        conn.release();
+        res.send(JSON.stringify(data));
+        return;
+    }
+    const Agent: IUser = await getAgent(params.agentId, conn);
+    const eds = new EDS(Agent.DfKey);
+    const param = decParam(eds.Decrypted(params.param));
+    console.log("getGameDataCaption param:", param);
+    if (param.getKey === "GameDataCaption") {
+        const sql = "select Game,BetType from GameDataCaption where Id=1";
+        console.log("getGameDataCaption", sql);
+        await conn.query(sql).then((rows) => {
+            data.list = rows;
+            // console.log("getTicketDetail", sql);
+        }).catch((err) => {
+            data.code = 9;
+            data.error = err;
+            console.log("getGameDataCaption error", data);
+            // res.send(JSON.stringify(data));
+        });
+    } else {
+        data.code = 9;
+        data.error = "param error!!";
+    }
     conn.release();
     res.send(JSON.stringify(data));
 }

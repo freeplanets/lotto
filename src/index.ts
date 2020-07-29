@@ -1,3 +1,4 @@
+// import bodyParser from "body-parser";
 import cors from "cors";
 import express, {Request, Response} from "express";
 import mariadb from "mariadb";
@@ -19,10 +20,12 @@ dbPool.getConnection().then((conn) => {
     // define a route handler for the default home page
 const crosOption: cors.CorsOptions = {
 };
-app.use(express.json());
+// app.use(bodyParser.json({limit: "50mb"}));
+app.use(express.json({limit: "50mb"}));
 app.use(express.urlencoded({extended: true}));
 app.use(cors(crosOption));
 app.use(PreCheck);
+
 app.get("/", async (req: Request, res: Response) => {
 
        res.send("ok");

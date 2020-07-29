@@ -107,6 +107,7 @@ export interface IGameAccessParams {
     showTrialRoom?: string; // 是否显示试玩场，1 为显示，0 为不显示，默认显示
     startTime?: number;
     endTime?: number;
+    getKey?: string;
   }
 
 export interface IDbAns  {
@@ -299,4 +300,10 @@ export interface IGameResult {
     NumberSpecial: string;
     SerialNo: string;
     isCancel: string;
+}
+
+export interface IGameDataCaption {
+    id: number;
+    Game: string;
+    BetType: string;
 }
