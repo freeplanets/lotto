@@ -9,7 +9,7 @@ export interface ISpeed3Result {
   BigSmall: number;
   Sum: number;
   Same3: ISame3;
-  Long: number;
+  Long: number[];
   Short: number;
 }
 export class Speed3Result {
@@ -28,7 +28,7 @@ export class Speed3Result {
       Num: 0,
       ALL: 0
     },
-    Long: 0,
+    Long: [],
     Short: 0
   };
   constructor(nums: string) {
@@ -40,8 +40,8 @@ export class Speed3Result {
     this.NumSet.Same3 = this.getSame3(anums);
     // 大小(和) 11-17 大 0, 4-10 小 1, 豹子 通殺 2
     this.NumSet.BigSmall = this.NumSet.Same3.ALL === 0 ? 2 : this.XF.getBigSmall(this.NumSet.Sum, this.midNum);
-    this.NumSet.Long = this.getNumsIndex(anums, this.LongNum);
-    this.NumSet.Short = this.getNumsIndex(anums, this.ShortNum);
+    this.NumSet.Long = this.getNumsIndex(anums, this.LongNum, true) as number[];
+    this.NumSet.Short = this.getNumsIndex(anums, this.ShortNum) as number;
   }
   private parseToInt(v: number|string): number {
     if (typeof(v) === "string") { v = parseInt(v, 10); }
@@ -70,13 +70,23 @@ export class Speed3Result {
     ];
     return steps.findIndex( (itm) => itm[0] <= t && itm[1] >= t);
   }
-  private getNumsIndex(nums: string[], sets: string[]) {
+  private getNumsIndex(nums: string[], sets: string[], isMulti?: boolean) {
     nums.sort();
     let idx = sets.indexOf(nums[0] + "" + nums[1]);
-    if (idx === -1) {
+    if (!isMulti) {
+      if (idx === -1) {
+        idx = sets.indexOf(nums[1] + "" + nums[2]);
+      }
+      return idx === -1 ? sets.length : idx;
+    } else {
+      const ans: number[] = [];
+      ans.push(idx);
       idx = sets.indexOf(nums[1] + "" + nums[2]);
+      ans.push(idx);
+      idx = sets.indexOf(nums[0] + "" + nums[2]);
+      ans.push(idx);
+      return ans;
     }
-    return idx === -1 ? sets.length : idx;
   }
 }
 

@@ -3,6 +3,7 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 1,              // 三軍
     NumTarget: "Nums",
+    Position: [0, 1, 2],
     PType: "Multi",
     OpenAll: 1,
   },
@@ -31,6 +32,7 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 6,              // 長牌
     NumTarget: "Long",
+    Position: [0, 1, 2],
     OpenAll: 1
   },
   {

@@ -428,21 +428,31 @@ app.get("/getBasePayRate", async (req, res) => {
   }
   const param = req.query;
   const params = [param.GameID];
-  const sql = `select BetType,Title,SubTitle,SubType,NoAdjust,Profit,DfRate,TopRate,
-        Probability,Steps,TopPay,OneHand,TotalNums,UseAvg,SingleNum,UnionNum,MinHand,MaxHand,
-        BetForChange,StepsGroup,ChangeStart,PerStep from BasePayRate where GameID = ?`;
-  await conn.query(sql, params).then((v) => {
-      // console.log("getBasePayRate", v, params);
-      conn.release();
-      msg.data = v;
-      res.send(JSON.stringify(msg));
-  }).catch((err) => {
-      console.log("getBasePayRate error", err);
-      msg.ErrNo = 9;
-      msg.debug = err;
-      conn.release();
-      res.send(JSON.stringify(msg));
-  });
+  const sql = `select p.BetType,p.SubType,NoAdjust,Profit,DfRate,TopRate,
+        p.Probability,Steps,TopPay,OneHand,TotalNums,UseAvg,SingleNum,UnionNum,MinHand,MaxHand,
+        BetForChange,StepsGroup,ChangeStart,PerStep
+        from ProbabilityTable p left join BasePayRate b on  p.GType=b.GType and p.BetType=b.BetType and p.SubType=b.SubType where GameID = ?`;
+  console.log("getBasePayRate:", sql, params);
+  let ans = await doQuery(sql, conn, params);
+  if (ans) {
+      if (ans.length) {
+        msg.data = ans;
+      } else {
+        ans = createBasePayRate(param.GameID, conn);
+        if (ans) {
+            ans = await doQuery(sql, conn, params);
+            if (ans) {
+                msg.data = ans;
+            }
+        }
+      }
+  }
+  if (!msg.data) {
+    msg.ErrNo = 9;
+    msg.ErrCon = "getBasePayRate error";
+  }
+  conn.release();
+  res.send(JSON.stringify(msg));
 });
 app.get("/getPayRate", async (req, res) => {
   const conn = await getConnection();
@@ -455,8 +465,12 @@ app.get("/getPayRate", async (req, res) => {
   }
   const param = req.query;
   const params = [param.PayClassID, param.GameID];
-  const sql = `select p.BetType,p.SubType,b.DfRate,p.Rate,b.Probability,b.PerStep,b.MinHand,b.MaxHand
-      from  BasePayRate b left join PayRate p on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType where p.PayClassID=? and p.GameID = ?`;
+  const sql = `select p.BetType,p.SubType,b.DfRate,p.Rate,a.Probability,b.PerStep,b.MinHand,b.MaxHand
+      from ProbabilityTable a left join BasePayRate b
+        on a.GType=b.GType and a.BetType=b.BetType and a.SubType=b.SubType
+        left join PayRate p
+        on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType
+        where p.PayClassID=? and p.GameID = ?`;
   const ans = await doQuery(sql, conn, params);
   if (ans) {
       msg.data = ans;
@@ -488,9 +502,13 @@ app.post("/batch/saveBasePayRate", async (req, res) => {
       return;
     }
     const param = req.body;
+    //console.log("saveBasePayRate", param);
     const datas: IBasePayRateItm[] = JSON.parse(param.data.replace(/\\/g, ""));
+    //console.log("saveBasePayRate", datas);
     datas.map((itm) => {
         itm.GameID = param.GameID;
+        itm.GType = param.GType;
+        // itm.StepsGroup = JSON.stringify(itm.StepsGroup);
         itm.ModifyID = param.ModifyID;
     });
     const jt: JTable<IBasePayRateItm> = new JTable(conn, "BasePayRate");
@@ -521,14 +539,14 @@ app.post("/batch/saveBasePayRate1", async (req, res) => {
       if (!itm.Profit) { itm.Profit = 0; }
       if (!itm.DfRate) { itm.DfRate = 0; }
       if (!itm.TopRate) { itm.TopRate = 0; }
-      if (!itm.Probability) { itm.Probability = 0; }
+      // if (!itm.Probability) { itm.Probability = 0; }
       if (!itm.Steps) { itm.Steps = 0; }
-      const tmp = `(${param.GameID},${itm.BetType},'${itm.Title}','${itm.SubTitle}',${itm.SubType},${itm.NoAdjust},${itm.Profit},${itm.DfRate},${itm.TopRate},${itm.Probability},${itm.Steps},${itm.TopPay},${itm.OneHand},${param.ModifyID})`;
+      const tmp = `(${param.GameID},${itm.BetType},'${itm.Title}','${itm.SubTitle}',${itm.SubType},${itm.NoAdjust},${itm.Profit},${itm.DfRate},${itm.TopRate},${itm.Steps},${itm.TopPay},${itm.OneHand},${param.ModifyID})`;
       valstr.push(tmp);
   });
-  let sql = "insert into BasePayRate(GameID,BetType,Title,SubTitle,SubType,NoAdjust,Profit,DfRate,TopRate,Probability,Steps,TopPay,OneHand,ModifyID) values";
+  let sql = "insert into BasePayRate(GameID,BetType,Title,SubTitle,SubType,NoAdjust,Profit,DfRate,TopRate,Steps,TopPay,OneHand,ModifyID) values";
   sql += valstr.join(",");
-  sql += " ON DUPLICATE KEY UPDATE NoAdjust=values(NoAdjust),Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Probability=values(Probability),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),ModifyID=values(ModifyID)";
+  sql += " ON DUPLICATE KEY UPDATE NoAdjust=values(NoAdjust),Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),ModifyID=values(ModifyID)";
   await conn.query(sql).then((v) => {
       console.log("getPayRate", sql, v);
       conn.release();
@@ -1644,5 +1662,11 @@ async function isTermEmpty(tid: number, conn: mariadb.PoolConnection): Promise<b
         if (ans[0].cnt === 0) { return true; }
     }
     return false;
+}
+async function createBasePayRate(GameID, conn: mariadb.PoolConnection) {
+    const sql = `insert into BasePayRate(GameID,GType,BetType,SubType)
+        select g.id GameID,p.GType,p.BetType,p.SubType from ProbabilityTable p left join Games g on p.GType=g.GType where g.id = ?`;
+    const ans = await doQuery(sql, conn, [GameID]);
+    return ans;
 }
 export default app;

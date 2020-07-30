@@ -220,6 +220,7 @@ export interface ICommonParams {
 export interface IBasePayRateItm {
     id: number;
     GameID?: number;
+    GType?: number;
     Title?: string;
     SubTitle?: string;
     BetType?: number;
@@ -228,7 +229,7 @@ export interface IBasePayRateItm {
     Profit?: number;
     DfRate?: number;
     TopRate?: number;
-    Probability?: number;
+    // Probability?: number;
     Steps?: number;
     TopPay?: number;
     OneHand?: number;
