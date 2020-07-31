@@ -502,9 +502,9 @@ app.post("/batch/saveBasePayRate", async (req, res) => {
       return;
     }
     const param = req.body;
-    //console.log("saveBasePayRate", param);
+    // console.log("saveBasePayRate", param);
     const datas: IBasePayRateItm[] = JSON.parse(param.data.replace(/\\/g, ""));
-    //console.log("saveBasePayRate", datas);
+    // console.log("saveBasePayRate", datas);
     datas.map((itm) => {
         itm.GameID = param.GameID;
         itm.GType = param.GType;
