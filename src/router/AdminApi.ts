@@ -480,17 +480,26 @@ app.get("/getPayRate", async (req, res) => {
   }
   conn.release();
   res.send(JSON.stringify(msg));
-  /*
-  await conn.query(sql, params).then((v) => {
-      // console.log("getPayRate", v, params);
-      conn.release();
-      res.send(JSON.stringify(v));
-  }).catch((err) => {
-      console.log("getPayRate error", err);
-      conn.release();
-      res.send(JSON.stringify(err));
-  });
-  */
+});
+app.get("/getGameType", async (req, res) => {
+    const conn = await getConnection();
+    const msg: IMsg = {ErrNo: 0};
+    if (!conn) {
+      msg.ErrNo = 9;
+      msg.ErrCon = "get connection error!!";
+      res.send(JSON.stringify(msg));
+      return;
+    }
+    const sql = `select GType,OpenNums,OpenSP,StartNum,EndNum,SameNum from GameType where 1`;
+    const ans = await doQuery(sql, conn);
+    if (ans) {
+        msg.data = ans;
+    } else {
+        msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
+        msg.ErrCon = "getGameType error";
+    }
+    conn.release();
+    res.send(JSON.stringify(msg));
 });
 app.post("/batch/saveBasePayRate", async (req, res) => {
     const conn = await getConnection();
