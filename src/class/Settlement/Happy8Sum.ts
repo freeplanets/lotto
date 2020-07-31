@@ -18,8 +18,9 @@ export class Happy8Sum {
       OddEven:  this.XF.getOddEven(Total, tieNum),
       BigSmall: this.XF.getBigSmall(Total, midNum, tieNum),
       Total810: Total === tieNum ? 0 : 1,
-      Pass: Total === tieNum ? 4 : this.getPass()
+      Pass: 0
     };
+    this.OneNum.Pass = Total === tieNum ? 4 : this.getPass();
   }
   // 大單 0,大雙 1,小單 2,小雙 3
   private getPass() {

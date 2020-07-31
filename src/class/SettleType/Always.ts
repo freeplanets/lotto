@@ -7,14 +7,14 @@ const SettleNums: ISetl[] = [
     OpenAll: 1
   },
   {
-    BetTypes: 2,              // 單雙
-    NumTarget: "OddEven",
+    BetTypes: 2,              // 大小
+    NumTarget: "BigSmall",
     Position: [0, 1, 2, 3, 4],
     OpenAll: 1,
   },
   {
-    BetTypes: 3,              // 大小
-    NumTarget: "BigSmall",
+    BetTypes: 3,              // 單雙
+    NumTarget: "OddEven",
     Position: [0, 1, 2, 3, 4],
     OpenAll: 1,
   },

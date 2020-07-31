@@ -4,12 +4,17 @@ export interface IAWDT {
   Num: number;
   Tie: number;
 }
+export interface IBS {
+  BigSmall: number;
+  OddEven: number;
+}
 
 export interface IAlwaysResult {
   Nums: string[];
   RGNums: number[];
   OddEven: number[];
   BigSmall: number[];
+  Sum: IBS;
   DragonTiger: IAWDT;
   First3: number;
   Middle3: number;
@@ -17,9 +22,7 @@ export interface IAlwaysResult {
 }
 export class AlwaysResult {
   private XF = new XFunc();
-  private midNum = 11;
-  private midTNum = 84;
-  private tieNum = 84;
+  private midNum = 23;
   get Nums() {
     return this.NumSet;
   }
@@ -28,6 +31,10 @@ export class AlwaysResult {
     RGNums: [],
     OddEven: [],
     BigSmall: [],
+    Sum: {
+      BigSmall: 0,
+      OddEven: 0
+    },
     DragonTiger: {
       Num: 0,
       Tie: 0
@@ -38,16 +45,20 @@ export class AlwaysResult {
   };
   constructor(private nums: string) {
     const anums = nums.split(",");
+    let Sum: number = 0;
     anums.map((snum, idx) => {
       // if(!this.NumSet.RGNums) this.NumSet.RGNums=[];
       const HPre = (idx + 1) * 10;
       const TPre = (idx + 1) * 10;
       const iNum = parseInt(snum, 10);
+      Sum += iNum;
       this.NumSet.RGNums.push(HPre + iNum);
       this.NumSet.Nums.push(snum);
       this.NumSet.OddEven.push(TPre + this.XF.getOddEven(iNum));
       this.NumSet.BigSmall.push(TPre + this.XF.getBigSmall(iNum, this.midNum));
     });
+    this.NumSet.Sum.BigSmall = this.XF.getBigSmall(Sum, this.midNum);
+    this.NumSet.Sum.OddEven = this.XF.getOddEven(Sum);
     this.NumSet.DragonTiger = this.getDragonTiger(anums[0], anums[4]);
     this.NumSet.First3 = this.getOthers(anums[0] + anums[1] + anums[2]);
     this.NumSet.Middle3 = this.getOthers(anums[1] + anums[2] + anums[3]);
