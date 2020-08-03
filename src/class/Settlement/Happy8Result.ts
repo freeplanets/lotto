@@ -14,7 +14,7 @@ export interface IHappy8Result {
 }
 export class Happy8Result {
   private XF = new XFunc();
-  private midNum = 40;
+  private midNum = 41;
   private tieNum = 810;
   get Nums() {
     return this.NumSet;
