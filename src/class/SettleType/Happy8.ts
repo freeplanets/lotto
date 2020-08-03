@@ -29,7 +29,7 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 5,              // 總和過關 大單 0,大雙 1,小單 2,小雙 3
     NumTarget: "Sum",
-    SubName: "PASS",
+    SubName: "Pass",
     TieNum: 4,
     OpenAll: 1
   },
