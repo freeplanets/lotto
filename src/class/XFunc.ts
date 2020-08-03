@@ -33,10 +33,10 @@ export default class XFunc implements IFunc {
         return ZMap[num];
     }
     public getOddEven(num: string|number, tieNum?: number) {
-        if (tieNum) {
-            return 2;
-        }
         num = this.toInt(num);
+        if (num===tieNum) {
+            return 2;
+        }        
         return (num + 1) % 2;     // 單為0 ,雙為1
     }
     /**

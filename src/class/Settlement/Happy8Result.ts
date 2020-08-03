@@ -40,7 +40,7 @@ export class Happy8Result {
       this.NumSet.Nums.push(snum);
       Total = Total + this.parseToInt(snum);
     });
-    this.NumSet.Sum = new Happy8Sum(Total, this.midNum, this.tieNum).Nums;
+    this.NumSet.Sum = new Happy8Sum(Total, this.tieNum).Nums;
     this.NumSet.Counter = this.getCounter(anums);
     this.NumSet.FiveElements = this.getFiveElements(Total);
   }
@@ -63,7 +63,7 @@ export class Happy8Result {
       if (isSmall) { small++; }
       if (isEven) { even++; }
     });
-    tmp.BigSmallS = small === midCount ? 2 : (small < midCount ? 0 : 1);
+    tmp.BigSmallS = small === midCount ? 2 : (small < midCount ? 1 : 0);
     tmp.OddEvenS = even === midCount ? 2 : (even < midCount ? 0 : 1);
     return tmp;
   }

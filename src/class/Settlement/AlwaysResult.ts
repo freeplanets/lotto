@@ -97,8 +97,8 @@ export class AlwaysResult {
     s.map((sr) => {
       inum.push(this.parseToInt(sr));
     });
-    const k1 = inum[0] - inum[1];
-    const k2 = inum[1] - inum[2];
+    const k1 = inum[1] - inum[0];
+    const k2 = inum[2] - inum[1];
     if (k1 === 1 && k2 === 1) { return 2; }
     if ((k1 === 1 || k2 === 1) && k1 + k2 !== 2) { return 4; }
     return 5;

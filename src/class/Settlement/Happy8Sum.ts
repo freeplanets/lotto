@@ -13,10 +13,10 @@ export class Happy8Sum {
   }
   private XF = new XFunc();
   private OneNum: ISum;
-  constructor(Total: number, midNum: number, tieNum: number) {
+  constructor(private Total: number, private tieNum: number) {
     this.OneNum = {
       OddEven:  this.XF.getOddEven(Total, tieNum),
-      BigSmall: this.XF.getBigSmall(Total, midNum, tieNum),
+      BigSmall: this.XF.getBigSmall(Total, tieNum, tieNum),
       Total810: Total === tieNum ? 0 : 1,
       Pass: 0
     };
@@ -25,6 +25,9 @@ export class Happy8Sum {
   // 大單 0,大雙 1,小單 2,小雙 3
   private getPass() {
     const pass = ["00", "01", "10", "11"];
-    return pass.indexOf(this.OneNum.BigSmall + "" + this.OneNum.OddEven);
+    const BS = this.XF.getBigSmall(this.Total,this.tieNum);
+    const OE = this.XF.getOddEven(this.Total);
+    console.log('BS:',BS,this.Total,this.tieNum);
+    return pass.indexOf(BS + "" + OE);
   }
 }
