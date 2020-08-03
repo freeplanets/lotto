@@ -25,9 +25,9 @@ export class Happy8Sum {
   // 大單 0,大雙 1,小單 2,小雙 3
   private getPass() {
     const pass = ["00", "01", "10", "11"];
-    const BS = this.XF.getBigSmall(this.Total,this.tieNum);
+    const BS = this.XF.getBigSmall(this.Total, this.tieNum);
     const OE = this.XF.getOddEven(this.Total);
-    console.log('BS:',BS,this.Total,this.tieNum);
+    console.log("BS:", BS, this.Total, this.tieNum);
     return pass.indexOf(BS + "" + OE);
   }
 }

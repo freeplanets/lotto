@@ -34,9 +34,9 @@ export default class XFunc implements IFunc {
     }
     public getOddEven(num: string|number, tieNum?: number) {
         num = this.toInt(num);
-        if (num===tieNum) {
+        if (num === tieNum) {
             return 2;
-        }        
+        }
         return (num + 1) % 2;     // 單為0 ,雙為1
     }
     /**
