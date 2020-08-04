@@ -69,6 +69,7 @@ export interface ITerms {
     Result?: string;
     SpNo?: string;
     isSettled?: number;
+    lrid?:number;
     ModifyID: number;
 }
 
@@ -76,7 +77,7 @@ export interface IGame {
     id: number;
     name: string;
     OfficeSite: string;
-    StopBeforeEnd: string;
+    StopBeforeEnd: number;
     BothSideAdjust: boolean;
     AutoOpen: boolean;
     PDiffTwoSide: number;

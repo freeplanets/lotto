@@ -33,7 +33,7 @@ class JDate {
         const d =  this.curDate.toLocaleDateString("zh-TW", {timeZone: "Asia/Taipei"});
         return this.dateAddZero(d);
     }
-    private  dateAddZero(d: string): string {
+    dateAddZero(d: string): string {
         const sep: string = d.indexOf("-") > -1 ? "-" : "/";
         const dArr: string[] = d.split(sep);
         const newA = dArr.map((s) => {
@@ -41,7 +41,7 @@ class JDate {
         });
         return newA.join(sep);
     }
-    private addZeroIfUnderTen(v: string|number): string {
+    addZeroIfUnderTen(v: string|number): string {
         const i: number = typeof(v) === "string" ? parseInt(v, 10) : 0;
         if (i < 10) { return "0" + i; }
         return "" + i;
