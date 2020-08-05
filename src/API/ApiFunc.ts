@@ -1,8 +1,8 @@
-import mariadb from "mariadb";
-import {getUsers} from "../API/MemberApi";
+import mariadb, {PoolConnection} from "mariadb";
+// import {getUsers} from "../API/MemberApi";
 import JTable from "../class/JTable";
-import {ICommonParams, IMsg} from "../DataSchema/if";
-import {IGame, IPayClassParam, IPayRateItm} from "../DataSchema/user";
+import {ICommonParams, IDbAns, IMsg, IParamLog} from "../DataSchema/if";
+import {IGame, IPayClassParam, IPayRateItm, ITerms} from "../DataSchema/user";
 import {doQuery} from "../func/db";
 
 export async function setPayRateData(GameID: number, PayClassID: number, ModifyID: number, data: any, conn: mariadb.PoolConnection): Promise<boolean> {
@@ -86,7 +86,7 @@ export async function chkTermIsSettled(GameID: string|number, conn: mariadb.Pool
   });
   return ans;
 }
-export async function CreateOddsData(GameID: string|number, GType: string, tid: number, conn: mariadb.PoolConnection) {
+export async function CreateOddsData(GameID: string|number, GType: string, tid: number, conn: mariadb.PoolConnection): Promise<IMsg> {
   let sql: string = "";
   sql = "select * from CurOddsInfo where tid = ? and GameID= ? limit 0,1";
   const params = [tid, GameID];
@@ -145,7 +145,7 @@ async function setBt15Odds(tid: number, GameID: number|string, conn: mariadb.Poo
   return msg;
 }
 
-async function getGameParams(GameID: number|string, conn: mariadb.PoolConnection) {
+async function getGameParams(GameID: number|string, conn: mariadb.PoolConnection): Promise<IMsg> {
   const msg: IMsg = {ErrNo: 0};
   const sql = "select * from Games where id=?";
   await conn.query(sql, [GameID]).then((rows) => {
@@ -443,4 +443,44 @@ async function isGameAutoOpen(GameID: number|string, conn: mariadb.PoolConnectio
         if (ans[0].AutoOpen) { return true; }
     }
     return false;
+}
+
+export async function createTerms(GType: string, term: ITerms, conn: PoolConnection, PLog?: IParamLog[]) {
+    await conn.beginTransaction();
+    const jt: JTable<ITerms> = new JTable(conn, "Terms");
+    let ans;
+    let msg: IMsg = {ErrNo: 0};
+    if (term.id) {
+        ans = jt.Update(term);
+        if (ans) {
+            if (PLog) {
+                ans = await saveParamLog(PLog, conn);
+            }
+        }
+        if (!ans) {
+            await conn.rollback();
+            msg.ErrNo = 9;
+        } else {
+            await conn.commit();
+            msg.data = ans;
+        }
+        return msg;
+    } else {
+        ans = await jt.Insert(term);
+        if (ans) {
+            const dbans = ans as IDbAns;
+            const tid = dbans.insertId;
+            msg = await CreateOddsData(term.GameID, GType, tid, conn);
+        } else {
+            msg.ErrNo = 9;
+            msg.error = ans;
+        }
+    }
+    if (msg.ErrNo === 0) { await conn.commit(); } else { await conn.rollback(); }
+    return msg;
+}
+
+export async function saveParamLog(PLog: IParamLog[], conn: mariadb.PoolConnection) {
+    const jt: JTable<IParamLog> = new JTable(conn, "ParamsLog");
+    return await jt.MultiInsert(PLog);
 }

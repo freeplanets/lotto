@@ -1,5 +1,6 @@
 import mariadb from "mariadb";
 import {IDbAns} from "../DataSchema/if";
+import {doQuery} from "../func/db";
 import eds from "./EncDecString";
 export interface IHasID {
     id: number;
@@ -22,12 +23,29 @@ interface ITableIndex {
 interface ITBIdxes {
     [key: number]: ITableIndex;
 }
+interface IKeyVal {
+    [key: string]: string|number;
+}
 const ED = new eds();
 export default class JTable<T extends IHasID> {
+    private query = doQuery;
     constructor(private conn: mariadb.PoolConnection, private TableName: string) {}
-    public async getOne(id: number): Promise<T|undefined> {
-        const sql = `select * from ${this.TableName} where id=${id}`;
+    public async getOne(id: number|IKeyVal): Promise<T|undefined> {
+        const param: any = [];
+        const field: string[] = [];
+        if (typeof(id) === "number") {
+            param.push(id);
+            field.push("id=?");
+        } else {
+            Object.keys(id).map((key) => {
+                param.push(id[key]);
+                field.push(`${key}=?`);
+            });
+        }
+        const sql = `select * from ${this.TableName} where ${field.join(" and ")}`;
         let mb: T | undefined;
+        const ans = await this.query(sql, this.conn, param);
+        /*
         await this.conn.query(sql).then((row) => {
             if (row.length > 0) {
                 mb = row[0];
@@ -37,7 +55,13 @@ export default class JTable<T extends IHasID> {
             // mb = err;
             console.log("JTable getOne", err);
         });
+        */
         // console.log("JTable List mb", mb);
+        if (ans) {
+            if (ans.lenght > 0) {
+                mb = ans[0] as T;
+            }
+        }
         return mb;
     }
     public async List() {
@@ -81,11 +105,12 @@ export default class JTable<T extends IHasID> {
         // console.log("JTable Update", sql, params);
         await this.conn.query(sql, params).then((row) => {
             ans = row;
-            // console.log("JTable Upate ans:", ans);
+            console.log("JTable Upate ans:", ans);
         }).catch((err) => {
-            ans = err;
+            ans = false;
+            console.log("JTable Upate err:", err);
         });
-        console.log("JTable Upate after:", ans);
+
         return ans;
     }
     public async Insert(v: T) {

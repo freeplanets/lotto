@@ -9,6 +9,7 @@ import {PreCheck} from "./func/middleware";
 import adminRouter from "./router/AdminApi";
 import agentApi from "./router/agentApi";
 import apiRouter from "./router/api";
+import GameCenter from "./router/FromCenter";
 // const args: minimist.ParsedArgs = minimist(process.argv.slice(2), {});
 // console.log("minimist:", args);
 // schedule.scheduleTest();
@@ -72,6 +73,7 @@ app.get("/saveGames", async (req, res) => {
     });
 app.use("/api", adminRouter);
 app.use("/agentApi", agentApi);
+app.use("/GameCenter", GameCenter);
 app.use("/test", apiRouter);
 app.listen(port, () => {
         console.log(`server started at http://localhost:${ port }`);

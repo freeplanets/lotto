@@ -69,7 +69,7 @@ export interface ITerms {
     Result?: string;
     SpNo?: string;
     isSettled?: number;
-    lrid?:number;
+    lrid?: number;
     ModifyID: number;
 }
 
@@ -90,4 +90,11 @@ export interface IGame {
     GType: string;
     hasSPNO: number;
     OpenNums: number;
+}
+
+export interface IBroadCasts {
+    id: number;
+    GameID: number;
+    lrid: number;
+    memo: string;
 }

@@ -597,7 +597,7 @@ app.post("/batch/savePayRate", async (req, res) => {
 });
 app.post("/saveTerms", async (req, res) => {
   const param: ICommonParams = req.body;
-  const msg: IMsg = {
+  let msg: IMsg = {
       ErrNo: 0,
       ErrCon: ""
   };
@@ -644,7 +644,21 @@ app.post("/saveTerms", async (req, res) => {
         conn.release();
         res.send(JSON.stringify(msg));
         return;
-    }
+      }
+      const term: ITerms = {
+            id: param.id ? param.id : 0,
+            GameID: param.GameID ? param.GameID as number : 0,
+            TermID: param.TermID as string,
+            PDate: param.PDate as string,
+            PTime: param.PTime as string,
+            StopTime: param.StopTime as string,
+            StopTimeS: param.StopTimeS as string,
+            ModifyID: param.ModifyID ? param.ModifyID : 0
+        };
+      msg = await afunc.createTerms(GType, term, conn, param.PLog as IParamLog[]);
+      conn.release();
+      res.send(JSON.stringify(msg));
+        /*
       const params = [
           param.GameID, param.TermID, param.PDate, param.PTime, param.StopTime, param.StopTimeS, param.ModifyID];
       const fields = ["GameID", "TermID", "PDate", "PTime", "StopTime", "StopTimes", "ModifyID"];
@@ -698,6 +712,7 @@ app.post("/saveTerms", async (req, res) => {
       }
       conn.release();
       res.send(JSON.stringify(msg));
+      */
   }
 });
 app.get("/getTerms", async (req, res) => {
@@ -1658,10 +1673,6 @@ async function setLogin(uid: number, Account: string, conn: mariadb.PoolConnecti
         }
     }
     return;
-}
-export async function saveParamLog(PLog: IParamLog[], conn: mariadb.PoolConnection) {
-    const jt: JTable<IParamLog> = new JTable(conn, "ParamsLog");
-    return await jt.MultiInsert(PLog);
 }
 async function isTermEmpty(tid: number, conn: mariadb.PoolConnection): Promise<boolean> {
     const sql = "select count(*) cnt from BetHeader where tid = ?";

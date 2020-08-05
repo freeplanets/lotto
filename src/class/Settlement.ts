@@ -1,8 +1,10 @@
 import mariadb from "mariadb";
+import {saveParamLog} from "../API/ApiFunc";
 import {getGame} from "../API/MemberApi";
-import {IParamLog, ISqlProc} from "../DataSchema/if";
+import {IMsg, IParamLog, ISqlProc} from "../DataSchema/if";
+import {ITerms} from "../DataSchema/user";
 import {doQuery} from "../func/db";
-import {saveParamLog} from "../router/AdminApi";
+import JTable from "./JTable";
 import {AlwaysSetl} from "./Settlement/AlwaysSetl";
 import {CarsSetl} from "./Settlement/CarsSetl";
 import {D3DSetl} from "./Settlement/D3DSetl";
@@ -149,6 +151,45 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     }
     // console.log("SQL:", ans);
     return true;
+}
+export async function CancelTerm(tid: number, GameID: number, conn: mariadb.PoolConnection) {
+    const sqls: string[] = [];
+    let sql: string = "";
+    const msg: IMsg = {ErrNo: 0};
+    const jt: JTable<ITerms> = new JTable(conn, "Terms");
+    const term = await jt.getOne(tid);
+    if (term) {
+        sql = `update Terms set isCanceled=1 where id=${tid}`;
+        sqls.push(sql);
+        sql = `update BetTable set isCancled=1,WinLose=0 where tid=${tid} and GameID=${term.GameID}`;
+        sqls.push(sql);
+        sql = `update BetHeader set isCancled=1,WinLose=0 where tid=${tid} and GameID=${term.GameID}`;
+        // 損益歸戶
+        sql = `insert into UserCredit(uid,GameID,tid,DepWD)
+            select UserID uid,GameID,tid,sum(Total + WinLose) DepWD
+            from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group by UserID,GameID,tid`;
+        sql = sql + " on duplicate key update DepWD=values(DepWD)";
+        sqls.push(sql);
+        sql = "insert into Member(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid";
+        sql = sql + " on duplicate key update Balance=values(Balance)";
+        sqls.push(sql);
+        const needBreak: boolean = false;
+        await conn.beginTransaction();
+        await Promise.all(sqls.map(async (qry) => {
+            if (needBreak) { return; }
+            const ans = await doQuery(qry, conn);
+            if (!ans) {
+                await conn.rollback();
+                msg.ErrNo = 9;
+                msg.ErrCon = `error:${qry}`;
+            }
+        }));
+        if (!needBreak) { await conn.commit(); }
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = `Term not found, ID= ${tid}`;
+    }
+    return msg;
 }
 /*
 async function doSql(sql: string, conn: mariadb.PoolConnection): Promise<boolean> {
