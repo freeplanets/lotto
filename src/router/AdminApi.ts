@@ -11,11 +11,11 @@ import {Gets} from "../class/Gets";
 import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
+import {CancelTerm} from "../class/Settlement";
 import ErrCode from "../DataSchema/ErrCode";
 import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameDataCaption, IGameItem , IGameResult , IMOdds, IMsg, IParamLog} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
-
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
 interface ILoginInfo {
@@ -1566,6 +1566,20 @@ app.get("/DelTerm", async (req, res) => {
             msg.ErrNo = ErrCode.DELETE_TERM_ERR;
             msg.ErrCon = "Not Empty!!";
         }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.debug = "db connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/CancelTerm", async (req, res) => {
+    let msg: IMsg = { ErrNo: 0 };
+    const param = req.query;
+    const tid = param.tid;
+    const conn = await getConnection();
+    if (conn) {
+        msg = await CancelTerm(tid, conn);
         conn.release();
     } else {
         msg.ErrNo = 9;

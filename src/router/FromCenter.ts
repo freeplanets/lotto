@@ -7,14 +7,21 @@ import {IMsg} from "../DataSchema/if";
 import {getConnection} from "../func/db";
 
 const app: Router = express.Router();
-app.get("doit", webFunc);
-app.post("doit", webFunc);
+app.get("/doit", webFunc);
+app.post("/doit", webFunc);
 async function webFunc(req: Request, res: Response) {
   let param: IFromCenter;
   let msg: IMsg = {ErrNo: 0, error: ""};
-  if (req.query) { param = req.query; } else { param = req.body; }
+  if (req.query.op) {
+    // console.log("query", req.query);
+    param = req.query;
+  } else {
+    // console.log("body", req.body);
+    param = req.body;
+  }
   const conn: PoolConnection|undefined = await getConnection();
   if (conn) {
+    // console.log("webFunc", param);
     const CC: CenterCall = new CenterCall(param, conn);
     if (param.op) {
       msg = await CC[param.op]();
@@ -46,8 +53,8 @@ async function sendMsg(msg: string) {
   const url: string = `https://nacauhh4p9.execute-api.ap-southeast-1.amazonaws.com/default/slackpush?${querystring.encode(Inputs)}`;
   return new Promise((resolve, reject) => {
     https.get(url, Optons, (res) => {
-      console.log("sendMsg statusCode:", res.statusCode);
-      console.log("sendMsg headers:", res.headers);
+      // console.log("sendMsg statusCode:", res.statusCode);
+      // console.log("sendMsg headers:", res.headers);
       res.on("data", (d) => {
         console.log("Receive from SendMsg:", d);
         resolve(d);

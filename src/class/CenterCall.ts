@@ -32,11 +32,15 @@ export default class CenterCall {
   public async issue() {
     const param = this.param;
     const conn = this.conn;
+    console.log("issue", param);
     const game: JTable<IGame> = new JTable(conn, "Games");
     if (param.lottoid) {
       const term: ITerms = this.Term;
       const gInfo = await game.getOne(parseInt(param.lottoid, 10));
+      console.log("issue", gInfo);
       if (gInfo) {
+        term.GameID = gInfo.id;
+        term.TermID = param.issueno;
         const tmp: string[] | undefined = param.drawtime?.split(" ");
         if (tmp) {
           term.PDate = tmp[0];
@@ -45,10 +49,17 @@ export default class CenterCall {
         const sec = gInfo.StopBeforeEnd ? -1 * gInfo.StopBeforeEnd : -20;
         term.StopTimeS = this.Dt.timeMoveSec(term.PTime, sec);
         term.StopTime = term.StopTimeS;
-        this.msg = await this.createTerms(gInfo.GType, term, conn);
+        term.lrid = parseInt(param.lrid, 10);
+        console.log("issue term", term);
+        if (!param.issueno) {
+          this.msg.ErrNo = 9;
+          this.msg.ErrCon = "issueno is empty!!";
+        } else {
+          this.msg = await this.createTerms(gInfo.GType, term, conn);
+        }
       } else {
         this.msg.ErrNo = 9;
-        this.msg.ErrCon = "lottoid is missing!!";
+        this.msg.ErrCon = "Game not found!!";
       }
     } else {
       this.msg.ErrNo = 9;
@@ -67,11 +78,16 @@ export default class CenterCall {
       };
       const term: ITerms|undefined = await jt.getOne(filter);
       if (term) {
-          const num: string = param.result + (param.result2 ? "," + param.result2 : "");
-          const ans = await this.doSettle(term.id, term.GameID, num, conn, term.isSettled);
-          if (!ans) {
+          if (!term.isCanceled) {
+            const num: string = param.result + (param.result2 ? "," + param.result2 : "");
+            const ans = await this.doSettle(term.id, term.GameID, num, conn, term.isSettled);
+            if (!ans) {
+              this.msg.ErrNo = 9;
+              this.msg.ErrCon = "Settle failed!!";
+            }
+          } else {
             this.msg.ErrNo = 9;
-            this.msg.ErrCon = "Settle failed!!";
+            this.msg.ErrCon = `lottoid:${param.lottoid} issueno:${param.issueno} is canceled!!`;
           }
       } else {
         this.msg.ErrNo = 9;
@@ -126,7 +142,7 @@ export default class CenterCall {
       };
       const term: ITerms|undefined = await jt.getOne(filter);
       if (term) {
-        this.msg = await this.cancelTerm(term.id, GameID, conn);
+        this.msg = await this.cancelTerm(term.id, conn);
       } else {
         this.msg.ErrNo = 9;
         this.msg.ErrCon = `Term not found lottoid=${GameID},lrid=${lrid}`;

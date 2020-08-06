@@ -30,17 +30,19 @@ class JDate {
         return newA.join(sep);
     }
     public addZeroIfUnderTen(v: string|number): string {
-        const i: number = typeof(v) === "string" ? parseInt(v, 10) : 0;
+        const i: number = typeof(v) === "string" ? parseInt(v, 10) : v;
         if (i < 10) { return "0" + i; }
         return "" + i;
     }
     public timeMoveSec(time: string, df: number): string {
+        console.log("timeMoveSec:", time, df);
         const hms: number[] = time.split(":").map((s) => parseInt(s, 10));
         const total: number = hms[0] * 3600 + hms[1] * 60 + hms[2] + df;
         const sec: number = total % 60;
         const totalmin = (total - sec) / 60;
         const min: number = totalmin % 60;
         const hour: number = (totalmin - min) / 60;
+        console.log("timeMoveSec:", hour, min, sec);
         return `${this.addZeroIfUnderTen(hour)}:${this.addZeroIfUnderTen(min)}:${this.addZeroIfUnderTen(sec)}`;
       }
     private getTime(dStr: string): number {

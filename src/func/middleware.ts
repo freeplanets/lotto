@@ -16,7 +16,7 @@ export const PreCheck = async (req: Request, res: Response, next) => {
     req.body = CheckParams(req.body);
     param = req.body;
   }
-  if (req.path.indexOf("login") < 0 && req.path.indexOf("logout") < 0 && req.path.indexOf("agentApi") < 0 && req.path.indexOf("member") < 0 && req.path.indexOf("FromCenter")) {
+  if (req.path.indexOf("login") < 0 && req.path.indexOf("logout") < 0 && req.path.indexOf("agentApi") < 0 && req.path.indexOf("member") < 0 && req.path.indexOf("GameCenter") < 0) {
     const msg: IMsg = {ErrNo: 0};
     const UserID: number|undefined = param.UserID;
     const sid: string|undefined = param.sid;

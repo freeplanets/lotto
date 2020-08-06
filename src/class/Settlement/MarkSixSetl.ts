@@ -7,7 +7,8 @@ import {CMarkSixMum, IMSResult} from "./CMarkSixMum";
 // const SettleMethods = MarkSixST;
 export function MarkSixSetl(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
   // let ans: string[] = [];
-  const imsr: IMSResult = imsra as IMSResult;
+  // const imsr: IMSResult = imsra as IMSResult;
+  const imsr: IMSResult = new CMarkSixMum(imsra).Nums;
   const ans: ISqlProc = {
       pre: [],
       common: [],
@@ -27,6 +28,7 @@ export function MarkSixSetl(tid: number, GameID: number, imsra: any, rtn: any, c
           }
       }
   });
+  ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
   return ans;
 }
 
@@ -116,7 +118,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
           if (itm.SubName === "length") {
               nn = imsr[itm.NumTarget].length + itm.NumMove;
           } else {
-              nn = imsr[itm.NumTarget][itm.SubName];
+            nn = imsr[itm.NumTarget][itm.SubName];
           }
       } else {
           nn = imsr[itm.NumTarget];

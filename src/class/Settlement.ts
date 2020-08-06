@@ -34,16 +34,24 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     };
     const SettleStatus: number = isSettled ? 3 : 1;
     await conn.beginTransaction();
-    sql = `update BetTableEx set Opened=0 where tid=${tid} and GameID=${GameID}`;
+    sql = `update CurOddsInfo set isStop=1 where tid=${tid}`;
     await conn.query(sql).then(async (res) => {
-        console.log("BetTableEx set open zero:", sql, res);
+        console.log( "SaveNums", sql, res);
         ans = true;
         if (PLog) {
             console.log("SaveNums", PLog);
             await saveParamLog(PLog, conn);
         }
     }).catch(async (err) => {
-        console.log("WinLose=Amt*-1 err 1", err);
+        console.log(sql, err);
+        await conn.rollback();
+        ans = false;
+    });
+    sql = `update BetTableEx set Opened=0 where tid=${tid} and GameID=${GameID}`;
+    await conn.query(sql).then(async (res) => {
+        console.log("BetTableEx set open zero:", sql, res);
+    }).catch(async (err) => {
+        console.log("update BetTableEx set Opened=0", err);
         await conn.rollback();
         ans = false;
     });
@@ -123,6 +131,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         let needBreak: boolean = false;
         await Promise.all(sqls.common.map(async (itm) => {
             if (needBreak) { return; }
+            // console.log("sqls.common:", itm);
             ans = await doQuery(itm, conn);
             if (!ans) {
                 console.log("err rollback 1");
@@ -152,22 +161,25 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     // console.log("SQL:", ans);
     return true;
 }
-export async function CancelTerm(tid: number, GameID: number, conn: mariadb.PoolConnection) {
+export async function CancelTerm(tid: number, conn: mariadb.PoolConnection) {
     const sqls: string[] = [];
     let sql: string = "";
     const msg: IMsg = {ErrNo: 0};
     const jt: JTable<ITerms> = new JTable(conn, "Terms");
     const term = await jt.getOne(tid);
     if (term) {
+        sql = `update CurOddsInfo set isStop=1 where tid=${tid}`;
+        sqls.push(sql);
         sql = `update Terms set isCanceled=1 where id=${tid}`;
         sqls.push(sql);
-        sql = `update BetTable set isCancled=1,WinLose=0 where tid=${tid} and GameID=${term.GameID}`;
+        sql = `update BetTable set isCancled=1,WinLose=0 where tid=${tid}`;  // and GameID=${term.GameID}`;
         sqls.push(sql);
-        sql = `update BetHeader set isCancled=1,WinLose=0 where tid=${tid} and GameID=${term.GameID}`;
+        sql = `update BetHeader set isCancled=1,WinLose=0 where tid=${tid}`; // and GameID=${term.GameID}`;
+        sqls.push(sql);
         // 損益歸戶
         sql = `insert into UserCredit(uid,GameID,tid,DepWD)
             select UserID uid,GameID,tid,sum(Total + WinLose) DepWD
-            from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group by UserID,GameID,tid`;
+            from BetHeader where tid=${tid} and isCancled=1 group by UserID,GameID,tid`;
         sql = sql + " on duplicate key update DepWD=values(DepWD)";
         sqls.push(sql);
         sql = "insert into Member(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid";
@@ -177,6 +189,7 @@ export async function CancelTerm(tid: number, GameID: number, conn: mariadb.Pool
         await conn.beginTransaction();
         await Promise.all(sqls.map(async (qry) => {
             if (needBreak) { return; }
+            console.log("CancelTerm:", qry);
             const ans = await doQuery(qry, conn);
             if (!ans) {
                 await conn.rollback();
@@ -255,6 +268,7 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
         select UserID uid,GameID,tid,sum(Total + WinLose) DepWD
         from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group by UserID,GameID,tid`;
     sql = sql + " on duplicate key update DepWD=values(DepWD)";
+    //console.log("doBT:", sql);
     ans.common.push(sql);
     sql = "insert into Member(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid";
     sql = sql + " on duplicate key update Balance=values(Balance)";

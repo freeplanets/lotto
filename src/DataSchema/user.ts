@@ -69,6 +69,7 @@ export interface ITerms {
     Result?: string;
     SpNo?: string;
     isSettled?: number;
+    isCanceled?: number;
     lrid?: number;
     ModifyID: number;
 }

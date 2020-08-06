@@ -33,17 +33,19 @@ export default class JTable<T extends IHasID> {
     public async getOne(id: number|IKeyVal): Promise<T|undefined> {
         const param: any = [];
         const field: string[] = [];
-        if (typeof(id) === "number") {
-            param.push(id);
-            field.push("id=?");
-        } else {
+        console.log("getOne", typeof(id), id);
+        if (typeof(id) === "object") {
             Object.keys(id).map((key) => {
                 param.push(id[key]);
                 field.push(`${key}=?`);
             });
+        } else {
+            param.push(id);
+            field.push("id=?");
         }
         const sql = `select * from ${this.TableName} where ${field.join(" and ")}`;
         let mb: T | undefined;
+        console.log("getone", sql, param);
         const ans = await this.query(sql, this.conn, param);
         /*
         await this.conn.query(sql).then((row) => {
@@ -58,7 +60,7 @@ export default class JTable<T extends IHasID> {
         */
         // console.log("JTable List mb", mb);
         if (ans) {
-            if (ans.lenght > 0) {
+            if (ans.length > 0) {
                 mb = ans[0] as T;
             }
         }
