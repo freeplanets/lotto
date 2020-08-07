@@ -268,7 +268,7 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
         select UserID uid,GameID,tid,sum(Total + WinLose) DepWD
         from BetHeader where tid=${tid} and GameID=${GameID} and isCancled=0 group by UserID,GameID,tid`;
     sql = sql + " on duplicate key update DepWD=values(DepWD)";
-    //console.log("doBT:", sql);
+    // console.log("doBT:", sql);
     ans.common.push(sql);
     sql = "insert into Member(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid";
     sql = sql + " on duplicate key update Balance=values(Balance)";

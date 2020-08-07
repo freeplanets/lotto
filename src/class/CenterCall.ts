@@ -116,7 +116,7 @@ export default class CenterCall {
           lrid: parseInt(param.lrid, 10),
           memo: param.memo
         };
-        const jt: JTable<IBroadCasts> = new JTable(conn, "BoradCasts");
+        const jt: JTable<IBroadCasts> = new JTable(conn, "BroadCasts");
         const ans = await jt.Insert(bc);
         if (!ans) {
           this.msg.ErrNo = 9;
