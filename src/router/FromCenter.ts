@@ -36,7 +36,7 @@ async function webFunc(req: Request, res: Response) {
     msg.ErrNo = 9;
     msg.error = "Get connection error!!";
   }
-  if (msg.ErrNo !== 0) {
+  if (msg.ErrNo === 9) {
     msg.error = msg.ErrCon;
     const ans = await sendMsg(msg.ErrCon as string);
     if (ans) {
