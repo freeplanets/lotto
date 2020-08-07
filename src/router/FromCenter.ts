@@ -1,4 +1,4 @@
-import express, { Request, Response, response, Router } from "express";
+import express, { Request, Response, Router } from "express";
 import https from "https";
 import {PoolConnection} from "mariadb";
 import querystring from "querystring";
