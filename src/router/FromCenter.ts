@@ -24,7 +24,7 @@ async function webFunc(req: Request, res: Response) {
     // console.log("webFunc", param);
     const CC: CenterCall = new CenterCall(param, conn);
     if (param.op) {
-      if(typeof(CC[param.op])==='function'){
+      if (typeof(CC[param.op]) === "function") {
         msg = await CC[param.op]();
       } else {
         msg.ErrNo = 9;

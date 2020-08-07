@@ -32,12 +32,12 @@ export default class CenterCall {
   public async issue() {
     const param = this.param;
     const conn = this.conn;
-    console.log("issue", param);
+    //console.log("issue", param);
     const game: JTable<IGame> = new JTable(conn, "Games");
     if (param.lottoid) {
       const term: ITerms = this.Term;
       const gInfo = await game.getOne(parseInt(param.lottoid, 10));
-      console.log("issue", gInfo);
+      //console.log("issue", gInfo);
       if (gInfo) {
         term.GameID = gInfo.id;
         term.TermID = param.issueno;
@@ -50,7 +50,7 @@ export default class CenterCall {
         term.StopTimeS = this.Dt.timeMoveSec(term.PTime, sec);
         term.StopTime = term.StopTimeS;
         term.lrid = parseInt(param.lrid, 10);
-        console.log("issue term", term);
+        //console.log("issue term", term);
         if (!param.issueno) {
           this.msg.ErrNo = 9;
           this.msg.ErrCon = "issueno is empty!!";
@@ -59,7 +59,7 @@ export default class CenterCall {
         }
       } else {
         this.msg.ErrNo = 9;
-        this.msg.ErrCon = "Game not found!!";
+        this.msg.ErrCon = `lottoid:${param.lottoid} Game not found!!`;
       }
     } else {
       this.msg.ErrNo = 9;
@@ -91,7 +91,7 @@ export default class CenterCall {
           }
       } else {
         this.msg.ErrNo = 9;
-        this.msg.ErrCon = "Term is not found!!";
+        this.msg.ErrCon = `lottoid:${param.lottoid} Term is not found!!`;
       }
     } else {
       this.msg.ErrNo = 9;
