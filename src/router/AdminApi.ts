@@ -8,13 +8,14 @@ import {Bet} from "../class/Bet";
 import EDS from "../class/EncDecString";
 import {getOtherSide} from "../class/Func";
 import {Gets} from "../class/Gets";
+import GoogleAuth, {IParamForGoogleAuth} from "../class/GoogleAuth";
 import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
 import ErrCode from "../DataSchema/ErrCode";
 import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameDataCaption, IGameItem , IGameResult , IMOdds, IMsg, IParamLog} from "../DataSchema/if";
-import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser} from "../DataSchema/user";
+import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
@@ -23,6 +24,8 @@ interface ILoginInfo {
     Account: string;
     sid?: string;
     Levels?: number;
+    isTwoPassAsked?: number;
+    isChkGA?:number;
 }
 app.get("/login", async (req, res) => {
     // console.log(req.query);
@@ -40,7 +43,9 @@ app.get("/login", async (req, res) => {
                 const info: ILoginInfo = {
                     id: user.id,
                     Account: user.Account,
-                    Levels: user.Levels
+                    Levels: user.Levels,
+                    isTwoPassAsked: user.isTwoPassAsked,
+                    isChkGA: user.isChkGA
                 };
                 const logkey: string|undefined = await setLogin(user.id, user.Account, conn);
                 if (logkey) {
@@ -74,6 +79,81 @@ app.get("/logout", async (req, res) => {
         const ans = await doQuery(sql, conn, [param.UserID, param.sid]);
         if (ans) {
             msg.data = ans;
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/getGAImg", async (req, res) => {
+    const msg: IMsg = {ErrNo: 0};
+    const param = req.query;
+    if (!param.UserID) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Missing UserID!!";
+    }
+    if (!param.AppName) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Missing AppName!!";
+    }
+    if (msg.ErrNo !== 0) {
+        res.send(JSON.stringify(msg));
+    }
+    const conn = await getConnection();
+    if (conn) {
+        const jt: JTable<IUser> = new JTable(conn, "User");
+        const user: IUser|undefined = await jt.getOne(param.UserID);
+        if (user) {
+            const GA = new GoogleAuth();
+            const p: IParamForGoogleAuth = {
+                AppName: param.AppName,
+                AppInfo: user.Account,
+                SecretCode: GA.SecretCode
+            };
+            const ans = await GA.getIMG(p);
+            console.log("getGAImg", ans);
+            if (ans) {
+                msg.ErrCon = ans;
+                const userp: IUserPartial = {
+                    id: param.UserID
+                };
+                userp.GAAppName = p.AppName;
+                userp.GACode = p.SecretCode;
+                const tmp = await afunc.setUser(userp, conn);
+                if (!tmp) {
+                    msg.ErrNo = 9;
+                    msg.ErrCon = "Save user error!!";
+                }
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Error!!";
+            }
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Find  user error!!";
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/SetUser", async (req, res) => {
+    const param = req.query;
+    const msg: IMsg = {ErrNo: 0};
+    const user: IUserPartial = {
+        id: param.UserID
+    };
+    if (param.isTwoPassAsked) { user.isTwoPassAsked = param.isTwoPassAsked; }
+    const conn = await getConnection();
+    if (conn) {
+        const ans = await afunc.setUser(user, conn);
+        if (!ans) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Upate user error!!";
         }
         conn.release();
     } else {

@@ -107,7 +107,7 @@ export default class JTable<T extends IHasID> {
         // console.log("JTable Update", sql, params);
         await this.conn.query(sql, params).then((row) => {
             ans = row;
-            console.log("JTable Upate ans:", ans);
+            // console.log("JTable Upate ans:", ans);
         }).catch((err) => {
             ans = false;
             console.log("JTable Upate err:", err);

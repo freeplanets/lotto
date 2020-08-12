@@ -11,11 +11,21 @@ export interface IUser {
     PayClassID: number;
     PayClass?: string;
     Balance?: number;
+    forcePWChange?: number;
+    isTwoPassAsked?: number;
+    isChkGA?:number;
     CreateTime: string;
     ModifyTime: string;
     CDate?: Date;
 }
-
+export interface IUserPartial {
+    id: number;
+    forcePWChange?: number;
+    isTwoPassAsked?: number;
+    GAAppName?: string;
+    GACode?: string;
+    isChkGA?: number;
+}
 export interface IPayRate {
     id: number;
     BetType: number;
