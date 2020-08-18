@@ -230,7 +230,7 @@ app.get("/SetUser", async (req, res) => {
         const ans = await afunc.setUser(user, conn);
         if (!ans) {
             msg.ErrNo = 9;
-            msg.ErrCon = "Upate user error!!";
+            msg.ErrCon = "Upate user error!!!";
         }
         conn.release();
     } else {
