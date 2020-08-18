@@ -1,5 +1,5 @@
 import mariadb from "mariadb";
-import {IDbAns} from "../DataSchema/if";
+import {IDbAns, IKeyVal} from "../DataSchema/if";
 import {doQuery} from "../func/db";
 import eds from "./EncDecString";
 export interface IHasID {
@@ -23,9 +23,7 @@ interface ITableIndex {
 interface ITBIdxes {
     [key: number]: ITableIndex;
 }
-interface IKeyVal {
-    [key: string]: string|number;
-}
+
 const ED = new eds();
 export default class JTable<T extends IHasID> {
     private query = doQuery;

@@ -8,7 +8,7 @@ import {Bet} from "../class/Bet";
 import EDS from "../class/EncDecString";
 import {getOtherSide} from "../class/Func";
 import {Gets} from "../class/Gets";
-import GoogleAuth, {IParamForGoogleAuth} from "../class/GoogleAuth";
+import GoogleAuth, {IGAValidate, IParamForGoogleAuth} from "../class/GoogleAuth";
 import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
@@ -19,13 +19,21 @@ import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial}
 import {doQuery, getConnection} from "../func/db";
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
+interface IProgs {
+    id: number;
+    Title: string;
+    Paths: string;
+    icon: string;
+    Funcs: string;
+}
 interface ILoginInfo {
     id: number;
     Account: string;
     sid?: string;
     Levels?: number;
     isTwoPassAsked?: number;
-    isChkGA?:number;
+    isChkGA?: number;
+    Progs?: IProgs[];
 }
 app.get("/login", async (req, res) => {
     // console.log(req.query);
@@ -45,8 +53,14 @@ app.get("/login", async (req, res) => {
                     Account: user.Account,
                     Levels: user.Levels,
                     isTwoPassAsked: user.isTwoPassAsked,
-                    isChkGA: user.isChkGA
+                    isChkGA: user.isChkGA,
+                    Progs: []
                 };
+                const programs = user.Programs ? user.Programs : "";
+                const progs = await afunc.getPrograms(user.Levels, programs, conn);
+                if (progs) {
+                    info.Progs = progs as IProgs[];
+                }
                 const logkey: string|undefined = await setLogin(user.id, user.Account, conn);
                 if (logkey) {
                     info.sid = logkey ;
@@ -110,14 +124,15 @@ app.get("/getGAImg", async (req, res) => {
             const p: IParamForGoogleAuth = {
                 AppName: param.AppName,
                 AppInfo: user.Account,
-                SecretCode: GA.SecretCode
+                SecretCode: GA.SecretCode,
             };
             const ans = await GA.getIMG(p);
             console.log("getGAImg", ans);
             if (ans) {
                 msg.ErrCon = ans;
                 const userp: IUserPartial = {
-                    id: param.UserID
+                    id: param.UserID,
+                    isChkGA: 1
                 };
                 userp.GAAppName = p.AppName;
                 userp.GACode = p.SecretCode;
@@ -141,13 +156,75 @@ app.get("/getGAImg", async (req, res) => {
     }
     res.send(JSON.stringify(msg));
 });
+app.get("/GAValidate", async (req, res) => {
+    const msg: IMsg = {ErrNo: 0};
+    const param = req.query;
+    if (!param.UserID) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Missing UserID!!";
+    }
+    if (!param.Pin) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Missing Pin Code!!";
+    }
+    if (msg.ErrNo !== 0) {
+        res.send(JSON.stringify(msg));
+    }
+    const conn = await getConnection();
+    if (conn) {
+        const jt: JTable<IUser> = new JTable(conn, "User");
+        const user: IUser|undefined = await jt.getOne(param.UserID);
+        if (user) {
+            const GA = new GoogleAuth();
+            const p: IGAValidate = {
+                Pin: param.Pin,
+                SecretCode: user.GACode ? user.GACode : ""
+            };
+            const ans = await GA.Validate(p);
+            console.log("Validate", ans);
+            if (ans === "True") {
+                msg.ErrCon = ans as string;
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Error!!";
+            }
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Find  user error!!";
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/getPrograms", async (req, res) => {
+    const msg: IMsg = {ErrNo: 0};
+    const conn = await getConnection();
+    if (conn) {
+        const ans = await afunc.getPrograms(9, "", conn);
+        if (!ans) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "get Programs error!!";
+        } else {
+            msg.data = ans;
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
 app.get("/SetUser", async (req, res) => {
     const param = req.query;
     const msg: IMsg = {ErrNo: 0};
     const user: IUserPartial = {
-        id: param.UserID
+        id: param.SetUserID ? param.SetUserID : param.UserID
     };
     if (param.isTwoPassAsked) { user.isTwoPassAsked = param.isTwoPassAsked; }
+    if (param.Programs) { user.Programs = param.Programs; }
     const conn = await getConnection();
     if (conn) {
         const ans = await afunc.setUser(user, conn);

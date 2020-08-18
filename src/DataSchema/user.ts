@@ -13,7 +13,9 @@ export interface IUser {
     Balance?: number;
     forcePWChange?: number;
     isTwoPassAsked?: number;
-    isChkGA?:number;
+    isChkGA?: number;
+    GACode?: string;
+    Programs?: string;
     CreateTime: string;
     ModifyTime: string;
     CDate?: Date;
@@ -25,6 +27,7 @@ export interface IUserPartial {
     GAAppName?: string;
     GACode?: string;
     isChkGA?: number;
+    Programs?: string;
 }
 export interface IPayRate {
     id: number;

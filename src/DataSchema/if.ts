@@ -308,3 +308,6 @@ export interface IGameDataCaption {
     Game: string;
     BetType: string;
 }
+export interface IKeyVal {
+    [key: string]: string|number;
+}
