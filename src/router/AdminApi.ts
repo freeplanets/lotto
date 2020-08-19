@@ -26,14 +26,21 @@ interface IProgs {
     icon: string;
     Funcs: string;
 }
+interface IPClass {
+    GameID: number;
+    PayClassID: number;
+}
 interface ILoginInfo {
     id: number;
     Account: string;
     sid?: string;
     Levels?: number;
+    Types?: number;
     isTwoPassAsked?: number;
+    forcePWChange?: number;
     isChkGA?: number;
     Progs?: IProgs[];
+    PayClass?: IPClass[];
 }
 app.get("/login", async (req, res) => {
     // console.log(req.query);
@@ -52,10 +59,16 @@ app.get("/login", async (req, res) => {
                     id: user.id,
                     Account: user.Account,
                     Levels: user.Levels,
+                    Types: user.Types,
                     isTwoPassAsked: user.isTwoPassAsked,
+                    forcePWChange: user.forcePWChange,
                     isChkGA: user.isChkGA,
                     Progs: []
                 };
+                if (user.PayClass) {
+                    // console.log("PayClass:", user.PayClass);
+                    info.PayClass = JSON.parse(user.PayClass.replace(/\\/g, "")) as IPClass[];
+                }
                 const programs = user.Programs ? user.Programs : "";
                 const progs = await afunc.getPrograms(user.Levels, programs, conn);
                 if (progs) {
@@ -247,7 +260,7 @@ app.post("/ChangePassword", async (req, res) => {
         console.log("ChangePassword param", param);
         // const chk = await chkLogin(param.UserID, param.sid, conn);
         // if (chk) {
-        const sql = `update User set Password=PASSWORD(?) where id=? and Password=PASSWORD(?)`;
+        const sql = `update User set Password=PASSWORD(?),forcePWChange=0 where id=? and Password=PASSWORD(?)`;
         const ans = await doQuery(sql, conn, [param.NPassword, param.UserID, param.OPassword]);
         if (ans) {
                 console.log("ChangePassword", ans);
@@ -1580,20 +1593,28 @@ app.get("/getBetHeaders", async (req, res) => {
         const uparam = {
             findString: param.UpName ? param.UpName : "ALL"
         };
-        upid = await getUsers(conn, uparam);
-        if (!upid || upid.length === 0) {
-            msg.ErrNo = 9;
-            msg.ErrCon = "Get BetLists error!";
-            conn.release();
-            res.send(JSON.stringify(msg));
+
+        if (param.Types) {
+            if (parseInt(param.Types + "", 10) === 1) {
+                param.UpId = param.UserID;
+            }
         }
-        msg.UpUser = upid;
-        if (upid) {
-            const tmpU: number[] = [];
-            upid.map((u: any) => {
-                tmpU.push(u.id);
-            });
-            param.UpId = tmpU.length === 1 ? tmpU[0] : tmpU ;
+        if (!param.UpId) {
+            upid = await getUsers(conn, uparam);
+            if (!upid || upid.length === 0) {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Get BetLists error!";
+                conn.release();
+                res.send(JSON.stringify(msg));
+            }
+            msg.UpUser = upid;
+            if (upid) {
+                const tmpU: number[] = [];
+                upid.map((u: any) => {
+                    tmpU.push(u.id);
+                });
+                param.UpId = tmpU.length === 1 ? tmpU[0] : tmpU ;
+            }
         }
         const users = await getUsers(conn, param, "Member");
         if (users) {

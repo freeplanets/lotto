@@ -167,7 +167,8 @@ export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonPara
         }
     }
     if (cond.length === 0) { cond.push("1"); }
-    let exFields = ",Account,Nickname,Types,Programs";
+    let exFields = ",Account,Nickname,Types";
+    if (tb === "User") { exFields += ",Programs"; }
     if (param?.OnlyID) {
         exFields = "";
     }

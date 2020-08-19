@@ -346,7 +346,7 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
         cond.push(` (b.CreateTime BETWEEN '${param.SDate}' AND '${param.SDate} 23:59:59') `);
     }
     */
-    if (uids) {
+    if (uids && uids.length > 0) {
         cond.push(` UserID in (${uids.join(",")}) `);
     }
     if (param.GameID) {
