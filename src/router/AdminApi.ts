@@ -238,6 +238,8 @@ app.get("/SetUser", async (req, res) => {
     };
     if (param.isTwoPassAsked) { user.isTwoPassAsked = param.isTwoPassAsked; }
     if (param.Programs) { user.Programs = param.Programs; }
+    if (param.isChkGA) { user.isChkGA = parseInt(param.isChkGA, 10); }
+    // console.log("SetUser", param, user);
     const conn = await getConnection();
     if (conn) {
         const ans = await afunc.setUser(user, conn);
