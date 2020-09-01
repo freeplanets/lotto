@@ -243,6 +243,7 @@ export interface IBasePayRateItm {
     ChangeStart?: number;
     PerStep?: number;
     StepsGroup?: string;
+    ChaseNum?: number;
     ModifyID?: number;
 }
 export interface IStepG {
@@ -311,3 +312,23 @@ export interface IGameDataCaption {
 export interface IKeyVal {
     [key: string]: string|number;
 }
+
+export interface IChaseNum {
+    id: number;
+    UserID: number;
+    UpId?: number;
+    betid: number;
+    BetType?: number;
+    Num?: string;
+    Terms?: number;
+    TermsDone?: number;
+    FinishWhenOpen?: number;
+}
+
+export interface IProbTable {
+    id: number;
+    GType: string;
+    BetType: number;
+    SubType: number;
+    Probability: number;
+ }

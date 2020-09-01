@@ -61,7 +61,7 @@ async function sendMsg(msg: string) {
       // console.log("sendMsg statusCode:", res.statusCode);
       // console.log("sendMsg headers:", res.headers);
       res.on("data", (d) => {
-        console.log("Receive from SendMsg:", d);
+        // console.log("Receive from SendMsg:", d);
         resolve(d);
       }).on("error", (err) => {
         console.log("Error is raised by SendMsg:", err);

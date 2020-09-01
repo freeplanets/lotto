@@ -31,7 +31,7 @@ export default class JTable<T extends IHasID> {
     public async getOne(id: number|IKeyVal): Promise<T|undefined> {
         const param: any = [];
         const field: string[] = [];
-        console.log("getOne", typeof(id), id);
+        // console.log("getOne", typeof(id), id);
         if (typeof(id) === "object") {
             Object.keys(id).map((key) => {
                 param.push(id[key]);
@@ -43,7 +43,7 @@ export default class JTable<T extends IHasID> {
         }
         const sql = `select * from ${this.TableName} where ${field.join(" and ")}`;
         let mb: T | undefined;
-        console.log("getone", sql, param);
+        // console.log("getone", sql, param);
         const ans = await this.query(sql, this.conn, param);
         /*
         await this.conn.query(sql).then((row) => {
@@ -64,14 +64,28 @@ export default class JTable<T extends IHasID> {
         }
         return mb;
     }
-    public async List() {
-        const sql = `select * from ${this.TableName} where 1`;
+    public async List(keys?: IKeyVal | IKeyVal[]) {
+        let filter = "1";
+        if (keys) {
+            if (Array.isArray(keys)) {
+                const tmp: string[] = [];
+                keys.map((itm) => {
+                    tmp.push(` ${itm.Key} = ${typeof(itm.Val) === "number" ? itm.Val : "'" + itm.Val + "'" } `);
+
+                });
+                if (tmp.length > 0) { filter = tmp.join("and"); }
+            } else {
+                filter = ` ${keys.Key} = ${typeof(keys.Val) === "number" ? keys.Val : "'" + keys.Val + "'"} `;
+            }
+        }
+        const sql = `select * from ${this.TableName} where ${filter}`;
         let mb: T[] | any;
-        // console.log("JTable List sql", sql);
+        console.log("JTable List sql", sql);
         await this.conn.query(sql).then((row) => {
             mb = row;
         }).catch((err) => {
-            mb = err;
+            mb = false;
+            console.log(err);
         });
         // console.log("JTable List mb", mb);
         return mb;

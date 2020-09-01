@@ -1,7 +1,7 @@
 import mariadb, {PoolConnection} from "mariadb";
 // import {getUsers} from "../API/MemberApi";
 import JTable from "../class/JTable";
-import {ICommonParams, IDbAns, IMsg, IParamLog} from "../DataSchema/if";
+import {IChaseNum, ICommonParams, IDbAns, IMsg, IParamLog} from "../DataSchema/if";
 import {IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import {doQuery} from "../func/db";
 
@@ -493,4 +493,9 @@ export async function setUser(user: IUserPartial, conn: PoolConnection): Promise
 export async function getPrograms(lvl: number, progs: string, conn: PoolConnection) {
     const sql = `select * from Programs where ${lvl === 9 ? 1 : "id in (" + progs + ")"  }`;
     return await doQuery(sql, conn);
+}
+
+export async function setChaseNum(pa: IChaseNum, conn: PoolConnection) {
+    const jt: JTable<IChaseNum> = new JTable(conn, "ChaseNum");
+    return await jt.Update(pa);
 }

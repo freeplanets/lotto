@@ -66,7 +66,7 @@ export default class GoogleAuth {
     const sparam = this.rgParam(gav);
     // const url: string = `${this.pair_url}?${param.join("&")}`;
     const url: string = `${this.VALID_URL}?${sparam}`;
-    console.log("Validate", url);
+    // console.log("Validate", url);
     return new Promise((resolve, reject) => {
       https.get(url, this.Optons, (res) => {
         res.setEncoding("binary");

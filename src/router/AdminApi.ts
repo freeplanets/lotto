@@ -14,7 +14,7 @@ import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
 import ErrCode from "../DataSchema/ErrCode";
-import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameDataCaption, IGameItem , IGameResult , IMOdds, IMsg, IParamLog} from "../DataSchema/if";
+import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameDataCaption, IGameItem , IGameResult , IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 const app: Router = express.Router();
@@ -194,7 +194,7 @@ app.get("/GAValidate", async (req, res) => {
                 SecretCode: user.GACode ? user.GACode : ""
             };
             const ans = await GA.Validate(p);
-            console.log("Validate", ans);
+            // console.log("Validate", ans);
             if (ans === "True") {
                 msg.ErrCon = ans as string;
             } else {
@@ -224,6 +224,33 @@ app.get("/getPrograms", async (req, res) => {
             msg.data = ans;
         }
         conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/getProbTable", async (req, res) => {
+    const msg: IMsg = {ErrNo: 0};
+    const param = req.query;
+    if (!param.GType) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Missing GType!!";
+    }
+    if (msg.ErrNo !== 0) {
+        res.send(JSON.stringify(msg));
+    }
+    const conn = await getConnection();
+    if (conn) {
+       const jt: JTable<IProbTable> = new JTable(conn, "ProbabilityTable");
+       const ans = await jt.List({Key: "GType", Val: param.GType});
+       if (ans) {
+           msg.data = ans;
+       } else {
+           msg.ErrNo = 9;
+           msg.ErrCon = "Data not found!!!";
+       }
+       conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -602,7 +629,7 @@ app.get("/getBasePayRate", async (req, res) => {
   const params = [param.GameID];
   const sql = `select p.BetType,p.SubType,NoAdjust,Profit,DfRate,TopRate,
         p.Probability,Steps,TopPay,OneHand,TotalNums,UseAvg,SingleNum,UnionNum,MinHand,MaxHand,
-        BetForChange,StepsGroup,ChangeStart,PerStep
+        BetForChange,StepsGroup,ChangeStart,PerStep,ChaseNum
         from ProbabilityTable p left join BasePayRate b on  p.GType=b.GType and p.BetType=b.BetType and p.SubType=b.SubType where GameID = ?`;
   // console.log("getBasePayRate:", sql, params);
   let ans = await doQuery(sql, conn, params);
@@ -685,7 +712,7 @@ app.post("/batch/saveBasePayRate", async (req, res) => {
     const param = req.body;
     // console.log("saveBasePayRate", param);
     const datas: IBasePayRateItm[] = JSON.parse(param.data.replace(/\\/g, ""));
-    // console.log("saveBasePayRate", datas);
+    console.log("saveBasePayRate", datas);
     datas.map((itm) => {
         itm.GameID = param.GameID;
         itm.GType = param.GType;
