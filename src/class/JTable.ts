@@ -80,7 +80,7 @@ export default class JTable<T extends IHasID> {
         }
         const sql = `select * from ${this.TableName} where ${filter}`;
         let mb: T[] | any;
-        console.log("JTable List sql", sql);
+        // console.log("JTable List sql", sql);
         await this.conn.query(sql).then((row) => {
             mb = row;
         }).catch((err) => {
@@ -239,6 +239,7 @@ export default class JTable<T extends IHasID> {
         // console.log(`MultiUpdate ${this.TableName}:`, sql, values);
         let ans1;
         await this.conn.batch(sql, values).then((res) => {
+            // console.log("batch update:", res);
             ans1 = res;
         }).catch((err) => {
             console.log("JTable MultiUpdate error", err, values);

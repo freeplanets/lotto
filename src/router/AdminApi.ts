@@ -794,6 +794,33 @@ app.post("/batch/savePayRate", async (req, res) => {
       res.send(JSON.stringify(err));
   });
 });
+app.post("/batch/saveProbTable", async (req, res) => {
+    const conn = await getConnection();
+    const msg: IMsg = {ErrNo: 0};
+    if (!conn) {
+      msg.ErrNo = 9;
+      msg.ErrCon = "get connection error!!";
+      res.send(JSON.stringify(msg));
+      return;
+    }
+    const param = req.body;
+    // console.log("saveBasePayRate", param);
+    const datas: IProbTable[] = JSON.parse(param.data.replace(/\\/g, ""));
+    // console.log("saveProbTable", datas);
+    datas.map((itm) => {
+        // itm.StepsGroup = JSON.stringify(itm.StepsGroup);
+        itm.ModifyID = param.ModifyID;
+    });
+    const jt: JTable<IProbTable> = new JTable(conn, "ProbabilityTable");
+    const ans = jt.MultiUpdate(datas);
+    if (ans) {
+        msg.data = ans;
+    } else {
+        msg.ErrNo = 9;
+    }
+    conn.release();
+    res.send(JSON.stringify(msg));
+});
 app.post("/saveTerms", async (req, res) => {
   const param: ICommonParams = req.body;
   let msg: IMsg = {

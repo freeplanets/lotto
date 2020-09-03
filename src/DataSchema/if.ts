@@ -331,4 +331,5 @@ export interface IProbTable {
     BetType: number;
     SubType: number;
     Probability: number;
+    ModifyID?: number;
  }
