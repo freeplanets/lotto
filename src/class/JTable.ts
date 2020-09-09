@@ -3,7 +3,7 @@ import {IDbAns, IKeyVal} from "../DataSchema/if";
 import {doQuery} from "../func/db";
 import eds from "./EncDecString";
 export interface IHasID {
-    id: number;
+    id?: number;
 }
 interface ITableIndex {
     Table: string;
@@ -113,7 +113,7 @@ export default class JTable<T extends IHasID> {
             fields.push( key + "=?");
             params.push(v[key]);
         });
-        params.push(v.id);
+        if (v.id) { params.push(v.id); }
         let ans;
         const sql = `update ${this.TableName} set ` + fields.join(",") + " where id = ?";
         // console.log("JTable Update", sql, params);

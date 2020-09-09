@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import mariadb from "mariadb";
+import mariadb, {PoolConnection} from "mariadb";
 dotenv.config();
 
 export const port = process.env.SERVER_PORT;  // default port to listen
@@ -36,9 +36,9 @@ const mdOptions: mariadb.PoolConfig = {
 };
 const dbPool: mariadb.Pool = mariadb.createPool(mdOptions);
 
-export function getConnection(): Promise<mariadb.PoolConnection|undefined> {
+export function getConnection(): Promise<PoolConnection|undefined> {
     return new Promise((resolve, reject) => {
-        dbPool.getConnection().then((conn: mariadb.PoolConnection) => {
+        dbPool.getConnection().then((conn: PoolConnection) => {
             resolve(conn);
         }).catch((err) => {
             console.log("getConnection error:", err);

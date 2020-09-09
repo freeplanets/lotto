@@ -1,5 +1,5 @@
 import express, {Request, Response, Router } from "express";
-import mariadb from "mariadb";
+import mariadb, { PoolConnection } from "mariadb";
 // import {setPayRateData,setPayRate,isPayClassUsed,chkTermIsSettled,CreateOddsData,getGameList,getBtList} from '../API/ApiFunc';
 import * as afunc from "../API/ApiFunc";
 import {getGame, getOddsData, getPayClass, getTermDateNotSettled, getUsers} from "../API/MemberApi";
@@ -14,7 +14,7 @@ import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
 import ErrCode from "../DataSchema/ErrCode";
-import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IGameDataCaption, IGameItem , IGameResult , IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
+import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IDfOddsItems, IGameDataCaption , IGameItem , IGameResult, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 const app: Router = express.Router();
@@ -1151,6 +1151,29 @@ app.post("/Save/:TableName", async (req, res) => {
   }
   conn.release();
   res.send(JSON.stringify(msg));
+});
+app.post("/SaveDfOddsItem", async (req, res) => {
+    const msg: IMsg = { ErrNo: 0};
+    const conn = await getConnection();
+    if (!conn) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "get connection error!!";
+        res.send(JSON.stringify(msg));
+        return;
+    }
+    // const param = req.body;
+    // console.log("SaveDfOddsItem:", req.body);
+    const data: IDfOddsItems[] = JSON.parse(req.body.data.replace(/\\/g, ""));
+    const jt: JTable<IDfOddsItems> = new JTable(conn, "dfOddsItems");
+    const ans = await jt.MultiInsert(data);
+    if (ans) {
+        msg.data = ans;
+    } else {
+        msg.ErrNo = 9;
+        msg.error = ans;
+    }
+    conn.release();
+    res.send(JSON.stringify(msg));
 });
 app.get("/member/getAnimals", (req, res) => {
   res.send(JSON.stringify(Zadic));

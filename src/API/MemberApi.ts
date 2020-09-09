@@ -177,7 +177,7 @@ export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonPara
     }
     const sql = `select id${exFields} from ${tb} where ${cond.join("and")}`;
     let ans;
-    //console.log("getUsers:", sql, param, params);
+    // console.log("getUsers:", sql, param, params);
     await conn.query(sql, params).then((rows) => {
         // console.log("getUsers", rows);
         ans = rows;

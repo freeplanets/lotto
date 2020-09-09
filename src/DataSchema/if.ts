@@ -333,3 +333,12 @@ export interface IProbTable {
     Probability: number;
     ModifyID?: number;
  }
+
+export interface IDfOddsItems {
+    id?: number;
+    GType: string;
+    BetType: number;
+    SubType: number;
+    Num: string;
+    ModifyID?: number;
+}

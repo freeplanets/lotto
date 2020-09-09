@@ -52,7 +52,7 @@ export default class GoogleAuth {
         res.setEncoding("binary");
         // const data: any[] = [];
         res.on("data", (d) => {
-          console.log("Receive from SendMsg:", d);
+          // console.log("Receive from SendMsg:", d);
           // data.push(Buffer.from(d, "binary"));
           resolve(d);
         }).on("error", (err) => {
@@ -72,7 +72,7 @@ export default class GoogleAuth {
         res.setEncoding("binary");
         // const data: any[] = [];
         res.on("data", (d) => {
-          console.log("Receive from SendMsg:", d);
+          // console.log("Receive from SendMsg:", d);
           // data.push(Buffer.from(d, "binary"));
           resolve(d);
         }).on("error", (err) => {
