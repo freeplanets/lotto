@@ -337,7 +337,7 @@ app.get("/getGames", async (req, res) => {
   if (conn) {
       const param = req.query;
       const sql = `select id,name,GType,OpenNums from Games where ${parseInt(param.showall, 10) ? 1 : "GType != ''"} order by id`;
-      //console.log("getGames:", param, sql);
+      // console.log("getGames:", param, sql);
       const ans = await doQuery(sql, conn);
       if (ans) {
           msg.data = ans;
