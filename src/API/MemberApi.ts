@@ -104,13 +104,13 @@ function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConne
 async function getOddsItem(GameID: number|string, tid: string, isSettled: number, PayClassID: number,
                            MaxOddsID: number, conn: mariadb.PoolConnection) {
     const sql = `SELECT UNIX_TIMESTAMP(OID) OID,c.BetType,Num,Odds+Rate Odds,isStop,Steps
-        FROM CurOddsInfo c left join PayRate p on c.GameID=p.GameID and c.BetType=p.BetType
-        WHERE c.GameID=? and tid=? and PayClassID=? and p.SubType=0 and UNIX_TIMESTAMP(OID) > ?`;
+        FROM CurOddsInfo c left join PayRate p on c.GameID=p.GameID and c.BetType=p.BetType  and c.SubType=p.SubType
+        WHERE c.GameID=? and tid=? and PayClassID=? and UNIX_TIMESTAMP(OID) > ?`;
     const gameOdds: IGameOdds = {};
     let MaxID: number = 0;
     const param = [GameID, tid, PayClassID, MaxOddsID];
     // const btOdds:IBtOdds = {}
-    // console.log("getOddsItem isSettled", isSettled);
+    console.log("getOddsItem", sql, param, isSettled);
     await conn.query(sql, param).then((rows) => {
         rows.map((itm) => {
             /*

@@ -473,7 +473,7 @@ app.post("/savePayClass", async (req, res) => {
     return;
   }
   const param = req.body;
-  console.log("param chk", param);
+  // console.log("param chk", param);
   const params = [param.GameID, param.PayClassName, param.ModifyID];
   const sql = `insert into PayClass(GameID,PayClassName,ModifyID) values(?,?,?) on duplicate key update PayClassName=values(PayClassName),ModifyID=values(ModifyID)`;
   let rlt: IDBAns = {
@@ -515,7 +515,7 @@ app.post("/savePayClass", async (req, res) => {
       msg.ErrNo = 9;
   }
   msg.debug = ans;
-  console.log("savePayClass", msg);
+  // console.log("savePayClass", msg);
   conn.release();
   res.send(JSON.stringify(msg));
 
@@ -530,7 +530,7 @@ app.get("/editPayClass", async (req, res) => {
     res.send(JSON.stringify(msg));
     return;
   }
-  console.log("param chk", param);
+  // console.log("param chk", param);
   const params = [param.PayClassName, param.ModifyID, param.id];
   const sql = `update PayClass set PayClassName=?,ModifyID=? where id=?`;
   let rlt: IDBAns = {
@@ -561,7 +561,7 @@ app.get("/delPayClass", async (req, res) => {
     res.send(JSON.stringify(msg));
     return;
   }
-  console.log("param chk", param);
+  // console.log("param chk", param);
   const params = [param.id];
   const chk = await afunc.isPayClassUsed(param.GameID, param.id, conn);
   console.log("delPayClass chk", chk);
@@ -579,7 +579,7 @@ app.get("/delPayClass", async (req, res) => {
       warningStatus: 0
   };
   await conn.query(sql, params).then((v) => {
-      console.log("savePayClass", v);
+      // console.log("savePayClass", v);
       // res.send(JSON.stringify(v));
       rlt = v;
       if (rlt.affectedRows <= 0) {

@@ -52,7 +52,7 @@ export async function isPayClassUsed(GameID: string, PayClassID: string, conn: m
       const iPID: number = parseInt(PayClassID, 10);
       res.map((itm) => {
           const pc = JSON.parse(itm.PayClass.replace(/\\/g, ""));
-          console.log("pc", pc);
+          // console.log("pc", pc);
           if (pc[GameID] === iPID) {
               ans = true;
               return ans;
@@ -122,26 +122,46 @@ export async function CreateOddsData(GameID: string|number, GType: string, tid: 
           msg.ErrCon = JSON.stringify(err);
           msg.debug = sql;
       });
+      if (msg.ErrNo === 0) {
+          if (GType === "MarkSix" || GType === "BTCHash") {
+            msg = await setBt15Odds(tid, GameID, GType, conn, stop);
+          }
+      }
+      /*
       if (msg.ErrNo === 0 && GameID === 1) {
           msg = await setBt15Odds(tid, GameID, conn);
       }
+      */
   }
   return msg;
 }
 
-async function setBt15Odds(tid: number, GameID: number|string, conn: mariadb.PoolConnection) {
+async function setBt15Odds(tid: number, GameID: number|string, GType: string, conn: mariadb.PoolConnection, stop: number) {
   let msg: IMsg = await getGameParams(GameID, conn);
-  const twoside: number[] = [12, 13];
-  const colorwave: number[] = [14];
+  let twoside: number[] = [];
+  let colorwave: number[] = [];
+  let passBT: number = 0;
+  if (GType === "MarkSix") {
+    twoside = [12, 13];
+    colorwave = [14];
+    passBT = 15;
+  } else if (GType === "BTCHash") {
+    twoside = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    passBT = 47;
+  }
   if (msg.ErrNo !== 0) {
       return msg;
   }
   const games: IGame = msg.data as IGame;
-  msg = await updateCurOdds(tid, GameID, twoside, games.PDiffTwoSide, conn);
-  if (msg.ErrNo !== 0 ) {
-      return msg;
+  if (twoside.length > 0) {
+    msg = await updateCurOdds(tid, GameID, twoside, games.PDiffTwoSide, conn, passBT, stop);
+    if (msg.ErrNo !== 0 ) {
+        return msg;
+    }
   }
-  msg = await updateCurOdds(tid, GameID, colorwave, games.PDiffColorWave, conn);
+  if (colorwave.length > 0) {
+    msg = await updateCurOdds(tid, GameID, colorwave, games.PDiffColorWave, conn, passBT, stop);
+  }
   return msg;
 }
 
@@ -163,7 +183,7 @@ async function getGameParams(GameID: number|string, conn: mariadb.PoolConnection
   return msg;
 }
 
-async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], OddsPlus: number, conn: mariadb.PoolConnection) {
+async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], OddsPlus: number, conn: mariadb.PoolConnection, passBT: number, stop: number) {
   let sql = `
       select CONCAT(BetType,Num) Num,(Odds + ${OddsPlus}) Odds, MaxOdds
       from CurOddsInfo where tid=${tid} and GameID = ${GameID} and BetType in (${Bts.join(",")})
@@ -183,12 +203,12 @@ async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], 
   const dtas: any = msg.data;
   const data: string[] = [];
   dtas.map((itm) => {
-      data.push(`(${tid},${GameID},15,${itm.Num},${itm.Odds},${itm.MaxOdds})`);
+      data.push(`(${tid},${GameID},${passBT},${itm.Num},${itm.Odds},${itm.MaxOdds}),${stop}`);
   });
   sql = `
-  insert into CurOddsInfo(tid,GameID,BetType,Num,Odds,MaxOdds)
+  insert into CurOddsInfo(tid,GameID,BetType,Num,Odds,MaxOdds,isStop)
   values${data.join(",")}
-  on duplicate key update Odds=values(Odds),MaxOdds=values(MaxOdds)
+  on duplicate key update Odds=values(Odds),MaxOdds=values(MaxOdds),isStop=values(isStop)
 `;
   console.log("updateCurOdds", sql);
   await conn.query(sql).then((row) => {
