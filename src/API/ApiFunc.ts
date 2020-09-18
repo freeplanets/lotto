@@ -203,7 +203,7 @@ async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], 
   const dtas: any = msg.data;
   const data: string[] = [];
   dtas.map((itm) => {
-      data.push(`(${tid},${GameID},${passBT},${itm.Num},${itm.Odds},${itm.MaxOdds}),${stop}`);
+      data.push(`(${tid},${GameID},${passBT},${itm.Num},${itm.Odds},${itm.MaxOdds},${stop})`);
   });
   sql = `
   insert into CurOddsInfo(tid,GameID,BetType,Num,Odds,MaxOdds,isStop)

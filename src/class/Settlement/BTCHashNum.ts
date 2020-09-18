@@ -7,7 +7,7 @@ import * as SFunc from "./SFunc";
 export interface ID3Result {
   Nums: number[];
   RGNums: ID3Nums[];
-  Sum: {BigSmall:number,OddEven:number};
+  Sum: {BigSmall: number, OddEven: number};
   Sum3?: ISum3;
   Pos12?: ITwoNums;
   Pos02?: ITwoNums;
@@ -36,7 +36,7 @@ export class C3DNum {
   private NumSet: ID3Result = {
     Nums: [],
     RGNums: [],
-    Sum: {BigSmall:0,OddEven:0}
+    Sum: {BigSmall: 0, OddEven: 0}
   };
   private getComb2 = SFunc.D3TwoNums;
   // private getSet3All = SFunc.D3Set3All;
@@ -50,13 +50,13 @@ export class C3DNum {
       const tmp = new D3OneNum(snum).Nums;
       this.NumSet.RGNums.push(new D3OneNum(snum).Nums);
       this.NumSet.Nums.push(tmp.Num);
-      //this.NumSet.Sum += tmp.Num;
+      // this.NumSet.Sum += tmp.Num;
     });
     const anum = nums.split(",");
     this.NumSet.Pos12 = new D3TwoNums(anum[1], anum[2]).Nums;
     this.NumSet.Pos02 = new D3TwoNums(anum[0], anum[2]).Nums;
     this.NumSet.Pos01 = new D3TwoNums(anum[0], anum[1]).Nums;
-    //this.NumSet.Sum3 = new D3Sum3(this.NumSet.Sum).Nums;
+    // this.NumSet.Sum3 = new D3Sum3(this.NumSet.Sum).Nums;
     this.NumSet.TwoNums = this.getComb2(nums);
     // this.NumSet.Set3All = this.getSet3All(nums) as number;
     this.NumSet.OddEvenPass = this.getOddEvenPass(this.NumSet.Nums);

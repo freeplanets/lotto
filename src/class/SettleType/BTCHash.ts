@@ -104,7 +104,7 @@ const SettleNums: ISetl[] = [
     Position: 0,
     SubName: "Prime",
     OpenAll: 1,
-  }, 
+  },
   {
     BetTypes: 16,             // 總和單雙
     NumTarget: "Sum",
@@ -198,25 +198,25 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 29,              // 一字現
     NumTarget: "Nums",
-    Position: [0,1,2,3,4],
+    Position: [0, 1, 2, 3, 4],
     OpenAll: 1,
   },
   {
     BetTypes: 30,              // 一字現-前3
     NumTarget: "Nums",
-    Position: [0,1,2],
+    Position: [0, 1, 2],
     OpenAll: 1,
   },
   {
     BetTypes: 31,              // 一字現-中3
     NumTarget: "Nums",
-    Position: [1,2,3],
+    Position: [1, 2, 3],
     OpenAll: 1,
   },
   {
     BetTypes: 32,              // 一字現-後3
     NumTarget: "Nums",
-    Position: [2,3,4],
+    Position: [2, 3, 4],
     OpenAll: 1,
   },
   {
