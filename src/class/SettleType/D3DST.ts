@@ -283,7 +283,7 @@ const SettleNums: ISetl[] = [
     OpenAll: 1
   },
   {
-    BetTypes: 43,             // 三字组合
+    BetTypes: 43,             // 三字組合
     NumTarget: "D3NotPos",
     OpenAll: 1
   },
