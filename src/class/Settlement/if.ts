@@ -1,4 +1,4 @@
-interface INumSet {
+export interface INumSet {
   Num: number;
   OddEven: number;
   BigSmall: number;
@@ -12,6 +12,9 @@ export interface IHappyNums extends INumSet {
 }
 export interface ID3Nums extends INumSet {
   Prime: number;
+}
+export interface IHNums extends INumSet {
+  Prime?: number;
 }
 export interface ISum3 extends INumSet {
   SumPos: number;

@@ -11,8 +11,12 @@ export class D3OneNum {
   private getOddEven = SFunc.OddEven;
   private getBigSmall = SFunc.BigSmall;
   private getPrime = SFunc.PrimeOrNot;
-  constructor(snum: string) {
-    this.Num = parseInt(snum, 10);
+  constructor(snum: string | number) {
+    if(typeof(snum)==='string'){
+      this.Num = parseInt(snum, 10);
+    } else {
+      this.Num = snum;
+    }
     if (this.Num > 9) { this.Num = this.Num % 10; }
     this.OneNum = {
       Num: this.Num,

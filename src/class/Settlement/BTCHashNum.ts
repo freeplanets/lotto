@@ -1,33 +1,28 @@
-import {D3OneNum} from "./D3OneNum";
-import {D3Sum3, } from "./D3Sum3";
-import {D3TwoNums} from "./D3TwoNums";
-import {IC36S, ID3Nums, ISum3, ITwoNums} from "./if";
+import {INumSet,IHNums} from "./if";
 import * as SFunc from "./SFunc";
-
+import {OeBsP} from "./OeBsP";
 export interface ID3Result {
   Nums: number[];
-  RGNums: ID3Nums[];
-  Sum: {BigSmall: number, OddEven: number};
-  Sum3?: ISum3;
-  Pos12?: ITwoNums;
-  Pos02?: ITwoNums;
-  Pos01?: ITwoNums;
-  TwoNums?: number[];
-  Set3All?: number;   // 組 3全包 中0,不中1
-  C36S?: IC36S;
-  OddEvenPass?: number;
-  BigSmallPass?: number;
-  PrimePass?: number;
-  D3Pos?: number;
-  D3NotPos?: number;
-  CrossN?: number;
-  Straight?: number;
-  Same3?: number;  // 犳子
-  Pairs?: number;  // 對子
-  PairsNum?: number;
-  StraightPart?: number; // 准對
-  Not6?: number; // 雜六
-  KillNum?: number[];
+  RGNums: IHNums[];
+  Sum: INumSet;
+  SumT3: INumSet;
+  SumM3: INumSet;
+  SumL3: INumSet;
+  TwoNums: string[];
+  TwoNumsT3: string[];
+  TwoNumsM3: string[];
+  TwoNumsL3: string[];
+  D3NotPos: string[];
+  D3NotPosT3: string;
+  D3NotPosM3: string;
+  D3NotPosL3: string;
+  D4NotPos:string[];
+  D5NotPos:string;
+  MixedT3:number;
+  MixedM3:number;
+  MixedL3:number;
+  GoldenFlower:number;
+  PASS:string[];
 }
 export class C3DNum {
   get Nums() {
@@ -36,62 +31,97 @@ export class C3DNum {
   private NumSet: ID3Result = {
     Nums: [],
     RGNums: [],
-    Sum: {BigSmall: 0, OddEven: 0}
+    Sum: {Num:0,BigSmall: 0, OddEven: 0},
+    SumT3: {Num:0,BigSmall: 0, OddEven: 0},
+    SumM3: {Num:0,BigSmall: 0, OddEven: 0},
+    SumL3: {Num:0,BigSmall: 0, OddEven: 0},
+    TwoNums: [],
+    TwoNumsT3: [],
+    TwoNumsM3: [],
+    TwoNumsL3: [],
+    D3NotPos: [],
+    D3NotPosT3: '',
+    D3NotPosM3: '',
+    D3NotPosL3: '',
+    D4NotPos: [],
+    D5NotPos: '',
+    MixedT3: 0,
+    MixedM3: 0,
+    MixedL3: 0,
+    GoldenFlower: 0,
+    PASS: []
   };
-  private getComb2 = SFunc.D3TwoNums;
+  private nums:string[];
   // private getSet3All = SFunc.D3Set3All;
-  private getOddEvenPass = SFunc.OddEvenPass;
-  private getBigSmallPass = SFunc.BigSmallPass;
-  private getPrimePass = SFunc.PrimePass;
   private getKillNum = SFunc.ChkKillNum;
-  constructor(private nums: string) {
-    nums.split(",").map((snum) => {
+  private Combi = SFunc.C;
+  constructor(num: string|string[]) {
+    //let nums:string[]=[];
+    if(typeof(num)==='string'){
+      if(num.indexOf(',')!==-1){
+        this.nums = num.split(',');  
+      } else {
+        this.nums = num.split('');
+      }
+    } 
+    else this.nums=num;
+    this.nums.map((s) => {
       // if(!this.NumSet.RGNums) this.NumSet.RGNums=[];
-      const tmp = new D3OneNum(snum).Nums;
-      this.NumSet.RGNums.push(new D3OneNum(snum).Nums);
-      this.NumSet.Nums.push(tmp.Num);
+      //const tmp = new D3OneNum(snum).Nums;
+      const n=parseInt(s,10);
+      this.NumSet.RGNums.push(new OeBsP([s]).Nums);
+      this.NumSet.Nums.push(n);
+      return n;
       // this.NumSet.Sum += tmp.Num;
     });
-    const anum = nums.split(",");
-    this.NumSet.Pos12 = new D3TwoNums(anum[1], anum[2]).Nums;
-    this.NumSet.Pos02 = new D3TwoNums(anum[0], anum[2]).Nums;
-    this.NumSet.Pos01 = new D3TwoNums(anum[0], anum[1]).Nums;
-    // this.NumSet.Sum3 = new D3Sum3(this.NumSet.Sum).Nums;
-    this.NumSet.TwoNums = this.getComb2(nums);
+
+    this.NumSet.Sum = new OeBsP(this.nums).Nums;
+    this.NumSet.SumT3 = new OeBsP(this.Top3).Nums;
+    this.NumSet.SumM3 = new OeBsP(this.Mid3).Nums;
+    this.NumSet.SumL3 = new OeBsP(this.Last3).Nums;
+    this.NumSet.TwoNums = this.Combi(this.nums,2);
+    this.NumSet.TwoNumsT3 = this.Combi(this.Top3,2);
+    this.NumSet.TwoNumsM3 = this.Combi(this.Mid3,2);
+    this.NumSet.TwoNumsL3 = this.Combi(this.Last3,2);
+    this.NumSet.D3NotPos = this.Combi(this.nums,3);
+    this.NumSet.D3NotPosT3 = this.Combi(this.Top3,3)[0];
+    this.NumSet.D3NotPosM3 = this.Combi(this.Mid3,3)[0];
+    this.NumSet.D3NotPosL3 = this.Combi(this.Last3,3)[0];
+    this.NumSet.D4NotPos = this.Combi(this.nums,4);
+    this.NumSet.D5NotPos = this.Combi(this.nums,5)[0];
     // this.NumSet.Set3All = this.getSet3All(nums) as number;
-    this.NumSet.OddEvenPass = this.getOddEvenPass(this.NumSet.Nums);
-    this.NumSet.BigSmallPass = this.getBigSmallPass(this.NumSet.Nums);
-    this.NumSet.PrimePass = this.getPrimePass(this.NumSet.Nums);
-    this.NumSet.D3Pos = parseInt(this.NumSet.Nums.join(""), 10);
-    this.NumSet.D3NotPos = this.getD3NoPos(nums);
-    this.NumSet.CrossN = this.getCrossN(nums);
-    this.NumSet.Straight = this.chkStraight(nums);
     // const cc = SFunc.Combs(anum);
-    const cc = SFunc.PairAndNum(anum);
-    this.NumSet.C36S = cc;
-    this.NumSet.Same3 = cc.isSame3 ? 0 : 1;
-    this.NumSet.Pairs = cc.isSet3 ? 0 : 1;
-    this.NumSet.Set3All = this.NumSet.Pairs;
-    this.NumSet.PairsNum = this.getPairsNum(nums);
-    this.NumSet.StraightPart = cc.isSet3 ? 1 : this.chkStraightPart(nums);
-    // 雜六 - 不包含豹子、順子、對子、半順
-    this.NumSet.Not6 = this.NumSet.Same3 && this.NumSet.Pairs && this.NumSet.Straight && this.NumSet.StraightPart ? 0 : 1;
-    this.NumSet.KillNum = this.getKillNum(this.NumSet.Nums);
   }
-  private getD3NoPos(n: string): number {
-    return parseInt(n.split(",").sort().join(""), 10);
+  private chkStraightOrHalf(nums: string[],func:Function) {
+    const arr:string[]= ['0','1','2','3','4','5','6','7','8','9','0','1','2','3'];
+    const ar1:number[]=[];
+    const ar2:number[]=[];
+    let chk2:boolean=false;
+    nums.map(num=>{
+      let idx1=arr.indexOf(num);
+      let idx2=arr.indexOf(num,2)
+      ar1.push(idx1);
+      ar2.push(idx2);
+      if(idx2 !== idx1) chk2=true;
+    })
+    let isStra=func(ar1);
+    if(isStra) return true;
+    if(chk2) return func(ar2);
+    return false;
   }
-  private getCrossN(n: string) {
-    const aNum = n.split(",").sort();
-    return parseInt(aNum[2], 10) - parseInt(aNum[0], 10);
+  private isStra(nums:number[]){
+    const snum=nums.sort();
+    for(let i=0,n=snum.length;i<n-1;i++){
+      if(snum[i+1]-snum[i] !==0) return false;
+    }
+    return true;
   }
-  private chkStraight(n: string) {
-    const aNum = n.split(",").sort();
-    if (aNum.join() === "019") { return 0; }
-    const chk1 = parseInt(aNum[1], 10) - parseInt(aNum[0], 10);
-    const chk2 = parseInt(aNum[2], 10) - parseInt(aNum[1], 10);
-    if (chk1 === 1 && chk2 === 1) { return 0; }
-    return 1;
+  private isStraHalf(nums:number[]){
+    if(nums.length!==3) return false;
+    const snum=nums.sort();
+    const chk1 = (snum[1]-snum[0]) ===1 ? 1 : 0;
+    const chk2 = (snum[1]-snum[0]) ===1 ? 1 : 0;
+    return !!(chk1 ^ chk2);
   }
   private chkStraightPart(n: string) {
     const aNum = n.split(",").sort();
@@ -117,6 +147,15 @@ export class C3DNum {
     if (fcnt === 1) { return fnum; }
     return -1;
   }
+  get Top3(){
+    return [this.nums[2],this.nums[3],this.nums[4]];
+  }
+  get Mid3(){
+    return [this.nums[1],this.nums[2],this.nums[3]];
+  }
+  get Last3(){
+    return [this.nums[0],this.nums[1],this.nums[2]];
+  }  
 }
 
 // const snum: string = "6,1,3";

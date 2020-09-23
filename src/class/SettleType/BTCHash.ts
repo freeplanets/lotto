@@ -119,37 +119,37 @@ const SettleNums: ISetl[] = [
   },
   {
     BetTypes: 18,             // 前3和單雙
-    NumTarget: "Top3",
+    NumTarget: "SumT3",
     SubName: "OddEven",
     OpenAll: 1
   },
   {
     BetTypes: 19,             // 前3和大小
-    NumTarget: "Top3",
+    NumTarget: "SumT3",
     SubName: "BigSmall",
     OpenAll: 1
   },
   {
     BetTypes: 20,             // 中3和單雙
-    NumTarget: "Mid3",
+    NumTarget: "SumM3",
     SubName: "OddEven",
     OpenAll: 1
   },
   {
     BetTypes: 21,             // 中3和大小
-    NumTarget: "Mid3",
+    NumTarget: "SumM3",
     SubName: "BigSmall",
     OpenAll: 1
   },
   {
     BetTypes: 22,             // 後3和單雙
-    NumTarget: "Top3",
+    NumTarget: "SumL3",
     SubName: "OddEven",
     OpenAll: 1
   },
   {
     BetTypes: 23,             // 後3和大小
-    NumTarget: "Top3",
+    NumTarget: "SumL3",
     SubName: "BigSmall",
     OpenAll: 1
   },
