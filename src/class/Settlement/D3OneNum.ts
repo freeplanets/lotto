@@ -12,7 +12,7 @@ export class D3OneNum {
   private getBigSmall = SFunc.BigSmall;
   private getPrime = SFunc.PrimeOrNot;
   constructor(snum: string | number) {
-    if(typeof(snum)==='string'){
+    if (typeof(snum) === "string") {
       this.Num = parseInt(snum, 10);
     } else {
       this.Num = snum;

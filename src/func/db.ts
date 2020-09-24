@@ -35,10 +35,22 @@ const mdOptions: mariadb.PoolConfig = {
     charset: "UTF8"
 };
 const dbPool: mariadb.Pool = mariadb.createPool(mdOptions);
+const HHOptions: mariadb.PoolConfig = {
+    host: process.env.HASHHOST,
+    user: process.env.HASHUSER,
+    password: process.env.HASHPASSWORD,
+    database: process.env.HASHDATABASE,
+    port: process.env.HASHPORT ? parseInt(process.env.HASHPORT, 10) : 0,
+    timezone: "Asia/Taipei",
+    charset: "UTF8"
+};
+const HHPool: mariadb.Pool =  mariadb.createPool(HHOptions);
 
-export function getConnection(): Promise<PoolConnection|undefined> {
+export function getConnection(doHash?: boolean): Promise<PoolConnection|undefined> {
+    let pool: mariadb.Pool = dbPool;
     return new Promise((resolve, reject) => {
-        dbPool.getConnection().then((conn: PoolConnection) => {
+        if (doHash) { pool = HHPool; }
+        pool.getConnection().then((conn: PoolConnection) => {
             resolve(conn);
         }).catch((err) => {
             console.log("getConnection error:", err);

@@ -139,22 +139,33 @@ function inNum(num: string, no: number[]): boolean {
   return no.length === cnt;
 }
 
-export function C(arr:string[], num:number){
-  var r:string[][]=[];
-	(function f(t:string[],a:string[],n:number){
-		if (n==0) {
-			return r.push(t);
-		}
-		for (var i=0,l=a.length; i<=l-n; i++){	
-			f(t.concat(a[i]), a.slice(i+1), n-1);
-		}
-  })([],arr,num);
-  let t1=r.map(rr=>rr.sort().join(''));
-  let c:string[]=[];
-  t1.map(rr=>{
-    if(c.indexOf(rr)===-1) c.push(rr);
-  })
-	return c;
+export function C(arr: string[], num: number) {
+  const r: string[][] = [];
+  function f(t: string[], a: string[], n: number) {
+    if (n === 0) {
+      return r.push(t);
+    }
+    for (let i = 0, l = a.length; i <= l - n; i++) {
+      f(t.concat(a[i]), a.slice(i + 1), n - 1);
+    }
+  }
+  f([], arr, num);
+  const t1 = r.map((rr) => rr.sort().join(""));
+  const c: string[] = [];
+  t1.map((rr) => {
+    if (c.indexOf(rr) === -1) { c.push(rr); }
+  });
+  return c;
 }
+/*
+function f(t: string[], a: string[], n: number) {
+  if (n === 0) {
+    return r.push(t);
+  }
+  for (let i = 0, l = a.length; i <= l - n; i++) {
+    f(t.concat(a[i]), a.slice(i + 1), n - 1);
+  }
+}
+*/
 // Happy
 //

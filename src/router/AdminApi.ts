@@ -1846,6 +1846,32 @@ app.get("/CancelTerm", async (req, res) => {
     }
     res.send(JSON.stringify(msg));
 });
+app.get("/getBTCHashTable", async (req, res) => {
+    const msg: IMsg = {ErrNo: 0};
+    const conn = await getConnection(true);
+    if (conn) {
+        const p = req.query;
+        const sql = `select hashvalue from btcBlocks limit ${p.idx},${p.steps}`;
+        console.log("getBTCHashTable:", sql);
+        try {
+            const ans = await doQuery(sql, conn);
+            console.log("getBTCHashTable end");
+            if (ans) {
+                msg.data = ans;
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Data no found!!";
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
 async function getTermIds(GameID: number, conn: mariadb.PoolConnection): Promise<IMsg> {
     const msg: IMsg = { ErrNo: 0 };
     const sql = `select id,TermID from Terms where GameID=? order by id desc`;
