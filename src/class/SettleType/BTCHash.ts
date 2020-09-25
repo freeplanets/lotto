@@ -292,6 +292,7 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 47,            // 兩面過關
     NumTarget: "PASS",
+    PType: "EACH",
     OpenAll: 1
   }
 ];

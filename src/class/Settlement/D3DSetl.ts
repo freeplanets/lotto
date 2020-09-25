@@ -3,7 +3,6 @@ import {ISetl, ISqlProc} from "../../DataSchema/if";
 import {IExProc} from "../Bet";
 import D3DST from "../SettleType/D3DST";
 import {C3DNum, ID3Result} from "./C3DNum";
-import { IC36S } from "./if";
 // const SettleMethods = MarkSixST;
 export function D3DSetl(tid: number, GameID: number, num: string, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
   // let ans: string[] = [];

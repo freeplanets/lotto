@@ -1,9 +1,9 @@
 import XFunc from "../XFunc";
-import { ISum } from "./Happy8Sum";
 export interface ISame3 {
   Num: number;
   ALL: number;
 }
+
 export interface ISpeed3Result {
   Nums: string[];
   BigSmall: number;

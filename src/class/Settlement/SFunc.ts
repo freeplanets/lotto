@@ -157,6 +157,15 @@ export function C(arr: string[], num: number) {
   });
   return c;
 }
+export function chkSame3OrPair(n: string[]) {
+  const ta: string[] = [];
+  n.map((nm) => {
+    const f = ta.find((itm) => itm === nm);
+    if (!f) { ta.push(nm); }
+  });
+  return ta.length;
+}
+
 /*
 function f(t: string[], a: string[], n: number) {
   if (n === 0) {

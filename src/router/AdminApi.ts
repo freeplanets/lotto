@@ -1852,10 +1852,10 @@ app.get("/getBTCHashTable", async (req, res) => {
     if (conn) {
         const p = req.query;
         const sql = `select hashvalue from btcBlocks limit ${p.idx},${p.steps}`;
-        //console.log("getBTCHashTable:", sql);
+        // console.log("getBTCHashTable:", sql);
         try {
             const ans = await doQuery(sql, conn);
-            //console.log("getBTCHashTable end");
+            // console.log("getBTCHashTable end");
             if (ans) {
                 msg.data = ans;
             } else {

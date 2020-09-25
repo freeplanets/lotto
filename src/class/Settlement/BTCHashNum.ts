@@ -1,7 +1,7 @@
 import {IHNums, INumSet} from "./if";
 import {OeBsP} from "./OeBsP";
 import * as SFunc from "./SFunc";
-export interface ID3Result {
+export interface IBTCHashResult {
   Nums: number[];
   RGNums: IHNums[];
   Sum: INumSet;
@@ -24,11 +24,11 @@ export interface ID3Result {
   GoldenFlower: number;
   PASS: string[];
 }
-export class C3DNum {
+export class BTCHashNum {
   get Nums() {
     return this.NumSet;
   }
-  private NumSet: ID3Result = {
+  private NumSet: IBTCHashResult = {
     Nums: [],
     RGNums: [],
     Sum: {Num: 0, BigSmall: 0, OddEven: 0},
@@ -53,8 +53,8 @@ export class C3DNum {
   };
   private nums: string[];
   // private getSet3All = SFunc.D3Set3All;
-  private getKillNum = SFunc.ChkKillNum;
   private Combi = SFunc.C;
+  private Same3OrPair = SFunc.chkSame3OrPair;
   constructor(num: string|string[]) {
     // let nums:string[]=[];
     if (typeof(num) === "string") {
@@ -88,8 +88,31 @@ export class C3DNum {
     this.NumSet.D3NotPosL3 = this.Combi(this.Last3, 3)[0];
     this.NumSet.D4NotPos = this.Combi(this.nums, 4);
     this.NumSet.D5NotPos = this.Combi(this.nums, 5)[0];
+    this.NumSet.MixedT3 = this.chkMiscellaneous(this.Top3);
+    this.NumSet.MixedM3 = this.chkMiscellaneous(this.Mid3);
+    this.NumSet.MixedL3 = this.chkMiscellaneous(this.Last3);
+    this.NumSet.PASS = this.getPass();
     // this.NumSet.Set3All = this.getSet3All(nums) as number;
     // const cc = SFunc.Combs(anum);
+  }
+  private getPass() {
+    const tmp: string[] = [];
+    this.NumSet.RGNums.map((itm, k) => {
+      tmp.push(`${k + 1}${itm.OddEven}`);
+      tmp.push(`${k + 6}${itm.BigSmall}`);
+      tmp.push(`${k + 11}${itm.Prime}`);
+    });
+    return tmp;
+  }
+  private chkMiscellaneous(nums: string[]) {
+    const ans = this.Same3OrPair(nums);
+    if (ans === 1) { return 0; }
+    if (ans === 2) { return 2; }
+    let isSH = this.chkStraightOrHalf(nums, this.isStra);
+    if (isSH) { return 1; }
+    isSH = this.chkStraightOrHalf(nums, this.isStraHalf);
+    if (isSH) { return 3; }
+    return 4;
   }
   private chkStraightOrHalf(nums: string[], func: (n: number[]) => boolean) {
     const arr: string[] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "1", "2", "3"];

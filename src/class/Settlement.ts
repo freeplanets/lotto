@@ -6,6 +6,7 @@ import {ITerms} from "../DataSchema/user";
 import {doQuery} from "../func/db";
 import JTable from "./JTable";
 import {AlwaysSetl} from "./Settlement/AlwaysSetl";
+import {BTCHashSetl} from "./Settlement/BTCHashSetl";
 import {CarsSetl} from "./Settlement/CarsSetl";
 import {D3DSetl} from "./Settlement/D3DSetl";
 import {Happy8Setl} from "./Settlement/Happy8Setl";
@@ -252,6 +253,9 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
             break;
         case "Speed3":
             ans = Speed3Setl(tid, GameID, imsra, rtn, conn);
+            break;
+        case "BTCHash":
+            ans = BTCHashSetl(tid, GameID, imsra, rtn, conn);
             break;
         default:
             ans = MarkSixSetl(tid, GameID, imsra, rtn, conn);
