@@ -27,6 +27,7 @@ export interface IGameInfo {
     endSec: number;
     endSecSN: number;
     isSettled: number;
+    GType: string;
 }
 export interface ILastGame {
     sno: string;
@@ -342,4 +343,10 @@ export interface IDfOddsItems {
     SubType: number;
     Num: string;
     ModifyID?: number;
+}
+
+export interface IHashAna {
+    id?: number;
+    Cond: string;
+    AnaData: string;
 }

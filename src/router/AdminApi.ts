@@ -14,7 +14,7 @@ import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
 import ErrCode from "../DataSchema/ErrCode";
-import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IDfOddsItems, IGameDataCaption , IGameItem , IGameResult, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
+import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IDfOddsItems, IGameDataCaption , IGameItem , IGameResult, IHashAna, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import {doQuery, getConnection} from "../func/db";
 const app: Router = express.Router();
@@ -1861,6 +1861,81 @@ app.get("/getBTCHashTable", async (req, res) => {
             } else {
                 msg.ErrNo = 9;
                 msg.ErrCon = "Data no found!!";
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/getHashAna", async (req, res) => {
+    const msg: IMsg = {ErrNo: 0};
+    const conn = await getConnection();
+    if (conn) {
+        const jt: JTable<IHashAna> = new JTable(conn, "HashAna");
+        try {
+            const ans = await jt.List();
+            if (ans) {
+                msg.data = ans;
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Data no found!!";
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.post("/saveHashAna", async (req, res) => {
+    const msg: IMsg = {ErrNo: 0};
+    const conn = await getConnection();
+    if (conn) {
+        const param = req.body;
+        const jt: JTable<IHashAna> = new JTable(conn, "HashAna");
+        const data: IHashAna = {
+            Cond: param.Cond,
+            AnaData: param.AnaData.replace(/\\"/g, '"')
+        };
+        try {
+            const ans = await jt.Insert(data);
+            if (ans) {
+                msg.data = ans;
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Data no found!!";
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
+app.get("/delHashAna", async (req, res) => {
+    const msg: IMsg = {ErrNo: 0};
+    const conn = await getConnection();
+    if (conn) {
+        const id = parseInt(req.query.id, 10);
+        const jt: JTable<IHashAna> = new JTable(conn, "HashAna");
+        try {
+            const ans = await jt.Delete(id);
+            if (ans) {
+                msg.data = ans;
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Delete data error!!";
             }
         } catch (error) {
             console.log(error);

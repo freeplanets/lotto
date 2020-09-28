@@ -49,7 +49,7 @@ export async function getPayClass(conn: mariadb.PoolConnection, GameID?: number|
     return ans;
 }
 export async function getGameInfo(GameID: number|string, conn: mariadb.PoolConnection) {
-    const sql: string = "select t.*,g.name from Terms t left join Games g on t.GameID=g.id where t.GameID=? order by t.id desc limit 0,1";
+    const sql: string = "select t.*,g.name,g.GType from Terms t left join Games g on t.GameID=g.id where t.GameID=? order by t.id desc limit 0,1";
     let row;
     const gf: IGameInfo = {
         id: "",
@@ -58,7 +58,8 @@ export async function getGameInfo(GameID: number|string, conn: mariadb.PoolConne
         isEnd: "N",
         endSec: 0,
         endSecSN: 0,
-        isSettled: 0
+        isSettled: 0,
+        GType: ""
     };
     await conn.query(sql, [GameID]).then((rows) => {
         if (rows) {
@@ -72,6 +73,7 @@ export async function getGameInfo(GameID: number|string, conn: mariadb.PoolConne
                     gf.endSecSN = JDate.LeftSec(row.StopTimeS);
                 }
                 gf.isSettled = row.isSettled;
+                gf.GType = row.GType;
             }
         }
     }).catch((err) => {

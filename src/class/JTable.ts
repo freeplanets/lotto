@@ -94,6 +94,18 @@ export default class JTable<T extends IHasID> {
      * update table where field 'id'
      * @param v
      */
+    public async Delete(id: number|number[]) {
+        let ans;
+        const sql = `delete from ${this.TableName} where id ${typeof(id) === "number" ? "=" + id : " in " + "(" + id.join(",") + ")" } `;
+        await this.conn.query(sql).then((row) => {
+            ans = row;
+            // console.log("JTable Upate ans:", ans);
+        }).catch((err) => {
+            ans = false;
+            console.log("JTable Delete err:", err);
+        });
+        return ans;
+    }
     public async Update(v: T ) {
         const fields: string[] = [];
         const params: any[] = [];
