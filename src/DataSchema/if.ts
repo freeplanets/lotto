@@ -161,6 +161,7 @@ export interface ICurOddsData {
     BetType: number;
     SubType: number;
     OID: number;
+    NoOID?: boolean;
     Num: number;
     Odds: number;
     tolS: number;

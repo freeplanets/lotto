@@ -5,12 +5,10 @@ import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
 import {IGame, ITerms} from "../DataSchema/user";
 import {getUserCredit, ModifyCredit} from "../func/Credit";
 // import JDate from '../class/JDate';
-import dbPool, {doQuery} from "../func/db";
 import BetParam from "./BetParam";
 import {C} from "./Func";
 import JTable from "./JTable";
 import {OpChk} from "./OpChk";
-// import dbPool from "src/func/db";
 interface INum {
     [key: number]: any;
 }
@@ -20,6 +18,15 @@ interface INumOdd {
 interface IGameInfo {
     UseAvgOdds: number;
     GType: string;
+}
+interface IOddInfo {
+    BetType: number;
+    SubType: number;
+    OID: number;
+    Num: number;
+    Odds: number;
+    tolS: number;
+    BaseOdds: number;
 }
 const GameTypes = {
     MarkSix : "MarkSix",
@@ -77,6 +84,7 @@ export class Bet implements IBet {
             Content: []
         };
         const BetDetail: IBetTable[] = [];
+        const GType = this.GameInfo.GType;
         const num: string[] = nums.split("@");
         const arrNum: INum = {};
         const dta: INumData[] = [];
@@ -103,7 +111,8 @@ export class Bet implements IBet {
             }
             dta.push(n);
         });
-        const ans: ICurOddsData[] = await this.getOddsData(arrNum);
+        const ans: ICurOddsData[] = await this.getOddsData(GType, arrNum);
+        // console.log("AnaNum getOddsData", ans);
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetTypes);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
@@ -117,9 +126,11 @@ export class Bet implements IBet {
         // for (const x in dta) {
         for (let i = 0, n = dta.length; i < n; i++) {
             const itm = dta[i];
+            // console.log("AnaNum chk:", itm, ans, typeof(itm.Num), typeof(ans[0].Num));
             const found = ans.find(
-                (nn) => nn.BetType === itm.BetType && nn.Num === itm.Num &&  nn.OID === itm.OddsID
+                (nn) => nn.BetType === itm.BetType && nn.Num === itm.Num && (nn.NoOID || nn.OID === itm.OddsID)
                 );
+            // console.log("AnaNum chk:", itm, ans, typeof(itm.Num), typeof(ans[0].Num), found);
             if (found) {
                 if (Chker) {
                     const chk = Chker.ChkData(itm, found);
@@ -312,7 +323,7 @@ export class Bet implements IBet {
             // SNB.Content.push(iNumD);
             tmpNums.push(iNumD);
         });
-        const ans: ICurOddsData[] = await this.getOddsData(arrNum);
+        const ans: ICurOddsData[] = await this.getOddsData(GType, arrNum);
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetTypes);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
@@ -361,6 +372,7 @@ export class Bet implements IBet {
         if (BNum === 0) {
             BNum = Odd.length;
         }
+        console.log("Parlay numsets", setsN, BNum, Odd);
         const numsets = C(setsN, BNum);
         const jt: JTable<IBetHeader> = new JTable(this.conn, "BetHeader");
         SNB.Sets = numsets.length;
@@ -399,6 +411,7 @@ export class Bet implements IBet {
             numsets.map((set, idx) => {
                 let odds: number = 0;
                 let odds1: number = 0;
+                let passodds: number = 1;
                 const oddsg: number[] = [];
                 const oddsg1: number[] = [];
                 set.map((n) => {
@@ -406,10 +419,8 @@ export class Bet implements IBet {
                     odds = odds + NumOdd[n];
                     oddsg.push(NumOdd[n]);
                     if (isPASS) {
-                        if (odds === 0) {
-                            odds = 1;
-                        }
-                        odds = odds * NumOdd[n];
+                        passodds = passodds * NumOdd[n];
+                        console.log("Pass chk", passodds, n);
                     } else if (GType === GameTypes.D3) {
                         const tmp: IExProc = {
                             id: 0,
@@ -448,7 +459,7 @@ export class Bet implements IBet {
                         }
                     }
                 });
-                const avgOdds: number = (isPASS ? odds : this.AvgOrMin(oddsg, UseAvgOdds));
+                const avgOdds: number = (isPASS ? passodds : this.AvgOrMin(oddsg, UseAvgOdds));
                 const bd: IBetTable = {
                     id: 0,
                     betid: rlt.insertId,
@@ -490,7 +501,7 @@ export class Bet implements IBet {
             // 聯碼限額--End
             const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
-            console.log("Parlay Save Detail:", rlt1);
+            console.log("Parlay Save Detail:", rlt1, BetDetail);
             if (rlt1) {
                 if (Chker) {
                     // console.log("do Chker updateTotals");
@@ -514,6 +525,11 @@ export class Bet implements IBet {
                         return msg;
                     }
                 }
+            } else {
+                await this.conn.rollback();
+                msg.ErrNo = 9;
+                msg.ErrCon = "Save detail error !!";
+                return msg;
             }
             msg.data = rlt1;
             await this.conn.commit();
@@ -600,8 +616,8 @@ export class Bet implements IBet {
             tmpNums.push(iNumD);
         });
         */
-        const ans: ICurOddsData[] = await this.getOddsData(Nums, BetType);
-        console.log("after getOddsData:", ans);
+        const ans: ICurOddsData[] = await this.getOddsData(GType, Nums, BetType);
+        // console.log("after getOddsData:", ans);
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetType);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetType);
         if (opParams) {
@@ -761,8 +777,9 @@ export class Bet implements IBet {
         const jt: JTable<ITerms> = new JTable(conn, "Terms");
         return await jt.getOne(tid);
     }
-    private async getOddsData(nums: INum|string, BT?: number) {
-        let sql: string = `select c.BetType,c.SubType,UNIX_TIMESTAMP(c.OID) OID,c.Num,Odds+Rate Odds,tolS from CurOddsInfo c left join PayRate p
+    private async getOddsData(GType: string, nums: INum|string, BT?: number) {
+        let chk45: boolean = false;
+        let sql: string = `select c.BetType,c.SubType,UNIX_TIMESTAMP(c.OID) OID,c.Num,Odds+Rate Odds,tolS,Odds BaseOdds from CurOddsInfo c left join PayRate p
         on c.GameID=p.GameID and c.BetType=p.BetType where p.SubType=0 and
         c.tid= ${this.tid} and c.GameID = ${this.GameID} and p.PayClassID= ${this.PayClassID} and `;
         if (typeof(nums) === "string") {
@@ -770,7 +787,12 @@ export class Bet implements IBet {
         } else {
             const filters: string[] = [];
             Object.keys(nums).map((BetType) => {
-                const tmp: string = "(c.BetType=" + BetType + " and Num in (" + nums[BetType].join(",") + "))";
+                let extF = "";
+                if (GType === "BTCHash" && (BetType === "41" || BetType === "42")) {
+                    chk45 = true;
+                    extF = ",0";
+                }
+                const tmp: string = "(c.BetType=" + BetType + " and Num in (" + nums[BetType].join(",") + extF + "))";
                 filters.push(tmp);
             });
             sql = sql + "(" + filters.join(" or ") + ")";
@@ -778,12 +800,41 @@ export class Bet implements IBet {
         }
         console.log("getOddsData:", sql);
         let ans;
-        await this.conn.query(sql).then((rows) => {
-            ans = rows;
+        await this.conn.query(sql).then(async (rows) => {
+            // console.log("getOddsData rows:", rows);
+            if (chk45) {
+                ans = [];
+                const tmp: IOddInfo[] = [];
+                const f0: IOddInfo = rows.find((itm) => itm.Num === 0);
+                let bOdds: IOddInfo;
+                bOdds = Object.assign({}, f0);
+                bOdds.tolS = 0;
+                Object.keys(nums).map((BetType) => {
+                    nums[BetType].map((num) => {
+                        const f = rows.find((itm) => itm.Num === num);
+                        if (f) {
+                            f.NoOID = true;
+                            ans.push(f);
+                        } else {
+                            const newOdds = Object.assign({}, bOdds);
+                            newOdds.Num = num;
+                            ans.push(newOdds);
+                            tmp.push(newOdds);
+                        }
+                        // console.log("getOddsData map:", typeof(num), num, f, ans);
+                    });
+                });
+                if (tmp.length > 0) {
+                    await this.saveNewOddsData(tmp);
+                }
+            } else {
+                ans = rows;
+            }
         }).catch((err) => {
             console.log("getOddsData", err);
             ans = false;
         });
+        // console.log("getOddsData ans:", ans);
         return ans;
     }
     private async getNumAvgle(BetTypes: number[]|number): Promise<INumAvg[]|undefined> {
@@ -872,6 +923,21 @@ export class Bet implements IBet {
             tmp.push(ln.join(" "));
         }
         return tmp.join(" : ");
+    }
+    private async saveNewOddsData(newOdds: IOddInfo[]) {
+        const data: string[] = [];
+        newOdds.map((itm) => {
+            data.push(`(${this.tid},${this.GameID},${itm.BetType},${itm.SubType},${itm.Num},${itm.BaseOdds},${itm.BaseOdds})`);
+        });
+        const sql = `insert into CurOddsInfo(tid,GameID,BetType,SubType,Num,Odds,MaxOdds) values${data.join(",")}`;
+        console.log("saveNewOddsData:", sql);
+        await this.conn.query(sql).then((res) => {
+            console.log("saveNewOddsData success:", res);
+            return res;
+        }).catch((error) => {
+            console.log("saveNewOddsData error:", error);
+            return false;
+        });
     }
     /*
     private async calDayReport(dt:IBetTable[]){

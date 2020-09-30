@@ -112,7 +112,7 @@ async function getOddsItem(GameID: number|string, tid: string, isSettled: number
     let MaxID: number = 0;
     const param = [GameID, tid, PayClassID, MaxOddsID];
     // const btOdds:IBtOdds = {}
-    console.log("getOddsItem", sql, param, isSettled);
+    // console.log("getOddsItem", sql, param, isSettled);
     await conn.query(sql, param).then((rows) => {
         rows.map((itm) => {
             /*
