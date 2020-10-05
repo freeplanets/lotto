@@ -189,13 +189,6 @@ const SettleNums: ISetl[] = [
     OpenAll: 1,
   },
   {
-    BetTypes: 28,              // 一定位-萬
-    NumTarget: "RGNums",
-    Position: 0,
-    SubName: "Num",
-    OpenAll: 1,
-  },
-  {
     BetTypes: 29,              // 一字現
     NumTarget: "Nums",
     Position: [0, 1, 2, 3, 4],
