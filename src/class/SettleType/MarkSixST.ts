@@ -58,14 +58,16 @@ const SettleNums: ISetl[] = [
       NumTarget: "RegularNums",
       Position: -1,
       OpenAll: 3,
-      OpenLess: 2
+      OpenLess: 2,
+      UseExTable: true
   },
   {
       BetTypes: 72,           // 三中二 II
       NumTarget: "RegularNums",
       Position: -1,
       OpenAll: 3,
-      OpenLess: 2
+      OpenLess: 2,
+      UseExTable: true
   },
   {
       BetTypes: 9,              // 二全中

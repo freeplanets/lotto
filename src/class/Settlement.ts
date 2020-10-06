@@ -106,7 +106,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
                     return false;
                 }
             }));
-            if (GType === "MarkSix") {  // 六合彩類 3中2 2中特 均成賠率或最小賠率檢查
+            if (GType === "MarkSix") {  // 六合彩類 3中2 均成賠率或最小賠率檢查
                 sql = `select * from BetTableEx
                     where tid=${tid} and GameID=${GameID} `;
                 let strs: string[] = [];

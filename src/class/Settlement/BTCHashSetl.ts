@@ -13,7 +13,7 @@ export function BTCHashSetl(tid: number, GameID: number, num: string, rtn: any, 
   };
   // let sqls: string[];
   let sqls: ISqlProc;
-  //console.log("imsr:", imsr);
+  // console.log("imsr:", imsr);
   rtn.map((rd) => {
       const found: ISetl | undefined = BTCHash.find((el) => el.BetTypes === rd.BetType);
       if (found) {
@@ -27,7 +27,7 @@ export function BTCHashSetl(tid: number, GameID: number, num: string, rtn: any, 
       }
   });
   ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
-  //console.log("BTCHashSetl:", ans);
+  // console.log("BTCHashSetl:", ans);
   return ans;
 }
 
