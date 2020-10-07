@@ -29,6 +29,7 @@ export function MarkSixSetl(tid: number, GameID: number, imsra: any, rtn: any, c
       }
   });
   ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  //console.log("MarkSixSetl sql:", ans);
   return ans;
 }
 
@@ -73,7 +74,14 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
               const tmp: number[] = imsr[itm.NumTarget];
               // nn = tmp;
               if (itm.OpenLess) {
+                  // 三中二
                   sql = `update BetTableEx set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in (${tmp.join(",")})`;
+                  sqls.pre.push(sql);
+
+                  sql = `update BetTable b,
+                  (SELECT betid,tGroup,count(*) OpNums,CASE UseAvgOdds WHEN 1 then SUM(ODDS)/count(*) when 0 then MIN(Odds) end Odds FROM BetTableEx
+                  where GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and Opened=1 group by betid,tGroup HAVING OpNums > 1) t set b.OpNums=t.OpNums,b.Odds=t.Odds,b.Payouts=b.Amt*t.Odds
+                  where b.betid=t.betid and b.tGroup=t.tGroup and b.GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and b.isCancled=0`;
                   sqls.pre.push(sql);
               } else {
                   tmp.map((elm) => {

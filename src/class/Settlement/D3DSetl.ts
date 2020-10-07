@@ -102,7 +102,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, con
             sqls.pre.push(sql);
             sql = `update BetTable b,
             (SELECT betid,tGroup,count(*) OpNums,CASE UseAvgOdds WHEN 1 then SUM(ODDS)/count(*) when 0 then MIN(Odds) end Odds FROM BetTableEx
-            where GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and Opened=1 group by betid,tGroup) t set b.OpNums=t.OpNums,b.Payouts=b.Amt*t.Odds
+            where GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and Opened=1 group by betid,tGroup) t set b.OpNums=t.OpNums,b.Odds=t.Odds,b.Payouts=b.Amt*t.Odds
             where b.betid=t.betid and b.tGroup=t.tGroup and b.GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and b.isCancled=0`;
             sqls.pre.push(sql);
         }

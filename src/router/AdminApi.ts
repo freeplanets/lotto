@@ -1851,7 +1851,7 @@ app.get("/getBTCHashTable", async (req, res) => {
     const conn = await getConnection(true);
     if (conn) {
         const p = req.query;
-        const sql = `select hashvalue from btcBlocks limit ${p.idx},${p.steps}`;
+        const sql = `select height,hashvalue from btcBlocks limit ${p.idx},${p.steps}`;
         // console.log("getBTCHashTable:", sql);
         try {
             const ans = await doQuery(sql, conn);
