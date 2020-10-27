@@ -13,6 +13,7 @@ interface IAnsData {
     path?: string;   // "http://<server2>,http:/11 / 45 /<server3>,http://<server4>"
     money?: string;  // "100.81",
     freeMoney?: string;  // "100.56"
+    status?:number;
     [key: string]: string|number|object|undefined;
 }
 let defaultUrl = "http://localhost:8080";

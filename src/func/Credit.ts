@@ -15,7 +15,7 @@ export async function ModifyCredit(uid: number, Account: string,
     const sql = `insert into UserCredit(uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;
     const param = [uid, Account, AgentId, idenkey, money, balance];
     const dbans: IDbAns = await conn.query(sql, param);
-    console.log("ModifyCredit:", dbans);
+    console.log("ModifyCredit:",sql, dbans);
     if (dbans.affectedRows > 0) {
     // return true;
         const bans =  await ModifyUserCredit(uid, balance, conn);
