@@ -13,7 +13,7 @@ interface IAnsData {
     path?: string;   // "http://<server2>,http:/11 / 45 /<server3>,http://<server4>"
     money?: string;  // "100.81",
     freeMoney?: string;  // "100.56"
-    status?:number;
+    status?: number;
     [key: string]: string|number|object|undefined;
 }
 let defaultUrl = "http://localhost:8080";
@@ -146,7 +146,6 @@ async function CreditAC(req: Request, res: Response, ac: number) {
         const key: number = (ac === 3 ? 1 : -1);
         const ans = await ModifyCredit(user.id, user.Account, params.agentId,
             money * key, param.orderId as string, conn, justquery);
-        console.log("CreditAC ModifyCredit:", ans);
         if (ans) {
             data.money = ans.balance + "";
             data.freeMoney = ans.balance + "";
@@ -157,6 +156,7 @@ async function CreditAC(req: Request, res: Response, ac: number) {
         msg.data = data;
     }
     conn.release();
+    console.log("CreditAC ModifyCredit:", msg);
     res.send(JSON.stringify(msg));
 }
 async function getAgent(id: string, conn: Connection) {
