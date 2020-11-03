@@ -1005,6 +1005,12 @@ app.post("/createBetItems", async (req, res) => {
     res.send(JSON.stringify(msg));
     return;
   }
+  if (!param.ModifyID) {
+    msg.ErrNo = 9;
+    msg.ErrCon = "Miss param ModifyID!!";
+    res.send(JSON.stringify(msg));
+    return;
+  }
   const GType = param.GType;
   const ModifyID = param.ModifyID;
   // console.log("createBetItems data:", param.data);
