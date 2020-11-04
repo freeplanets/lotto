@@ -630,7 +630,7 @@ app.get("/getBasePayRate", async (req, res) => {
   const param = req.query;
   const params = [param.GameID];
   const sql = `select p.BetType,p.SubType,NoAdjust,Profit,DfRate,TopRate,
-        p.Probability,Steps,TopPay,OneHand,TotalNums,UseAvg,SingleNum,UnionNum,MinHand,MaxHand,
+        p.Probability,p.isParlay,Steps,TopPay,OneHand,TotalNums,UseAvg,SingleNum,UnionNum,MinHand,MaxHand,
         BetForChange,StepsGroup,ChangeStart,PerStep,ChaseNum
         from ProbabilityTable p left join BasePayRate b on  p.GType=b.GType and p.BetType=b.BetType and p.SubType=b.SubType where GameID = ?`;
   // console.log("getBasePayRate:", sql, params);
