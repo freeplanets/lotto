@@ -1,10 +1,9 @@
 import {Request, Response } from "express";
 import mariadb from "mariadb";
-import { isRegExp } from "util";
 import ErrCode from "../DataSchema/ErrCode";
 import {IDbAns, IMsg} from "../DataSchema/if";
 import * as db from "../func/db";
-const staytime: number = 3000;   // sec
+const staytime: number = 3000000;   // sec
 
 export const PreCheck = async (req: Request, res: Response, next) => {
   // console.log("CPreCheck:", req.path, req.method);
