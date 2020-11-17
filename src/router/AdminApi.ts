@@ -1,5 +1,6 @@
 import express, {Request, Response, Router } from "express";
 import mariadb, { PoolConnection } from "mariadb";
+// import BetParam from "src/class/BetParam";
 // import {setPayRateData,setPayRate,isPayClassUsed,chkTermIsSettled,CreateOddsData,getGameList,getBtList} from '../API/ApiFunc';
 import * as afunc from "../API/ApiFunc";
 import {getGame, getOddsData, getPayClass, getTermDateNotSettled, getUsers} from "../API/MemberApi";
@@ -1171,8 +1172,21 @@ app.post("/SaveDfOddsItem", async (req, res) => {
     }
     // const param = req.body;
     // console.log("SaveDfOddsItem:", req.body);
+    const table = "dfOddsItems";
+    if (req.body.GType) {
+        const sql = `delete from ${table} where GType = '${req.body.GType}'`;
+        const dAns = await doQuery(sql, conn);
+        if (!dAns) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Delete " + req.body.GType + " data error!!";
+            res.send(JSON.stringify(msg));
+            return;
+        }
+        console.log("Delete " + req.body.GType + ":", dAns);
+    }
     const data: IDfOddsItems[] = JSON.parse(req.body.data.replace(/\\/g, ""));
-    const jt: JTable<IDfOddsItems> = new JTable(conn, "dfOddsItems");
+    const jt: JTable<IDfOddsItems> = new JTable(conn, table);
+
     const ans = await jt.MultiInsert(data);
     if (ans) {
         msg.data = ans;
