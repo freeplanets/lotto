@@ -7,10 +7,10 @@ export interface IZadicMap {
 }
 
 export const ZMap: IZadicMap = {};
-const Zadic: IZadicC = getAnimals();
+// const Zadic: IZadicC = getAnimals();
 
-export default Zadic;
-function getAnimals(): IZadicC {
+export default getAnimals;
+function getAnimals(hasZero?: boolean): IZadicC {
     const BASE_YEAR: number = 1900;
     const LOOPER: number = 12;
     const ANIMALS: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -27,6 +27,10 @@ function getAnimals(): IZadicC {
         }
     }
     const a = {};
+    if (hasZero) {
+        a["2"] = ["00"];
+        ZMap[0] = 2;
+    }
     NEW_ANIMALS.map((n, idx) => {
     for (let i = 1; i < 50; i++) {
         if ((i - 1) % LOOPER === idx) {

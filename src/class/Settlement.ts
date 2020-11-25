@@ -11,8 +11,9 @@ import {CarsSetl} from "./Settlement/CarsSetl";
 import {D3DSetl} from "./Settlement/D3DSetl";
 import {Happy8Setl} from "./Settlement/Happy8Setl";
 import {HappySetl} from "./Settlement/HappySetl";
+import { HashSixSetl} from "./Settlement/HashSixSetl";
 // import {CMarkSixMum, IMSResult} from "./Settlement/CMarkSixMum";
-import {getEx, MarkSixSetl} from "./Settlement/MarkSixSetl";
+import { MarkSixSetl} from "./Settlement/MarkSixSetl";
 import {Speed3Setl} from "./Settlement/Speed3Setl";
 // const SettleMethods=MarkSixST['MarkSix'];
 
@@ -258,6 +259,9 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
             break;
         case "BTCHash":
             ans = BTCHashSetl(tid, GameID, imsra, rtn, conn);
+            break;
+        case "HashSix":
+            ans = HashSixSetl(tid, GameID, imsra, rtn, conn);
             break;
         default:
             ans = MarkSixSetl(tid, GameID, imsra, rtn, conn);

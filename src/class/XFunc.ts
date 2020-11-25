@@ -1,4 +1,4 @@
-import {ZMap} from "./Animals";
+import getAnimals, {ZMap} from "./Animals";
 import ColorWave from "./ColorWave";
 /**
  *  單 0,雙 1
@@ -23,8 +23,9 @@ interface IFunc {
 
 export default class XFunc implements IFunc {
     private curDate: Date;
-    constructor() {
+    constructor(hasZero?: boolean) {
         this.curDate = new Date();
+        getAnimals(hasZero);
     }
     get createDate(): Date {
         return this.curDate;

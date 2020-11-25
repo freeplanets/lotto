@@ -9,7 +9,7 @@ SevenOE["03"] = 3;
 SevenOE["04"] = 4;
 SevenOE["05"] = 5;
 SevenOE["06"] = 6;
-SevenOE["17"] = 7;
+SevenOE["07"] = 7;
 SevenOE["10"] = 8;
 SevenOE["11"] = 9;
 SevenOE["12"] = 10;
@@ -25,7 +25,7 @@ SevenBS["03"] = 19;
 SevenBS["04"] = 20;
 SevenBS["05"] = 21;
 SevenBS["06"] = 22;
-SevenBS["17"] = 23;
+SevenBS["07"] = 23;
 SevenBS["10"] = 24;
 SevenBS["11"] = 25;
 SevenBS["12"] = 26;
@@ -35,6 +35,36 @@ SevenBS["15"] = 29;
 SevenBS["16"] = 30;
 SevenBS["17"] = 31;
 
+const SixOE: number[] = [];  // "單/雙"數量
+const SixBS: number[] = [];  // "大/小"數量
+SixOE["00"] = 0;
+SixOE["01"] = 1;
+SixOE["02"] = 2;
+SixOE["03"] = 3;
+SixOE["04"] = 4;
+SixOE["05"] = 5;
+SixOE["06"] = 6;
+SixOE["10"] = 7;
+SixOE["11"] = 8;
+SixOE["12"] = 9;
+SixOE["13"] = 10;
+SixOE["14"] = 11;
+SixOE["15"] = 12;
+SixOE["16"] = 13;
+SixBS["00"] = 14;
+SixBS["01"] = 15;
+SixBS["02"] = 16;
+SixBS["03"] = 17;
+SixBS["04"] = 18;
+SixBS["05"] = 19;
+SixBS["06"] = 20;
+SixBS["10"] = 21;
+SixBS["11"] = 22;
+SixBS["12"] = 23;
+SixBS["13"] = 24;
+SixBS["14"] = 25;
+SixBS["15"] = 26;
+SixBS["16"] = 27;
 /**
  * 特碼其他
  */
@@ -104,7 +134,9 @@ export class CMarkSixMum {
   };
   private xf = new XFunc();
   private totalMidNum = 175;
-  constructor(num: string) {
+  private SOE = SevenOE;
+  private SBS = SevenBS;
+  constructor(num: string, hasZero?: boolean) {
       const nums: string[] = num.split(",");
       nums.map((itm) => {
           this.imsr.Nums.push(parseInt(itm, 10));
@@ -118,11 +150,16 @@ export class CMarkSixMum {
       nums.map((itm) => {
           this.imsr.RegularNums.push(parseInt(itm, 10));
       });
-      this.imsr.SPNo = parseInt(sp, 10);
-      this.imsr.SPNum = new MSNum(this.imsr.SPNo, true).Num;
+      if (!hasZero) {
+        this.imsr.SPNo = parseInt(sp, 10);
+        this.imsr.SPNum = new MSNum(this.imsr.SPNo, true).Num;
+      } else {
+          this.SBS = SixBS;
+          this.SOE = SixOE;
+      }
       this.imsr.RGNums = [];
       nums.map((elm) => {
-          this.imsr.RGNums.push(new MSNum(parseInt(elm, 10)).Num);
+          this.imsr.RGNums.push(new MSNum(parseInt(elm, 10), false, hasZero).Num);
       });
       this.SevenOB();
       this.DragonTiger();
@@ -180,10 +217,10 @@ export class CMarkSixMum {
       if (!sfzd) {
           zd.push(this.imsr.SPNum.Zadic as number);
       }
-      tmp.push(SevenOE["0" + OddCnt]);
-      tmp.push(SevenOE["1" + EvenCnt]);
-      tmp.push(SevenBS["0" + BigCnt]);
-      tmp.push(SevenBS["1" + SmallCnt]);
+      tmp.push(this.SOE["0" + OddCnt]);
+      tmp.push(this.SOE["1" + EvenCnt]);
+      tmp.push(this.SBS["0" + BigCnt]);
+      tmp.push(this.SBS["1" + SmallCnt]);
       this.imsr.Seven = tmp;
       this.imsr.Zadic = zd;
   }

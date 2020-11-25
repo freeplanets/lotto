@@ -47,8 +47,8 @@ export default class MSNum extends XFunc {
     private num: IMarkSixNums = {Num: 0};
     private midNum = 25;
     private tieNum = 49;
-    constructor(num: number, spno: boolean= false) {
-        super();
+    constructor(num: number, spno: boolean= false, hasZero?: boolean) {
+        super(hasZero);
         this.num.Total = this.getDgtTotal(num);
         this.num.OddEven = this.getOddEven(num);
         this.num.BigSmall = this.getBigSmall(num, this.midNum, this.tieNum);

@@ -4,7 +4,7 @@ import mariadb, { PoolConnection } from "mariadb";
 // import {setPayRateData,setPayRate,isPayClassUsed,chkTermIsSettled,CreateOddsData,getGameList,getBtList} from '../API/ApiFunc';
 import * as afunc from "../API/ApiFunc";
 import {getGame, getOddsData, getPayClass, getTermDateNotSettled, getUsers} from "../API/MemberApi";
-import Zadic from "../class/Animals";
+import getAnimals from "../class/Animals";
 import {Bet} from "../class/Bet";
 import EDS from "../class/EncDecString";
 import {getOtherSide} from "../class/Func";
@@ -1198,7 +1198,7 @@ app.post("/SaveDfOddsItem", async (req, res) => {
     res.send(JSON.stringify(msg));
 });
 app.get("/member/getAnimals", (req, res) => {
-  res.send(JSON.stringify(Zadic));
+  res.send(JSON.stringify(getAnimals()));
 });
 app.get("/member/wagerLotto", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
