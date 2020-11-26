@@ -307,4 +307,5 @@ BetParam["3D"] = D3;
 BetParam.Happy = Happy;
 BetParam.Cars = Cars;
 BetParam.BTCHash = BTCHash;
+BetParam.HashSix = HashSix;
 export default BetParam;
