@@ -145,18 +145,18 @@ export class CMarkSixMum {
       this.imsr.SumOE = this.xf.getOddEven(this.imsr.Sum);
       this.imsr.SumBS = this.xf.getBigSmall(this.imsr.Sum, this.totalMidNum);
       this.imsr.tailNums = this.TailNums(nums);
-      const sp: string = nums.pop() as string;
       // this.imsr.RegularNums = nums;
-      nums.map((itm) => {
-          this.imsr.RegularNums.push(parseInt(itm, 10));
-      });
       if (!hasZero) {
+        const sp: string = nums.pop() as string;
         this.imsr.SPNo = parseInt(sp, 10);
         this.imsr.SPNum = new MSNum(this.imsr.SPNo, true).Num;
       } else {
           this.SBS = SixBS;
           this.SOE = SixOE;
       }
+      nums.map((itm) => {
+        this.imsr.RegularNums.push(parseInt(itm, 10));
+      });
       this.imsr.RGNums = [];
       nums.map((elm) => {
           this.imsr.RGNums.push(new MSNum(parseInt(elm, 10), false, hasZero).Num);
@@ -197,11 +197,11 @@ export class CMarkSixMum {
               BigCnt++;
           }
           const fzd = zd.find((elm) => elm === itm.Zadic);
-          // console.log("find zadic:", fzd, itm.Num, itm.Zadic);
+          console.log("find zadic:", fzd, itm.Num, itm.Zadic);
           if (!fzd) {
               zd.push(itm.Zadic as number);
           }
-          // console.log("find zadic", fzd, itm.Zadic, zd);
+          console.log("find zadic", fzd, itm.Zadic, zd);
       });
       if (this.imsr.SPNum.OddEven === 1) {
           EvenCnt++;

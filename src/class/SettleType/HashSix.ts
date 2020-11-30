@@ -65,7 +65,7 @@ const SettleNums: ISetl[] = [
       Position: -1,
       OpenAll: 3,
       OpenLess: 2,
-      UseExTable: true
+      differentOdds: true
   },
   {
       BetTypes: 79,           // KENO4
@@ -73,7 +73,7 @@ const SettleNums: ISetl[] = [
       Position: -1,
       OpenAll: 4,
       OpenLess: 2,
-      UseExTable: true
+      differentOdds: true
   },
   {
       BetTypes: 80,           // KENO5
@@ -81,15 +81,15 @@ const SettleNums: ISetl[] = [
       Position: -1,
       OpenAll: 5,
       OpenLess: 2,
-      UseExTable: true
+      differentOdds: true
   },
   {
       BetTypes: 81,           // KENO6
       NumTarget: "RegularNums",
       Position: -1,
       OpenAll: 6,
-      OpenLess: 5,
-      UseExTable: true
+      OpenLess: 3,
+      differentOdds: true
   },
   {
       BetTypes: 5,              // 總和單雙

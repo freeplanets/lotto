@@ -324,6 +324,7 @@ export class Bet implements IBet {
             tmpNums.push(iNumD);
         });
         const ans: ICurOddsData[] = await this.getOddsData(GType, arrNum);
+        console.log("Parlay getOddsData:", ans);
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetTypes);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
@@ -411,6 +412,8 @@ export class Bet implements IBet {
             numsets.map((set, idx) => {
                 let odds: number = 0;
                 let odds1: number = 0;
+                let odds2: number = 0;
+                let odds3: number = 0;
                 let passodds: number = 1;
                 const oddsg: number[] = [];
                 const oddsg1: number[] = [];
@@ -439,6 +442,8 @@ export class Bet implements IBet {
                         if (arrNum[BetType].length > setsN.length) {
                             // console.log("Odds1", nn, NumOdd[100 + nn], NumOdd);
                             odds1 = odds1 + NumOdd[100 + nn];
+                            if (NumOdd[200 + nn]) { odds2 = NumOdd[200 + nn]; }
+                            if (NumOdd[300 + nn]) { odds3 = NumOdd[300 + nn]; }
                             oddsg1.push(NumOdd[100 + nn]);
                             // 三中二額外處理
                             if (GType === GameTypes.MarkSix && (BetType === 8 || BetType === 72)) {
@@ -482,6 +487,12 @@ export class Bet implements IBet {
                 if (odds1) {
                     bd.Odds1 =  this.AvgOrMin(oddsg1, UseAvgOdds);
                     bd.Payouts1 = parseFloat((Amt * bd.Odds1).toFixed(2));
+                }
+                if (odds2) {
+                    bd.Odds2 = odds2;
+                }
+                if (odds3) {
+                    bd.Odds3 = odds3;
                 }
                 nums.push(bd.Num);
                 BetDetail.push(bd);

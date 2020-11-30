@@ -131,6 +131,8 @@ export interface IBetTable {
     Num: string;
     Odds: number;
     Odds1?: number;
+    Odds2?: number;
+    Odds3?: number;
     OpPASS?: number;
     Amt: number;
     validAmt: number;
@@ -290,6 +292,7 @@ export interface ISetl {
     ExtBT?: number;              // 比對附加下注方式
     UseExTable?: boolean;        // 使用BetTableEx進行比對 最小/平均賠率
     ExChk?: string;              // 額外檢查欄位名稱,開出的碼是否為組3或是組6
+    differentOdds?: boolean;      // 多重倍率(不變動)
 }
 
 export interface ISqlProc {

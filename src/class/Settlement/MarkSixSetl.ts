@@ -51,7 +51,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
           sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST('x13${idx + 1}${rgn.BigSmall}x' IN BOOLEAN MODE) and isCancled=0`;
           sqls.common.push(sql);
           // sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x14${idx + 1}${rgn.ColorWave}x%' and isCancled=0`;
-          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} MATCH(and) Num AGAINST('x14${idx + 1}${rgn.ColorWave}x' IN BOOLEAN MODE) and isCancled=0`;
+          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST('x14${idx + 1}${rgn.ColorWave}x' IN BOOLEAN MODE) and isCancled=0`;
           sqls.common.push(sql);
       });
       sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=OpPASS and isCancled=0`;
