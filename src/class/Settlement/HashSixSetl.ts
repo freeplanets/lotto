@@ -1,7 +1,8 @@
 import mariadb from "mariadb";
+import { mainModule } from "process";
 import {ISetl, ISqlProc} from "../../DataSchema/if";
 import {IMarkSixNums} from "../MSNum";
-import MarkSixST from "../SettleType/MarkSixST";
+import HashSix from "../SettleType/HashSix";
 import {CMarkSixMum, IMSResult} from "./CMarkSixMum";
 // const SettleMethods = MarkSixST;
 export function HashSixSetl(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
@@ -14,10 +15,19 @@ export function HashSixSetl(tid: number, GameID: number, imsra: any, rtn: any, c
       final: ""
   };
   // let sqls: string[];
-  console.log("IMSResult:", imsr);
+  console.log("IMSResult:");
+  Object.keys(imsr).map((keyname) => {
+      if (keyname === "RGNums") {
+        imsr.RGNums.map((rgn, idx) => {
+            console.log(`${keyname} ${idx + 1}:`, rgn);
+        });
+      } else {
+        console.log(`${keyname}:`, imsr[keyname]);
+      }
+  });
   let sqls: ISqlProc;
   rtn.map((rd) => {
-      const found: ISetl | undefined = MarkSixST.find((el) => el.BetTypes === rd.BetType);
+      const found: ISetl | undefined = HashSix.find((el) => el.BetTypes === rd.BetType);
       if (found) {
           sqls = CreateSql(tid, GameID, found, imsr, conn);
           if (sqls.pre.length > 0) {
@@ -29,7 +39,12 @@ export function HashSixSetl(tid: number, GameID: number, imsra: any, rtn: any, c
       }
   });
   ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
-  console.log("MarkSixSetl sql:", ans);
+  // console.log("MarkSixSetl sql:", ans);
+  /// *
+  ans.common.map((sql) => {
+      console.log("sql:", sql);
+  });
+  // */
   return ans;
 }
 
@@ -94,20 +109,33 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
           }
       } else {
           // const tmp: number[] = [];
+          const tmpNN: number[] = [];
           itm.Position.map(async (elm, idx) => {
-              console.log("chk1:", itm.BetTypes, itm.NumTarget, elm, itm.SubName);
-              nn = (idx + 1) * 10 + imsr[itm.NumTarget][elm][itm.SubName];
-              sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
-              // sqls.push(sql);
-              sqls.common.push(sql);
-              if (itm.ExtBT) {
-                  const num: number = nn as number;
-                  const exnn: number = itm.ExtBT * 100 + num;
-                  sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.ExtBT} and Num='${exnn}' and isCancled=0`;
-                  // sqls.push(sql);
+              console.log("chk1:", itm.BetTypes, itm.NumTarget, elm, itm.SubName, imsr[itm.NumTarget][elm][itm.SubName]);
+              // nn = (idx + 1) * 10 + imsr[itm.NumTarget][elm][itm.SubName];
+              nn = imsr[itm.NumTarget][elm][itm.SubName];
+              if (typeof(nn) === "number") {
+                  nn = (idx + 1) * 10 + nn;
+                  sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num='${nn}' and isCancled=0`;
+                // sqls.push(sql);
                   sqls.common.push(sql);
+                  if (itm.ExtBT) {
+                    const num: number = nn as number;
+                    const exnn: number = itm.ExtBT * 100 + num;
+                    sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.ExtBT} and Num='${exnn}' and isCancled=0`;
+                    // sqls.push(sql);
+                    sqls.common.push(sql);
+                }
+              } else {
+                nn.map((n) => {
+                    tmpNN.push((idx + 1) * 100 + n);
+                });
               }
           });
+          if (tmpNN.length > 0) {
+            sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in (${tmpNN.join(",")}) and isCancled=0`;
+            sqls.common.push(sql);
+          }
           // nn = tmp;
       }
   } else {

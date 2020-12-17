@@ -59,7 +59,7 @@ export default class MSNum extends XFunc {
         this.Num.TotOE = this.getTotalOE(num);
         this.num.TotBS = this.getTotalBS(num);
         this.num.Zadic = this.getZodic(num);
-        if (spno) {
+        if (spno || hasZero) {
             this.num.HalfWave = [];
             const spnum = num as number;
             if ( spnum < 49 ) {

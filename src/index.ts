@@ -75,7 +75,8 @@ app.use("/api", adminRouter);
 app.use("/agentApi", agentApi);
 app.use("/GameCenter", GameCenter);
 app.use("/test", apiRouter);
-app.listen(port, () => {
+// app.listen(port, () => {
+app.listen(3000, "0.0.0.0", () => {
         console.log(`server started at http://localhost:${ port }`);
     });
 /*

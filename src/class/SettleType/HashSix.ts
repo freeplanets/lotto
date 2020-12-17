@@ -180,7 +180,8 @@ const SettleNums: ISetl[] = [
     {
         BetTypes: 70,  // 尾數不中
         NumTarget: "tailNums",
-        OpenAll: 0
+        OpenAll: 0,
+        Position: -1
     },
     {
         BetTypes: 31,    // 五不中
