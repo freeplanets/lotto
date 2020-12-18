@@ -14,7 +14,7 @@ export function HashSixSetl(tid: number, GameID: number, imsra: any, rtn: any, c
       final: ""
   };
   // let sqls: string[];
-  //console.log("IMSResult:", imsr);
+  // console.log("IMSResult:", imsr);
   /*
   Object.keys(imsr).map((keyname) => {
       if (keyname === "RGNums") {
@@ -112,7 +112,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
           // const tmp: number[] = [];
           const tmpNN: number[] = [];
           itm.Position.map(async (elm, idx) => {
-              //console.log("chk1:", itm.BetTypes, itm.NumTarget, elm, itm.SubName, imsr[itm.NumTarget][elm][itm.SubName]);
+              // console.log("chk1:", itm.BetTypes, itm.NumTarget, elm, itm.SubName, imsr[itm.NumTarget][elm][itm.SubName]);
               // nn = (idx + 1) * 10 + imsr[itm.NumTarget][elm][itm.SubName];
               nn = imsr[itm.NumTarget][elm][itm.SubName];
               if (typeof(nn) === "number") {

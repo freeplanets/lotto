@@ -223,7 +223,7 @@ export class CMarkSixMum {
               BigCnt++;
           }
           const fzd = zd.find((elm) => elm === itm.Zadic);
-          //console.log("find zadic:", fzd, itm.Num, itm.Zadic);
+          // console.log("find zadic:", fzd, itm.Num, itm.Zadic);
           if (!fzd) {
               zd.push(itm.Zadic as number);
           }
