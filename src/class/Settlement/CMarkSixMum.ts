@@ -106,6 +106,11 @@ export interface IMSResult {
      Zadic: number[];
      Seven: number[];
      DragonTiger: number[];
+     ColorWaveP?: number[];
+     HalfWaveP?: number[];
+     OddEvenP?: number[];
+     BigSmallP?: number[];
+     SumOEP?: number[];
 }
 /**
  *  六合彩
@@ -161,6 +166,27 @@ export class CMarkSixMum {
       nums.map((elm) => {
           this.imsr.RGNums.push(new MSNum(parseInt(elm, 10), false, hasZero).Num);
       });
+      if (hasZero) {
+        const me = this;
+        const PosBet = ["ColorWave", "HalfWave", "OddEven", "BigSmall", "SumOE"];
+        PosBet.map((pbName) => {
+            me.imsr[pbName + "P"] = [];
+        });
+        this.imsr.RGNums.map((grn, idx) => {
+            Object.keys(grn).map((key) => {
+                if (PosBet.indexOf(key) !== -1) {
+                    if (key === "HalfWave") {
+                        const arr = grn[key]?.map((v) => {
+                            return (idx + 1) * 100 + v;
+                        });
+                        me.imsr[key + "P"] = me.imsr[key + "P"].concat(arr);
+                    }  else {
+                        me.imsr[key + "P"].push((idx + 1) * 10 + grn[key]);
+                    }
+                }
+            });
+        });
+      }
       this.SevenOB();
       this.DragonTiger();
   }
@@ -197,7 +223,7 @@ export class CMarkSixMum {
               BigCnt++;
           }
           const fzd = zd.find((elm) => elm === itm.Zadic);
-          console.log("find zadic:", fzd, itm.Num, itm.Zadic);
+          //console.log("find zadic:", fzd, itm.Num, itm.Zadic);
           if (!fzd) {
               zd.push(itm.Zadic as number);
           }
@@ -214,7 +240,7 @@ export class CMarkSixMum {
           BigCnt++;
       }
       const sfzd = zd.find((elm) => elm === this.imsr.SPNum.Zadic);
-      if (!sfzd) {
+      if (sfzd) {
           zd.push(this.imsr.SPNum.Zadic as number);
       }
       tmp.push(this.SOE["0" + OddCnt]);

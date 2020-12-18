@@ -289,7 +289,7 @@ export interface ISetl {
     OpenSP?: number;             // 開出特碼
     NumMove?: number;            // 號碼和結果差
     PType?: string;              // EACH 多項目對一個結果
-    ExtBT?: number;              // 比對附加下注方式
+    // ExtBT?: number;              // 比對附加下注方式
     UseExTable?: boolean;        // 使用BetTableEx進行比對 最小/平均賠率
     ExChk?: string;              // 額外檢查欄位名稱,開出的碼是否為組3或是組6
     differentOdds?: boolean;      // 多重倍率(不變動)

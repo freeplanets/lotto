@@ -1466,7 +1466,7 @@ app.post("/SaveNums", async (req, res) => {
     return;
   }
   const param = req.body;
-  console.log("SaveNums", param);
+  //console.log("SaveNums", param);
   if (!param.GameID) {
       msg.ErrNo = 9;
       msg.ErrCon = "GameID is missing!!";

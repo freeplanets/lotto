@@ -103,18 +103,20 @@ const SettleNums: ISetl[] = [
   },
   {
       BetTypes: 12,             // 正碼1-6單雙
-      NumTarget: "RGNums",
-      SubName: "OddEven",
-      Position: [0, 1, 2, 3, 4, 5],
-      ExtBT: 15,
+      NumTarget: "OddEvenP",
+      // NumTarget: "RGNums",
+      // SubName: "OddEven",
+      // Position: [0, 1, 2, 3, 4, 5],
+      // ExtBT: 15,
       OpenAll: 1
   },
   {
       BetTypes: 13,             // 正碼1-6大小
-      NumTarget: "RGNums",
-      SubName: "BigSmall",
-      Position: [0, 1, 2, 3, 4, 5],
-      ExtBT: 15,
+      NumTarget: "BigSmallP",
+      // NumTarget: "RGNums",
+      // SubName: "BigSmall",
+      // Position: [0, 1, 2, 3, 4, 5],
+      // ExtBT: 15,
       OpenAll: 1
   },
   {
@@ -315,10 +317,11 @@ const SettleNums: ISetl[] = [
     },
     {
         BetTypes: 14,             // 正碼1-6色波
-        NumTarget: "RGNums",
-        SubName: "ColorWave",
-        Position: [0, 1, 2, 3, 4, 5],
-        ExtBT: 15,
+        NumTarget: "ColorWaveP",
+        // NumTarget: "RGNums",
+        // SubName: "ColorWave",
+        // Position: [0, 1, 2, 3, 4, 5],
+        // ExtBT: 15,
         OpenAll: 1
     },
     {
@@ -327,10 +330,8 @@ const SettleNums: ISetl[] = [
         OpenAll: 1
     },
     {
-        BetTypes: 82,         // 正碼1-6半波
-        NumTarget: "RGNums",
-        SubName: "HalfWave",
-        Position: [0, 1, 2, 3, 4, 5],
+        BetTypes: 82,         // 正碼1-6半波 //NumTarget: "RGNums",//SubName: "HalfWave",//Position: [0, 1, 2, 3, 4, 5],
+        NumTarget: "HalfWaveP",
         OpenAll: 1
     },
     {
@@ -346,35 +347,35 @@ const SettleNums: ISetl[] = [
         OpenAll: 1
     },
     {
-        BetTypes: 84,         // 正碼1-6生肖
+        BetTypes: 84,         // 正碼1-6二肖
         NumTarget: "RGNums",
         SubName: "Zadic",
         Position: 1,
         OpenAll: 1
     },
     {
-        BetTypes: 85,         // 正碼1-6生肖
+        BetTypes: 85,         // 正碼1-6三肖
         NumTarget: "RGNums",
         SubName: "Zadic",
         Position: 2,
         OpenAll: 1
     },
     {
-        BetTypes: 86,         // 正碼1-6生肖
+        BetTypes: 86,         // 正碼1-6四肖
         NumTarget: "RGNums",
         SubName: "Zadic",
         Position: 3,
         OpenAll: 1
     },
     {
-        BetTypes: 87,         // 正碼1-6生肖
+        BetTypes: 87,         // 正碼1-6五肖
         NumTarget: "RGNums",
         SubName: "Zadic",
         Position: 4,
         OpenAll: 1
     },
     {
-        BetTypes: 88,         // 正碼1-6生肖
+        BetTypes: 88,         // 正碼1-6六肖
         NumTarget: "RGNums",
         SubName: "Zadic",
         Position: 5,

@@ -105,7 +105,7 @@ const SettleNums: ISetl[] = [
       SubName: "OddEven",
       Position: [0, 1, 2, 3, 4, 5],
       TieNum: 49,
-      ExtBT: 15,
+      // ExtBT: 15,
       OpenAll: 1
   },
   {
@@ -114,7 +114,7 @@ const SettleNums: ISetl[] = [
       SubName: "BigSmall",
       Position: [0, 1, 2, 3, 4, 5],
       TieNum: 49,
-      ExtBT: 15,
+      // ExtBT: 15,
       OpenAll: 1
   },
   {
@@ -122,7 +122,7 @@ const SettleNums: ISetl[] = [
       NumTarget: "RGNums",
       SubName: "ColorWave",
       Position: [0, 1, 2, 3, 4, 5],
-      ExtBT: 15,
+      // ExtBT: 15,
       OpenAll: 1
   },
   {

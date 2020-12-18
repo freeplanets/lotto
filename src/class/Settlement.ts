@@ -38,10 +38,10 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     await conn.beginTransaction();
     sql = `update CurOddsInfo set isStop=1 where tid=${tid}`;
     await conn.query(sql).then(async (res) => {
-        console.log( "SaveNums", sql, res);
+        //console.log( "SaveNums", sql, res);
         ans = true;
         if (PLog) {
-            console.log("SaveNums", PLog);
+            //console.log("SaveNums", PLog);
             await saveParamLog(PLog, conn);
         }
     }).catch(async (err) => {
@@ -97,7 +97,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         ans = false;
     });
     if (rtn) {
-        console.log("rtn chk:", sql, rtn);
+        //console.log("rtn chk:", sql, rtn);
         sqls = doBT(tid, GameID, num, rtn, conn, GType);
         if (sqls.pre.length > 0) {
             await Promise.all(sqls.pre.map(async (itm) => {
