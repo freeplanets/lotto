@@ -565,7 +565,7 @@ app.get("/delPayClass", async (req, res) => {
   // console.log("param chk", param);
   const params = [param.id];
   const chk = await afunc.isPayClassUsed(param.GameID, param.id, conn);
-  console.log("delPayClass chk", chk);
+  //console.log("delPayClass chk", chk);
   if (chk) {
       msg.ErrNo = 9;
       msg.ErrCon = "PayClass in used!!";
@@ -973,7 +973,7 @@ app.get("/getTerms", async (req, res) => {
       pa.push(param.SDate);
   }
   sql = sql + "order by id desc limit 0,10";
-  console.log("getTerms", sql, pa);
+  // console.log("getTerms", sql, pa);
   const tans = await doQuery(sql, conn, pa);
   if (tans) {
       msg.data = tans;

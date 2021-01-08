@@ -60,7 +60,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     if (ans) {
         // 還原結帳檢查結果,併預設會員為輸 WinLose=Amt*-1
         sql = `update BetTable set WinLose=Amt*-1,validAmt=Amt,OpNums=0,OpSP=0,isSettled=${SettleStatus} where tid=${tid} and GameID=${GameID} and isCancled=0`;
-        console.log("Update Settle Status", sql);
+        // console.log("Update Settle Status", sql);
         await conn.query(sql).then((res) => {
             // console.log("WinLose=Amt*-1", sql, res);
             ans = true;
@@ -146,13 +146,13 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
             }
         }));
     }
-    console.log("batch:", ans);
+    // console.log("batch:", ans);
     if (ans) {
         // sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=${SettleStatus} where id=${tid}`;
         sql = sqls.final;
         ans = await doQuery(sql, conn, [SettleStatus]);
         if (ans) {
-            console.log("commit 1");
+            // console.log("commit 1");
             await conn.commit();
         } else {
             console.log("err rollback 2");

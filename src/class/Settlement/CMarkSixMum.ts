@@ -227,7 +227,7 @@ export class CMarkSixMum {
           if (!fzd) {
               zd.push(itm.Zadic as number);
           }
-          console.log("find zadic", fzd, itm.Zadic, zd);
+          // console.log("find zadic", fzd, itm.Zadic, zd);
       });
       if (this.imsr.SPNum.OddEven === 1) {
           EvenCnt++;
