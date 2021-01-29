@@ -69,9 +69,9 @@ export default class XFunc implements IFunc {
         const n = this.getTail(num);
         return this.getOddEven(n);
     }
-    public getTotalBS(num: string|number): number {
+    public getTotalBS(num: string|number,midNum?:number): number {
         const tot = this.getDgtTotal(num);
-        return this.getBigSmall(tot);
+        return this.getBigSmall(tot,midNum);
     }
     public getTotalOE(num: string|number): number {
         const tot = this.getDgtTotal(num);

@@ -565,7 +565,7 @@ app.get("/delPayClass", async (req, res) => {
   // console.log("param chk", param);
   const params = [param.id];
   const chk = await afunc.isPayClassUsed(param.GameID, param.id, conn);
-  //console.log("delPayClass chk", chk);
+  // console.log("delPayClass chk", chk);
   if (chk) {
       msg.ErrNo = 9;
       msg.ErrCon = "PayClass in used!!";
@@ -1507,6 +1507,7 @@ app.get("/CurOddsInfo", async (req, res) => {
       if (!param.GameID) {
           msg.ErrNo = 9;
           msg.ErrCon = "GameID is missing!!";
+          conn.release();
           res.send(JSON.stringify(msg));
       }
       if (!param.tid) {
@@ -1514,6 +1515,7 @@ app.get("/CurOddsInfo", async (req, res) => {
           if (!tid) {
               msg.ErrNo = 9;
               msg.ErrCon = "Get data error!!";
+              conn.release();
               res.send(JSON.stringify(msg));
           }
       } else {
@@ -1543,7 +1545,12 @@ app.get("/CurOddsInfo", async (req, res) => {
       conn.release();
   }
   // console.log("CurOddsInfo", JSON.stringify(msg));
-  res.send(JSON.stringify(msg));
+  try {
+    res.send(JSON.stringify(msg));
+  } catch (err) {
+    console.log("Send to user error!!", err);
+    res.send("");
+  }
 });
 app.get("/setOdds", async (req, res) => {
   const msg: IMsg = {ErrNo: 0};

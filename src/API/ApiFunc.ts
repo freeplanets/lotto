@@ -249,9 +249,9 @@ export async function getCurTermId(GameID: number|string, conn: mariadb.PoolConn
   const sql = `select id from Terms where GameID=? order by id desc limit 0,1`;
   let ans: number = 0;
   const res = await doQuery(sql, conn, [GameID]);
-  // console.log("getCurTermId:", res);
-  if (res) {
-      ans = res[0].id;
+  if (res && res[0] ) {
+    // console.log("getCurTermId:", res[0]);
+    ans = res[0].id;
   } else {
       return undefined;
   }
@@ -259,6 +259,7 @@ export async function getCurTermId(GameID: number|string, conn: mariadb.PoolConn
 }
 
 export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: number, conn: mariadb.PoolConnection): Promise<any> {
+  if (!tid) { return false; }
   const gameStoped: boolean = await chkTermIsSettled(GameID, conn, tid);
   // console.log("getCurOddsInfo gameStoped:", gameStoped);
   const sql = `select UNIX_TIMESTAMP(OID) OID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps,PerStep,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and UNIX_TIMESTAMP(OID) > ?`;
