@@ -298,6 +298,37 @@ const HashSix = {
       55: 1, // [{ Title: '一肖量'}],
       89: 1, // [{ Title: '正碼1-6五行'}],
 };
+const SGPools = {
+      1: 1, // {title: '2D-一獎',shortT:"一獎"},
+      2: 1, // {title: '2D-二獎'},
+      3: 1, // {title: '2D-三獎'},
+      4: 1, // {title: '3D-一獎'},
+      5: 1, // {title: '3D-二獎'},
+      6: 1, // {title: '3D-三獎'},
+      7: 1, // {title: '4D-一獎'},
+      8: 1, // {title: '4D-二獎'},
+      9: 1, // {title: '4D-三獎'},
+      10: 1, // { title: '2D-23組'},
+      11: 1, // { title: '3D-23組'},
+      12: 1, // { title: '4D-23組'},
+      13: 2, // { title: '二星'},
+      14: 3, // { title: '三星' },
+      15: 4, // { title: '四星' },
+      16: 1, // { title: '2D頭-一獎' },
+      17: 1, // { title: '2D頭-二獎' },
+      18: 1, // { title: '2D頭-三獎' },
+      19: 1, // { title: '2D頭-23組' },
+      20: 5, // { title: '2D不中-5不中' },
+      21: 6, // { title: '2D不中-6不中' },
+      22: 7, // { title: '2D不中-7不中' },
+      23: 8, // { title: '2D不中-8不中' },
+      24: 9, // { title: '2D不中-9不中' },
+      25: 10, // { title: '2D不中-10不中' },
+      26: 1, // { title: '單雙',sctitle: [ , '1獎', '2獎', '3獎'],subtitle: [ '單', '雙' ] },
+      27: 1, // { title: '大小',sctitle: [ , '1獎', '2獎', '3獎'],subtitle: [ '大', '小' ] },
+      28: 1, // { title: '合數單雙',sctitle: [ , '1獎', '2獎', '3獎'],shortT: '合',subtitle: [ '單', '雙' ] },
+      29: 1, // { title: '合數大小',sctitle: [ , '1獎', '2獎', '3獎'],shortT: '合',subtitle: [ '大', '小' ] },
+};
 interface IBetParam {
       [key: string]: object;
 }
@@ -308,4 +339,5 @@ BetParam.Happy = Happy;
 BetParam.Cars = Cars;
 BetParam.BTCHash = BTCHash;
 BetParam.HashSix = HashSix;
+BetParam.SGPools = SGPools;
 export default BetParam;

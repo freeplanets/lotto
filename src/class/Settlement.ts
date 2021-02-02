@@ -14,6 +14,7 @@ import {HappySetl} from "./Settlement/HappySetl";
 import { HashSixSetl} from "./Settlement/HashSixSetl";
 // import {CMarkSixMum, IMSResult} from "./Settlement/CMarkSixMum";
 import { MarkSixSetl} from "./Settlement/MarkSixSetl";
+import {SGPoolsSetl} from "./Settlement/SGPoolsSetl";
 import {Speed3Setl} from "./Settlement/Speed3Setl";
 // const SettleMethods=MarkSixST['MarkSix'];
 
@@ -263,6 +264,9 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
             break;
         case "HashSix":
             ans = HashSixSetl(tid, GameID, imsra, rtn, conn);
+            break;
+        case "SGPools":
+            ans = SGPoolsSetl(tid, GameID, imsra, rtn, conn);
             break;
         default:
             ans = MarkSixSetl(tid, GameID, imsra, rtn, conn);
