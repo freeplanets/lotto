@@ -13,7 +13,7 @@ export function SGPoolsSetl(tid: number, GameID: number, num: string, rtn: any, 
   };
   // let sqls: string[];
   let sqls: ISqlProc;
-  console.log("imsr:", imsr);
+  //console.log("imsr:", imsr);
   rtn.map((rd) => {
       const found: ISetl | undefined = SGPools.find((el) => el.BetTypes === rd.BetType);
       if (found) {
@@ -42,7 +42,8 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ISGPoolsResult
   if (itm.SubName) {
     if (itm.Position !== undefined) {
       if (itm.Position > -1) {
-        const nums = imsr[itm.NumTarget][itm.SubName][itm.Position];
+        // console.log("chka:", itm, itm.Position, imsr[itm.NumTarget], imsr[itm.NumTarget][itm.SubName]);
+        const nums = imsr[itm.NumTarget][itm.Position][itm.SubName];
         sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num ='${nums}' and isCancled=0`;
         sqls.common.push(sql);
       } else {

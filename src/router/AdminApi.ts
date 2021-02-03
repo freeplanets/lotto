@@ -666,6 +666,7 @@ app.get("/getPayRate", async (req, res) => {
     return;
   }
   const param = req.query;
+  /*
   const params = [param.PayClassID, param.GameID];
   const sql = `select p.BetType,p.SubType,b.DfRate,p.Rate,a.Probability,b.PerStep,b.MinHand,b.MaxHand
       from ProbabilityTable a left join BasePayRate b
@@ -673,6 +674,15 @@ app.get("/getPayRate", async (req, res) => {
         left join PayRate p
         on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType
         where p.PayClassID=? and p.GameID = ?`;
+   */
+  const params = [param.GameID , param.GameID, param.PayClassID];
+  const sql = `select k.*,p.SubType,p.Rate from
+    (select b.GameID,b.SubType,a.BetType,b.DfRate,a.Probability,b.PerStep,b.MinHand,b.MaxHand
+        from ProbabilityTable a LEFT join BasePayRate b
+        on a.GType=b.GType and a.BetType=b.BetType and a.SubType=b.SubType where b.GameID=?) as k
+        left join
+    (select * from PayRate where GameID=? and PayClassID = ? ) as p
+        on k.GameID=p.GameID and k.BetType = p.BetType and k.SubType = p.SubType where 1`;
   const ans = await doQuery(sql, conn, params);
   if (ans) {
       msg.data = ans;
@@ -778,7 +788,7 @@ app.post("/batch/savePayRate", async (req, res) => {
     return;
   }
   const param = req.body;
-  console.log("savePayRate", req.body);
+  //console.log("savePayRate", req.body);
   param.data = JSON.parse(param.data.replace(/\\/g, ""));
   const valstr: string[] = [];
   param.data.map((itm: IPayRateItm) => {
