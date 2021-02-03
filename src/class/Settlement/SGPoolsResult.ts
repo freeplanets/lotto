@@ -8,6 +8,7 @@ interface ID234 {
 }
 interface ISets23 {
   D2: number[];
+  D2ND: number[];
   D2Head: number[];
   D3: number[];
   D4: number[];
@@ -31,7 +32,7 @@ export class SGPoolsResult {
   private NumSet: ISGPoolsResult = {
     Nums: [],
     Place: [],
-    NumSet23: { D2: [], D2Head: [], D3: [], D4: []},
+    NumSet23: { D2: [], D2ND: [], D2Head: [], D3: [], D4: []},
     OddEven: [],
     BigSmall: [],
     SumOddEven: [],
@@ -56,16 +57,16 @@ export class SGPoolsResult {
         this.NumSet.SumBigSmall.push(tbs + TPre);
         this.NumSet.SumOddEven.push(toe + TPre);
       }
-      this.AddNumNoDuplicate(this.NumSet.NumSet23.D2, d.D2);
+      this.AddNumNoDuplicate(this.NumSet.NumSet23.D2ND, d.D2);
+      /*
       this.AddNumNoDuplicate(this.NumSet.NumSet23.D2Head, d.D2Head);
       this.AddNumNoDuplicate(this.NumSet.NumSet23.D3, d.D3);
       this.AddNumNoDuplicate(this.NumSet.NumSet23.D4, d.D4);
-      /*
+      */
       this.NumSet.NumSet23.D2.push(d.D2);
       this.NumSet.NumSet23.D2Head.push(d.D2Head);
       this.NumSet.NumSet23.D3.push(d.D3);
       this.NumSet.NumSet23.D4.push(d.D4);
-      */
       this.NumSet.Nums.push(snum);
     });
   }

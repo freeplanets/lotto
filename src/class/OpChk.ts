@@ -74,7 +74,7 @@ export class OpChk {
             }
         }
         let chk: number;
-        console.log("ChkData", dt);
+        // console.log("ChkData", dt);
         chk = this.lessMinHand(chkAmt);
         if (chk !== ErrCode.PASS) { return chk; }
         chk = this.overMaxHand(chkAmt);

@@ -788,7 +788,7 @@ app.post("/batch/savePayRate", async (req, res) => {
     return;
   }
   const param = req.body;
-  //console.log("savePayRate", req.body);
+  // console.log("savePayRate", req.body);
   param.data = JSON.parse(param.data.replace(/\\/g, ""));
   const valstr: string[] = [];
   param.data.map((itm: IPayRateItm) => {
@@ -1208,7 +1208,7 @@ app.post("/SaveDfOddsItem", async (req, res) => {
     res.send(JSON.stringify(msg));
 });
 app.get("/member/getAnimals", (req, res) => {
-  res.send(JSON.stringify(getAnimals()));
+  res.send(JSON.stringify(getAnimals(true)));
 });
 app.get("/member/wagerLotto", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};

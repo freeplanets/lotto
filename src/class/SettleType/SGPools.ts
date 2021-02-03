@@ -68,6 +68,7 @@ const SettleNums: ISetl[] = [
     NumTarget: "NumSet23",
     SubName: "D2",
     Position: -1,
+    MultiPay: true,
     OpenAll: 1
   },
   {
@@ -75,6 +76,7 @@ const SettleNums: ISetl[] = [
     NumTarget: "NumSet23",
     SubName: "D3",
     Position: -1,
+    MultiPay: true,
     OpenAll: 1
   },
   {
@@ -82,12 +84,13 @@ const SettleNums: ISetl[] = [
     NumTarget: "NumSet23",
     SubName: "D4",
     Position: -1,
+    MultiPay: true,
     OpenAll: 1
   },
   {
     BetTypes: 13,         // '13': { title: '二星'},
     NumTarget: "NumSet23",
-    SubName: "D2",
+    SubName: "D2ND",
     Position: -1,
     PType: "Multi",
     OpenAll: 2
@@ -95,7 +98,7 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 14,         // '14': { title: '三星' },
     NumTarget: "NumSet23",
-    SubName: "D2",
+    SubName: "D2ND",
     Position: -1,
     PType: "Multi",
     OpenAll: 3
@@ -103,7 +106,7 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 15,         // '15': { title: '四星' },
     NumTarget: "NumSet23",
-    SubName: "D2",
+    SubName: "D2ND",
     Position: -1,
     PType: "Multi",
     OpenAll: 4
@@ -134,6 +137,7 @@ const SettleNums: ISetl[] = [
     NumTarget: "NumSet23",
     SubName: "D2Head",
     Position: -1,
+    MultiPay: true,
     OpenAll: 1
   },
   {

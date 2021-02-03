@@ -100,6 +100,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     if (rtn) {
         // console.log("rtn chk:", sql, rtn);
         sqls = doBT(tid, GameID, num, rtn, conn, GType);
+        console.log("after do BT:", sqls);
         if (sqls.pre.length > 0) {
             await Promise.all(sqls.pre.map(async (itm) => {
                 ans = await doQuery(itm, conn);

@@ -809,7 +809,7 @@ export class Bet implements IBet {
             sql = sql + "(" + filters.join(" or ") + ")";
             // console.log("getOddsData:", sql);
         }
-        console.log("getOddsData:", sql);
+        // console.log("getOddsData:", sql);
         let ans;
         await this.conn.query(sql).then(async (rows) => {
             // console.log("getOddsData rows:", rows);

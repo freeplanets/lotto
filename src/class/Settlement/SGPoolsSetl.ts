@@ -13,7 +13,7 @@ export function SGPoolsSetl(tid: number, GameID: number, num: string, rtn: any, 
   };
   // let sqls: string[];
   let sqls: ISqlProc;
-  //console.log("imsr:", imsr);
+  console.log("imsr:", imsr);
   rtn.map((rd) => {
       const found: ISetl | undefined = SGPools.find((el) => el.BetTypes === rd.BetType);
       if (found) {
@@ -54,8 +54,14 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ISGPoolsResult
             sqls.common.push(sql);
           });
         } else {
+          nums.map((elm) => {
+            sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num = '${elm}' and isCancled=0`;
+            sqls.common.push(sql);
+          });
+          /*
           sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join(",")}') and isCancled=0`;
           sqls.common.push(sql);
+          */
         }
       }
     }
@@ -64,7 +70,11 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ISGPoolsResult
     sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join("','")}') and isCancled=0`;
     sqls.common.push(sql);
   }
-  sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
+  if (itm.MultiPay) {
+    sql = `update BetTable set WinLose=Payouts*OpNums-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums>=${itm.OpenAll}`;
+  } else {
+    sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
+  }
   sqls.common.push(sql);
   return sqls;
 }

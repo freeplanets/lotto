@@ -293,6 +293,7 @@ export interface ISetl {
     UseExTable?: boolean;        // 使用BetTableEx進行比對 最小/平均賠率
     ExChk?: string;              // 額外檢查欄位名稱,開出的碼是否為組3或是組6
     differentOdds?: boolean;      // 多重倍率(不變動)
+    MultiPay?: boolean;             // 倍數派彩
 }
 
 export interface ISqlProc {
