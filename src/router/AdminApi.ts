@@ -282,6 +282,36 @@ app.get("/SetUser", async (req, res) => {
     }
     res.send(JSON.stringify(msg));
 });
+app.post("/ResetPassword", async (req, res) => {
+    const conn: mariadb.PoolConnection|undefined =  await getConnection();
+    const msg: IMsg = { ErrNo: 0};
+    if (conn) {
+        const param = req.body;
+        console.log("ResetPassword param", param);
+        // const chk = await chkLogin(param.UserID, param.sid, conn);
+        // if (chk) {
+        const sql = `update User set Password=PASSWORD(?),forcePWChange=0 where id=?`;
+        const ans = await doQuery(sql, conn, [param.NPassword, param.WhosID]);
+        if (ans) {
+                console.log("ChangePassword", ans);
+                msg.data = ans;
+                const dbAns: IDbAns = ans as IDbAns;
+                if (dbAns.affectedRows < 1) {
+                    msg.ErrNo = 9;
+                    msg.ErrCon = "Fail!!";
+                }
+            }
+        // } else {
+        //    msg.ErrNo = ErrCode.NO_LOGIN;
+        //    msg.ErrCon = "NO LOGIN INFO";
+        // }
+        conn.release();
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get connection error!!";
+    }
+    res.send(JSON.stringify(msg));
+});
 app.post("/ChangePassword", async (req, res) => {
     const conn: mariadb.PoolConnection|undefined =  await getConnection();
     const msg: IMsg = { ErrNo: 0};
