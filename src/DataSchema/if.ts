@@ -1,6 +1,7 @@
 export interface IGameItem {
     id: string;
     name: string;
+    GType: string;
 }
 export interface IBTItem {
     id: string;
