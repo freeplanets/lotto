@@ -23,7 +23,25 @@ if (process.env.NODE_ENV !== "development") {
 const memberUrl: string = defaultUrl;
 const staytime: number = 3000;   // sec
 const agentApi: Router = express.Router();
+/**
+ * Api for CryptoCur
+ */
+agentApi.post("/login", async (req: Request, res: Response) => {
+    await register(req.body, res);
+});
+agentApi.post("/modifyCredit", async (req: Request, res: Response) => {
+    await CreditAC(req.body, res, 2);
+});
+agentApi.post("/creditInfo", async (req: Request, res: Response) => {
+    await CreditAC(req.body, res, 4);
+});
+
+/**
+ * Api for CryptoCur
+ */
 agentApi.get("/1", async (req: Request, res: Response) => {
+    await register(req.query, res);
+    /*
     const params = req.query;
     console.log("agentApi/1 :", params);
     const msg: IMsg = {ErrNo: 0};
@@ -74,6 +92,7 @@ agentApi.get("/1", async (req: Request, res: Response) => {
     }
     conn.release();
     res.send(JSON.stringify(msg));
+    */
 });
 agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     const param = req.query;
@@ -101,13 +120,13 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     res.send(JSON.stringify(msg));
 });
 agentApi.get("/2", async (req: Request, res: Response) => {
-    await CreditAC(req, res, 2);
+    await CreditAC(req.query, res, 2);
 });
 agentApi.get("/3", async (req: Request, res: Response) => {
-    await CreditAC(req, res, 3);
+    await CreditAC(req.query, res, 3);
 });
 agentApi.get("/4", async (req: Request, res: Response) => {
-    await CreditAC(req, res, 4);
+    await CreditAC(req.query, res, 4);
 });
 agentApi.get("/GCaption", async (req: Request, res: Response) => {
     await getGameDataCaption(req, res);
@@ -115,8 +134,8 @@ agentApi.get("/GCaption", async (req: Request, res: Response) => {
 agentApi.get("/logHandle", async (req: Request, res: Response) => {
     await getTicketDetail(req, res);
 });
-async function CreditAC(req: Request, res: Response, ac: number) {
-    const params = req.query;
+async function CreditAC(params, res: Response, ac: number) {
+    // const params = req.query;
     // const conn = await dbPool.getConnection();
     console.log(`agentApi/${ac} param:`, params);
     const msg: IMsg = {ErrNo: 0};
@@ -132,7 +151,20 @@ async function CreditAC(req: Request, res: Response, ac: number) {
     data.tradeType = (ac === 3 ? 1 : 2);
     const Agent: IUser = await getAgent(params.agentId, conn);
     const eds = new EDS(Agent.DfKey);
-    const param = decParam(eds.Decrypted(params.param));
+    let param: IGameAccessParams;
+    if (Agent.DfKey === "NOEDS") {
+        param = {
+            ip: "",
+            ac: "2",
+            userCode: params.userCode
+        };
+        if (params.orderId) {
+            param.orderId = params.orderId;
+            param.money = params.money;
+        }
+    } else {
+        param = decParam(eds.Decrypted(params.param));
+    }
     console.log("agentApi/1 param:", param);
     const hasUser: IUser | boolean = await getUser(param.userCode, params.agentId, conn) as IUser;
     if (!hasUser) {
@@ -350,6 +382,72 @@ async function getGameDataCaption(req, res) {
     }
     conn.release();
     res.send(JSON.stringify(data));
+}
+async function register(params, res: Response) {
+    // const params = req.query;
+    console.log("agentApi/1 :", params);
+    const msg: IMsg = {ErrNo: 0};
+    const data: IAnsData = {code: 0};
+    const conn = await getConnection();
+    if (!conn) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "system busy!!";
+        res.send(JSON.stringify(msg));
+        return;
+    }
+    const Agent: IUser = await getAgent(params.agentId, conn);
+    console.log("agent Api /1", Agent);
+    if (Agent.DfKey) {
+        const eds = new EDS(Agent.DfKey);
+        let param: IGameAccessParams;
+        if (Agent.DfKey === "NOEDS") {
+            param = {
+                ac: "",
+                ip: "",
+                userCode: params.userCode,
+                nickName: params.nickName ? params.nickName : params.userCode
+            };
+            if (params.orderId) {
+                param.orderId = params.orderId;
+                param.money = params.money;
+            }
+        } else {
+            param = decParam(eds.Decrypted(params.param));
+        }
+        console.log("agentApi/1 param:", param);
+        const ans: boolean = await addUser(params.agentId, Agent.PayClassID, param, conn);
+        // console.log("after addUser:", ans);
+        if (ans) {
+            msg.ErrCon = "ok!!";
+            const Ans: any = await getUser(param.userCode, params.agentId, conn);
+            if (Ans) {
+                const usr = Ans as IUser;
+                let skey: string = eds.KeyString;
+                const ans1 = await addLoginInfo(usr.id, usr.Account, params.agentId, skey, conn);
+                if (ans1) {
+                    if (typeof(ans1) === "object") {
+                        if (ans1.logkey) { skey = ans1.logkey; }
+                    }
+                    data.fullUrl = `${memberUrl}?userCode=${usr.Account}&token=${skey}&lang=${param.lang}`;
+                    data.token = skey;
+                    msg.data = data;
+                }
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "Member not found!!";
+                msg.param = param;
+                msg.params = param;
+                msg.Agent = Agent;
+            }
+        } else {
+            msg.ErrCon = JSON.stringify(param);
+        }
+    } else {
+        msg.ErrNo = 9;
+        msg.ErrCon = "Agent not found!!";
+    }
+    conn.release();
+    res.send(JSON.stringify(msg));
 }
 /*
 async function ModifyCredit(uid: number, Account: string,
