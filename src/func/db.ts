@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
-import mariadb, {PoolConnection} from "mariadb";
+import mariadb, { PoolConnection } from "mariadb";
 dotenv.config();
-
+// console.log("dotenv:", process.env);
 export const port = process.env.SERVER_PORT;  // default port to listen
 /*
 {
@@ -13,7 +13,7 @@ connectionLimit: process.env.DBCONNLIMIT,
 rowsAsArray: true };
 */
 // console.log("env:", process.env);
-interface IAxParams {
+export interface IAxParams {
     [key: number]: number|string|boolean;
 }
 /*
@@ -30,11 +30,29 @@ const mdOptions: mariadb.PoolConfig = {
     user: process.env.MDUSER,
     password: process.env.MDPASSWORD,
     database: process.env.MDDATABASE,
-    port: process.env.MDPORT ? parseInt(process.env.MDPORT, 10) : 0,
+    port: process.env.MDPORT ? parseInt(process.env.MDPORT, 10) : 3306,
     timezone: "Asia/Taipei",
     charset: "UTF8"
 };
-const dbPool: mariadb.Pool = mariadb.createPool(mdOptions);
+const ccOptions: mariadb.PoolConfig = {
+    host: process.env.CCHOST,
+    user: process.env.CCUSER,
+    password: process.env.CCPASSWORD,
+    database: process.env.CCDATABASE,
+    port: process.env.CCPORT ? parseInt(process.env.CCPORT, 10) : 3306,
+    timezone: "Asia/Taipei",
+    charset: "UTF8"
+};
+/**
+ * 每個Pool預設會建立10個Connection，可依需要修改Config參數connectionLimit
+ */
+export const dbPool: mariadb.Pool = mariadb.createPool(mdOptions);
+// export const ccPool: mariadb.Pool = mariadb.createPool(ccOptions);
+/*
+if (dbPool) {
+    console.log("dbPool:", dbPool);
+}
+*/
 /*
 const HHOptions: mariadb.PoolConfig = {
     host: process.env.HASHHOST,
@@ -48,20 +66,24 @@ const HHOptions: mariadb.PoolConfig = {
 const HHPool: mariadb.Pool =  mariadb.createPool(HHOptions);
 */
 
-export function getConnection(doHash?: boolean): Promise<PoolConnection|undefined> {
-    const pool: mariadb.Pool = dbPool;
+export function getConnection(pool?: mariadb.Pool, doHash?: boolean): Promise<PoolConnection|undefined> {
+    // const pool: mariadb.Pool = dbPool;
     return new Promise((resolve, reject) => {
         // if (doHash) { pool = HHPool; }
-        if (doHash) { reject({error: "No hash test now"}); }
+        if (doHash) { reject(false); }
+        // if (doHash) { reject({error: "No hash test now"}); }
+        if (!pool) { pool = dbPool; }
+        // console.log("idleConnection:" + pool.idleConnections());
+        // console.log("pool info:", pool.totalConnections(), pool.activeConnections());
         pool.getConnection().then((conn: PoolConnection) => {
             resolve(conn);
         }).catch((err) => {
             console.log("getConnection error:", err);
-            reject(err);
+            reject(false);
         });
     });
 }
-export function doQuery(sql: string, conn: mariadb.PoolConnection, params?: IAxParams): Promise<any> {
+export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): Promise<any> {
     let query: Promise<any>;
     if (params) {
         query = conn.query(sql, params);
@@ -78,8 +100,8 @@ export function doQuery(sql: string, conn: mariadb.PoolConnection, params?: IAxP
             Object.keys(err).map((key) => {
                 console.log(key, ">", err[key]);
             });
-            reject(err);
+            reject(false);
         });
     });
 }
-export default dbPool;
+// export default dbPool;

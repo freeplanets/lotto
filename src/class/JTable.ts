@@ -1,10 +1,8 @@
 import mariadb from "mariadb";
-import {IDbAns, IKeyVal} from "../DataSchema/if";
+import ErrCode from "../DataSchema/ErrCode";
+import {IHasID, IKeyVal, IMsg} from "../DataSchema/if";
 import {doQuery} from "../func/db";
 import eds from "./EncDecString";
-export interface IHasID {
-    id?: number;
-}
 interface ITableIndex {
     Table: string;
     Non_unique: number;
@@ -64,18 +62,29 @@ export default class JTable<T extends IHasID> {
         }
         return mb;
     }
+    public async Lists(keys?: IKeyVal | IKeyVal[]): Promise<IMsg> {
+        const msg: IMsg = {ErrNo: 0};
+        const ans = await this.List(keys);
+        if (ans) {
+            msg.data = ans;
+        } else {
+            msg.ErrNo = ErrCode.NO_DATA_FOUND;
+            msg.ErrCon = "No Data!!";
+        }
+        return msg;
+    }
     public async List(keys?: IKeyVal | IKeyVal[]) {
         let filter = "1";
         if (keys) {
             if (Array.isArray(keys)) {
                 const tmp: string[] = [];
                 keys.map((itm) => {
-                    tmp.push(` ${itm.Key} = ${typeof(itm.Val) === "number" ? itm.Val : "'" + itm.Val + "'" } `);
+                    tmp.push(` ${itm.Key} ${itm.Cond ? itm.Cond : "=" } ${typeof(itm.Val) === "number" ? itm.Val : "'" + itm.Val + "'" } `);
 
                 });
                 if (tmp.length > 0) { filter = tmp.join("and"); }
             } else {
-                filter = ` ${keys.Key} = ${typeof(keys.Val) === "number" ? keys.Val : "'" + keys.Val + "'"} `;
+                filter = ` ${keys.Key} ${keys.Cond ? keys.Cond : "=" } ${typeof(keys.Val) === "number" ? keys.Val : "'" + keys.Val + "'"} `;
             }
         }
         const sql = `select * from ${this.TableName} where ${filter}`;
@@ -106,7 +115,7 @@ export default class JTable<T extends IHasID> {
         });
         return ans;
     }
-    public async Update(v: T ) {
+    public async Update(v: T ): Promise<IMsg> {
         const fields: string[] = [];
         const params: any[] = [];
         Object.keys(v).map((key) => {
@@ -126,20 +135,23 @@ export default class JTable<T extends IHasID> {
             params.push(v[key]);
         });
         if (v.id) { params.push(v.id); }
-        let ans;
+        let ans: IMsg = {};
         const sql = `update ${this.TableName} set ` + fields.join(",") + " where id = ?";
         // console.log("JTable Update", sql, params);
         await this.conn.query(sql, params).then((row) => {
             ans = row;
             // console.log("JTable Upate ans:", ans);
+            ans.ErrNo = ErrCode.PASS;
         }).catch((err) => {
-            ans = false;
+            // ans = false;
             console.log("JTable Upate err:", err);
+            ans.ErrNo = ErrCode.DB_QUERY_ERROR;
+            ans.Error = err;
         });
 
         return ans;
     }
-    public async Insert(v: T) {
+    public async Insert(v: T): Promise<IMsg> {
         const fields: string[] = [];
         const params: any[] = [];
         const vals: string[] = [];
@@ -169,49 +181,61 @@ export default class JTable<T extends IHasID> {
             insert into ${this.TableName}(${fields.join(",")}) values(${vals.join(",")})
         `;
         // console.log("JTable Insert:", sql, params);
-        let ans;
+        let ans: IMsg = {};
         await this.conn.query(sql, params).then((rows) => {
             ans = rows;
+            ans.ErrNo = ErrCode.PASS;
         }).catch((err) => {
             // ans = err;
             console.log(err);
-            ans = false;
+            ans.ErrNo = ErrCode.DB_QUERY_ERROR;
+            ans.Error = err;
+            // ans = false;
         });
         return ans;
     }
-    public async MultiInsert(v: T[]): Promise<IDbAns|undefined> {
+    public async MultiInsert(v: T[]): Promise<IMsg> {
         const fields: string[] = [];
         const vals: string[] = [];
         let cnt = 0;
-        v.map((itm) => {
-            const params: any[] = [];
-            Object.keys(itm).map((key) => {
-                if (key === "id") { return; }
-                if (key === "ModifyTime") { return; }
-                if (cnt === 0) {
-                    fields.push( key );
-                }
-                if (typeof(itm[key]) === "number") {
-                    params.push(itm[key]);
-                } else {
-                    params.push(`'${itm[key]}'`);
-                }
+        let ans: IMsg = {};
+        try {
+            v.map((itm) => {
+                const params: any[] = [];
+                Object.keys(itm).map((key) => {
+                    if (key === "id") { return; }
+                    if (key === "ModifyTime") { return; }
+                    if (cnt === 0) {
+                        fields.push( key );
+                    }
+                    if (typeof(itm[key]) === "number") {
+                        params.push(itm[key]);
+                    } else {
+                        params.push(`'${itm[key]}'`);
+                    }
+                });
+                cnt = cnt + 1;
+                vals.push(`(${params.join(",")})`);
             });
-            cnt = cnt + 1;
-            vals.push(`(${params.join(",")})`);
-        });
-        const sql = `
-            insert into ${this.TableName}(${fields.join(",")}) values${vals.join(",")}
-        `;
-        // console.log("JTable Multi Insert:", sql);
-        let ans: IDbAns|undefined;
-        await this.conn.query(sql).then((rows) => {
-            ans = rows as IDbAns;
-        }).catch((err) => {
-            // ans = err;
-            console.log(err);
-            // ans = false;
-        });
+            const sql = `
+                insert into ${this.TableName}(${fields.join(",")}) values${vals.join(",")}
+            `;
+            // console.log("JTable Multi Insert:", sql);
+
+            await this.conn.query(sql).then((rows) => {
+                ans = rows as IMsg;
+                ans.ErrNo = ErrCode.PASS;
+            }).catch((err) => {
+                // ans = err;
+                console.log(err);
+                // ans = false;
+                ans.ErrNo = ErrCode.DB_QUERY_ERROR;
+                ans.Error =  err;
+            });
+        } catch (err) {
+            ans.ErrNo = ErrCode.TRY_CATCH_ERROR,
+            ans.Error = err;
+        }
         return ans;
     }
     public async MultiUpdate(data: T[], isAdd: boolean= false) {

@@ -1,8 +1,8 @@
 export interface IUser {
-    TableName: "User";
+    TableName?: "User";
     id: number;
     Account: string;
-    Password: string;
+    Password?: string;
     Nickname: string;
     Types: number;
     Levels: number;

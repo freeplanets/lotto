@@ -1,6 +1,7 @@
 import express, { Request, Response, Router } from "express";
 import {Connection} from "mariadb";
 import EDS from "../class/EncDecString";
+import ErrCode from "../DataSchema/ErrCode";
 import {IDbAns, IGameAccessParams, IMsg} from "../DataSchema/if";
 import {IUser} from "../DataSchema/user";
 import {ModifyCredit} from "../func/Credit";
@@ -16,11 +17,14 @@ interface IAnsData {
     status?: number;
     [key: string]: string|number|object|undefined;
 }
-let defaultUrl = "http://localhost:8080";
+let defaultUrl = "http://localhost:8082";
+let defaultCCUrl = "http://localhost:8081";
 if (process.env.NODE_ENV !== "development") {
     defaultUrl = "http://lotocm.uuss.net";
+    defaultCCUrl = "http://cc.uuss.net";
 }
 const memberUrl: string = defaultUrl;
+const memberCCUrl: string = defaultCCUrl;
 const staytime: number = 3000;   // sec
 const agentApi: Router = express.Router();
 /**
@@ -106,9 +110,18 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
         res.send(JSON.stringify(msg));
         return;
     }
-    const login = await getUserLogin(param.Account, param.token, conn);
+    const Account = param.Account as string;
+    const token = param.token as string;
+    if (!Account || !token) {
+        msg.ErrNo = ErrCode.MISS_PARAMETER;
+        msg.ErrCon = "Miss Parameters!!";
+        conn.release();
+        res.send(JSON.stringify(msg));
+        return;
+    }
+    const login = await getUserLogin(Account, token, conn);
     if (login) {
-        const User: IUser | boolean = await getUser(param.Account, login.AgentID, conn);
+        const User: IUser | boolean = await getUser(Account, login.AgentID, conn);
         if (User) {
             msg.data = User as IUser;
         }
@@ -193,7 +206,7 @@ async function CreditAC(params, res: Response, ac: number) {
 }
 async function getAgent(id: string, conn: Connection) {
     const sql: string = "select * from User where id=?";
-    // console.log("getAgent:", sql);
+    console.log("getAgent:", sql, id);
     const row = await conn.query(sql, [id]);
     return row[0];
 }
@@ -225,7 +238,7 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
         '${param.userCode}',Password('${new Date().getTime()}'),'${param.nickName}',0,${AgentId},${PayClassID}
     )`;
     const ans: IDbAns = await conn.query(sql);
-    // console.log("addUser", ans);
+    console.log("addUser", ans, sql);
     if (ans.affectedRows > 0) {
         return true;
     } else {
@@ -260,9 +273,24 @@ function getUser(Account: string, AgentId: string, conn: Connection ): Promise<I
             if (rows.length === 0) {
                 resolve(false);
             }
-            resolve(rows[0]);
+            const r = rows[0] as IUser;
+            const user: IUser = {
+                id: r.id,
+                Account: r.Account,
+                Nickname: r.Nickname,
+                Types: r.Types,
+                forcePWChange: r.forcePWChange,
+                Levels: r.Levels,
+                PayClassID: r.PayClassID,
+                DfKey: r.DfKey,
+                UpId: r.UpId,
+                Balance: r.Balance,
+                CreateTime: r.CreateTime,
+                ModifyTime: r.ModifyTime,
+            };
+            resolve(user);
         }).catch((err) => {
-            console.log("getUser error", err);
+            console.log("getUser error", sql, `>Account:${Account},AgentId:${AgentId}`, "\n", err);
             reject(err);
         });
     });
@@ -405,7 +433,8 @@ async function register(params, res: Response) {
                 ac: "",
                 ip: "",
                 userCode: params.userCode,
-                nickName: params.nickName ? params.nickName : params.userCode
+                nickName: params.nickName ? params.nickName : params.userCode,
+                gameType: "cc"
             };
             if (params.orderId) {
                 param.orderId = params.orderId;
@@ -428,7 +457,9 @@ async function register(params, res: Response) {
                     if (typeof(ans1) === "object") {
                         if (ans1.logkey) { skey = ans1.logkey; }
                     }
-                    data.fullUrl = `${memberUrl}?userCode=${usr.Account}&token=${skey}&lang=${param.lang}`;
+                    let url = memberUrl;
+                    if (param.gameType === "cc") { url = memberCCUrl; }
+                    data.fullUrl = `${url}?userCode=${usr.Account}&token=${skey}&lang=${param.lang}`;
                     data.token = skey;
                     msg.data = data;
                 }

@@ -1,5 +1,5 @@
 import express, {Request, Response, Router } from "express";
-import mariadb, { PoolConnection } from "mariadb";
+import mariadb from "mariadb";
 // import BetParam from "src/class/BetParam";
 // import {setPayRateData,setPayRate,isPayClassUsed,chkTermIsSettled,CreateOddsData,getGameList,getBtList} from '../API/ApiFunc';
 import * as afunc from "../API/ApiFunc";
@@ -17,7 +17,7 @@ import {CancelTerm} from "../class/Settlement";
 import ErrCode from "../DataSchema/ErrCode";
 import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IDfOddsItems, IGameDataCaption , IGameItem , IGameResult, IHashAna, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
-import {doQuery, getConnection} from "../func/db";
+import {doQuery, getConnection, IAxParams} from "../func/db";
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
 interface IProgs {
@@ -50,7 +50,9 @@ app.get("/login", async (req, res) => {
     if (conn) {
         const param = req.query;
         let sql: string = "";
-        const params = [param.Account, param.Password];
+        const Account: string = `${param.Account}`;
+        const Password: string = `${param.Password}`;
+        const params = [Account, Password];
         sql = `Select * from User where Account= ? and Password=Password(?)`;
         const ans = await doQuery(sql, conn, params);
         if (ans) {
@@ -103,8 +105,11 @@ app.get("/logout", async (req, res) => {
     const msg: IMsg = { ErrNo: 0};
     if (conn) {
         const param = req.query;
+        const UserID: number = param.UserID ? parseInt(param.UserID as string, 10) : 0;
+        const sid: string = `${param.sid}`;
+        const params: IAxParams = [UserID, sid];
         const sql = `update LoginInfo set isActive=0 where uid=? and logkey=?`;
-        const ans = await doQuery(sql, conn, [param.UserID, param.sid]);
+        const ans = await doQuery(sql, conn, params);
         if (ans) {
             msg.data = ans;
         }
@@ -132,11 +137,13 @@ app.get("/getGAImg", async (req, res) => {
     const conn = await getConnection();
     if (conn) {
         const jt: JTable<IUser> = new JTable(conn, "User");
-        const user: IUser|undefined = await jt.getOne(param.UserID);
+        const AppName: string = param.AppName ? `param.AppName` : "";
+        const UserID: number = param.UserID ? parseInt(param.UserID as string, 10) : 0;
+        const user: IUser|undefined = await jt.getOne(UserID);
         if (user) {
             const GA = new GoogleAuth();
             const p: IParamForGoogleAuth = {
-                AppName: param.AppName,
+                AppName,
                 AppInfo: user.Account,
                 SecretCode: GA.SecretCode,
             };
@@ -145,7 +152,7 @@ app.get("/getGAImg", async (req, res) => {
             if (ans) {
                 msg.ErrCon = ans;
                 const userp: IUserPartial = {
-                    id: param.UserID,
+                    id: UserID,
                     isChkGA: 1
                 };
                 userp.GAAppName = p.AppName;
@@ -187,11 +194,12 @@ app.get("/GAValidate", async (req, res) => {
     const conn = await getConnection();
     if (conn) {
         const jt: JTable<IUser> = new JTable(conn, "User");
-        const user: IUser|undefined = await jt.getOne(param.UserID);
+        const UserID: number = param.UserID ? parseInt(param.UserID as string, 10) : 0;
+        const user: IUser|undefined = await jt.getOne(UserID);
         if (user) {
             const GA = new GoogleAuth();
             const p: IGAValidate = {
-                Pin: param.Pin,
+                Pin: `${param.Pin}`,
                 SecretCode: user.GACode ? user.GACode : ""
             };
             const ans = await GA.Validate(p);
@@ -244,7 +252,7 @@ app.get("/getProbTable", async (req, res) => {
     const conn = await getConnection();
     if (conn) {
        const jt: JTable<IProbTable> = new JTable(conn, "ProbabilityTable");
-       const ans = await jt.List({Key: "GType", Val: param.GType});
+       const ans = await jt.List({Key: "GType", Val: `${param.GType}`});
        if (ans) {
            msg.data = ans;
        } else {
@@ -261,12 +269,16 @@ app.get("/getProbTable", async (req, res) => {
 app.get("/SetUser", async (req, res) => {
     const param = req.query;
     const msg: IMsg = {ErrNo: 0};
+    let SetUserID: number = param.SetUserID ? parseInt(param.SetUserID as string, 10) : 0;
+    if (!SetUserID) {
+        SetUserID =  param.UserID ? parseInt(param.UserID as string, 10) : 0;
+    }
     const user: IUserPartial = {
-        id: param.SetUserID ? param.SetUserID : param.UserID
+        id: SetUserID
     };
-    if (param.isTwoPassAsked) { user.isTwoPassAsked = param.isTwoPassAsked; }
-    if (param.Programs) { user.Programs = param.Programs; }
-    if (param.isChkGA) { user.isChkGA = parseInt(param.isChkGA, 10); }
+    if (param.isTwoPassAsked) { user.isTwoPassAsked = parseInt(param.isTwoPassAsked as string, 10); }
+    if (param.Programs) { user.Programs = `${param.Programs}`; }
+    if (param.isChkGA) { user.isChkGA = parseInt(param.isChkGA as string, 10); }
     // console.log("SetUser", param, user);
     const conn = await getConnection();
     if (conn) {
@@ -367,7 +379,7 @@ app.get("/getGames", async (req, res) => {
   const msg: IMsg = {ErrNo: 0};
   if (conn) {
       const param = req.query;
-      const sql = `select id,name,GType,OpenNums from Games where ${parseInt(param.showall, 10) ? 1 : "GType != ''"} order by id`;
+      const sql = `select id,name,GType,OpenNums from Games where ${parseInt(param.showall as string, 10) ? 1 : "GType != ''"} order by id`;
       // console.log("getGames:", param, sql);
       const ans = await doQuery(sql, conn);
       if (ans) {
@@ -390,7 +402,7 @@ app.get("/member/GameResult", async (req, res) => {
         const param = req.query;
         console.log("/member/m_stirsbead_result", param);
         const sql = "select TermID,PTime,Result,SpNo,isSettled from Terms where GameID = ? and isSettled order by id limit 0,20";
-        const ans = await doQuery(sql, conn, [param.GameID]);
+        const ans = await doQuery(sql, conn, [parseInt(param.GameID as string, 10)]);
         if (ans) {
             const gr: IGameResult[] = [];
             ans.map((itm) => {
@@ -440,7 +452,7 @@ app.get("/getBtClass", async (req, res) => {
   const msg: IMsg = {ErrNo: 0};
   if (conn) {
       const param = req.query;
-      const params = [param.GameID];
+      const params = [parseInt(param.GameID as string, 10)];
       const sql = "select id,BCName,BetTypes from BetClass where GameID = ?";
       const ans = await doQuery(sql, conn, params);
       if (ans) {
@@ -460,7 +472,7 @@ app.get("/delBtClass", async (req, res) => {
   const msg: IMsg = {ErrNo: 0};
   if (conn) {
       const param = req.query;
-      const params = [param.GameID, param.BCName];
+      const params = [parseInt(param.GameID as string, 10), `${param.BCName}`];
       const sql = "delete from BetClass where GameID=?  and BCName=?";
       const ans = await doQuery(sql, conn, params);
       if (ans) {
@@ -480,7 +492,7 @@ app.get("/getPayClass", async (req, res) => {
   const msg: IMsg = {ErrNo: 0};
   if (conn) {
     const param = req.query;
-    const ans = await getPayClass(conn, param.GameID);
+    const ans = await getPayClass(conn, param.GameID as string);
     if (ans) {
         msg.data = ans;
     } else {
@@ -594,7 +606,7 @@ app.get("/delPayClass", async (req, res) => {
   }
   // console.log("param chk", param);
   const params = [param.id];
-  const chk = await afunc.isPayClassUsed(param.GameID, param.id, conn);
+  const chk = await afunc.isPayClassUsed(param.GameID as string, param.id as string, conn);
   // console.log("delPayClass chk", chk);
   if (chk) {
       msg.ErrNo = 9;
@@ -659,7 +671,7 @@ app.get("/getBasePayRate", async (req, res) => {
     return;
   }
   const param = req.query;
-  const params = [param.GameID];
+  const params = [param.GameID as string];
   const sql = `select p.BetType,p.SubType,NoAdjust,Profit,DfRate,TopRate,
         p.Probability,p.isParlay,Steps,TopPay,OneHand,TotalNums,UseAvg,SingleNum,UnionNum,MinHand,MaxHand,
         BetForChange,StepsGroup,ChangeStart,PerStep,ChaseNum
@@ -705,7 +717,7 @@ app.get("/getPayRate", async (req, res) => {
         on b.GameID=p.GameID and b.BetType = p.BetType and b.SubType = p.SubType
         where p.PayClassID=? and p.GameID = ?`;
    */
-  const params = [param.GameID , param.GameID, param.PayClassID];
+  const params = [param.GameID as string, param.GameID as string, param.PayClassID as string];
   const sql = `select k.*,p.SubType,p.Rate from
     (select b.GameID,b.SubType,a.BetType,b.DfRate,a.Probability,b.PerStep,b.MinHand,b.MaxHand
         from ProbabilityTable a LEFT join BasePayRate b
@@ -998,19 +1010,20 @@ app.get("/getTerms", async (req, res) => {
   }
   const param = req.query;
   const pa: string[] = [];
-  const ans = await getGame(param.GameID, conn);
+  const GameID: number = parseInt(param.GameID as string, 10);
+  const ans = await getGame(GameID, conn);
   if (ans) {
       msg.Game = ans;
   }
-  const pdate = await getTermDateNotSettled(param.GameID, conn);
+  const pdate = await getTermDateNotSettled(GameID, conn);
   if (pdate) {
       msg.PDate = pdate;
   }
   let sql = "select * from Terms where GameID=? ";
-  pa.push(param.GameID);
+  pa.push(param.GameID as string);
   if (param.SDate) {
       sql = sql + " and PDate=? ";
-      pa.push(param.SDate);
+      pa.push(param.SDate as string);
   }
   sql = sql + "order by id desc limit 0,10";
   // console.log("getTerms", sql, pa);
@@ -1251,7 +1264,7 @@ app.get("/member/wagerLotto", async (req, res) => {
   }
   const param = req.query;
   const games: IGameItem[] = await afunc.getGameList(conn);
-  const btlist: IBTItem[] = await afunc.getBtList(param.GameID, conn);
+  const btlist: IBTItem[] = await afunc.getBtList(param.GameID as string, conn);
   if (games) {
       msg.gameLists = games;
   }
@@ -1272,7 +1285,7 @@ app.get("/member/getOddsItems", async (req, res) => {
   }
   const param = req.query;
   // console.log("/api/member/getOddsItems", param);
-  const ans = await getOddsData(param.GameID, param.PayClassID, param.maxOID, conn);
+  const ans = await getOddsData(param.GameID as string, parseInt(param.PayClassID as string, 10), parseInt(param.maxOID as string, 10), conn);
   conn.release();
   res.send(JSON.stringify(ans));
 });
@@ -1393,7 +1406,7 @@ app.get("/member/getWagerItems", async (req, res) => {
   if (param.data === "") {
       param.date = JDate.DateStr;
   }
-  msg = await gets.getBetLists(param.UserID, param.date);
+  msg = await gets.getBetLists(parseInt(param.UserID as string, 10), param.date as string);
   conn.release();
   res.send(JSON.stringify(msg));
 });
@@ -1434,7 +1447,20 @@ app.get("/getUsers", async (req, res) => {
     return;
   }
   const param = req.query;
-  const ans = await getUsers(conn, param);
+  const params: ICommonParams = {};
+  if (param.findString) {
+      params.findString = param.findString as string;
+  }
+  if (param.userType !== undefined) {
+    params.userType = parseInt(param.userType as string, 10);
+  }
+  if (param.UpId) {
+      params.UpId = parseInt(param.UpId as string, 10);
+  }
+  if (param.OnlyID) {
+      params.OnlyID = !!param.OnlyID;
+  }
+  const ans = await getUsers(conn, params);
   if (ans) {
       msg.data = ans;
   } else {
@@ -1458,7 +1484,7 @@ app.get("/member/getPayClass", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "GameID is missing!!";
   } else {
-      const ans = getPayClass(conn, param.GameID);
+      const ans = getPayClass(conn, param.GameID as string);
       if (ans) {
           msg.data = ans;
       } else {
@@ -1551,7 +1577,7 @@ app.get("/CurOddsInfo", async (req, res) => {
           res.send(JSON.stringify(msg));
       }
       if (!param.tid) {
-          tid = await afunc.getCurTermId(param.GameID, conn);
+          tid = await afunc.getCurTermId(param.GameID as string, conn);
           if (!tid) {
               msg.ErrNo = 9;
               msg.ErrCon = "Get data error!!";
@@ -1559,14 +1585,14 @@ app.get("/CurOddsInfo", async (req, res) => {
               res.send(JSON.stringify(msg));
           }
       } else {
-          tid = param.tid;
+          tid = parseInt(param.tid as string, 10);
       }
       msg.tid = tid;
       let MaxOddsID: number = 0;
       if (param.MaxOddsID) {
-          MaxOddsID = parseInt(param.MaxOddsID, 10);
+          MaxOddsID = parseInt(param.MaxOddsID as string, 10);
       }
-      const ans = await afunc.getCurOddsInfo(tid as number, param.GameID, MaxOddsID, conn);
+      const ans = await afunc.getCurOddsInfo(tid as number, param.GameID as string, MaxOddsID, conn);
       if (ans) {
         msg.data = ans;
         // console.log("CurOddsInfo MaxOdDsID:", typeof MaxOddsID, MaxOddsID);
@@ -1602,16 +1628,23 @@ app.get("/setOdds", async (req, res) => {
       const param = req.query;
       // console.log("setOdds param", param);
       if (param.Step) {
-          const fOdds: IMOdds|undefined = await afunc.getOddsInfo(param.tid, param.GameID, param.BT, param.Num, conn);
-          if (fOdds) {
+        const tid = parseInt(param.id as string, 10);
+        const GameID = parseInt(param.GameID as string, 10);
+        const BT = parseInt(param.BT as string, 10);
+        const Num = parseInt(param.Num as string, 10);
+        const UserID = parseInt(param.UserID as string, 10);
+        const fOdds: IMOdds|undefined = await afunc.getOddsInfo(tid, GameID, BT, Num, conn);
+        if (fOdds) {
               // msg.data = ans;
               // const step: number = param.Step;
               let odds: number = 0;
               let addOdds: number = 0;
+              const Add: number = parseInt(param.Add as string, 10);
+              const Step: number = parseInt(param.Step as string, 10);
               if (param.Add) {
-                odds = fOdds.Odds + param.Add * param.Step;
+                odds = fOdds.Odds + Add * Step;
               } else {
-                addOdds = fOdds.Odds - param.Step;
+                addOdds = fOdds.Odds - Step;
                 addOdds = addOdds - (addOdds % fOdds.Steps);
                 odds = fOdds.Odds - addOdds;
               }
@@ -1621,19 +1654,19 @@ app.get("/setOdds", async (req, res) => {
               }
               if (odds < 1 ) { odds = 1; }
               if (odds !== fOdds.Odds) {
-                  const ans = await afunc.setOdds(param.tid, param.GameID, param.BT, param.Num, odds, param.UserID, conn);
+                  const ans = await afunc.setOdds(tid, GameID, BT, Num, odds, UserID, conn);
                   if (ans) {
                       msg.data = ans;
-                      const isBSA = await afunc.isBothSideAdjust(param.GameID, param.BT, conn);
+                      const isBSA = await afunc.isBothSideAdjust(GameID, BT, conn);
                       if (isBSA) {
-                        const OTNum = getOtherSide(param.Num);
-                        const OTOdds: IMOdds|undefined = await afunc.getOddsInfo(param.tid, param.GameID, param.BT, OTNum, conn);
+                        const OTNum = getOtherSide(Num);
+                        const OTOdds: IMOdds|undefined = await afunc.getOddsInfo(tid, GameID, BT, OTNum, conn);
                         console.log("BothSideAdjust", param.BT, param.Num, OTNum, OTOdds);
                         if (OTOdds) {
                             if (addOdds) {
                                 odds = OTOdds.Odds + addOdds;
                             } else {
-                                odds = OTOdds.Odds + param.Add * param.Step * -1;
+                                odds = OTOdds.Odds + Add * Step * -1;
                             }
                             if (odds > fOdds.MaxOdds) {
                                 odds = fOdds.MaxOdds;
@@ -1642,7 +1675,7 @@ app.get("/setOdds", async (req, res) => {
                                 odds = 1;
                             }
                             if (odds !== OTOdds.Odds) {
-                                await afunc.setOdds(param.tid, param.GameID, param.BT, OTNum, odds, param.UserID, conn);
+                                await afunc.setOdds(tid, GameID, BT, OTNum, odds, UserID, conn);
                             }
                         }
                       }
@@ -1672,7 +1705,13 @@ app.get("/setStop", async (req, res) => {
   } else {
       const param = req.query;
       console.log("setStop param", param);
-      const ans = await afunc.setStop(param.tid, param.GameID, param.isStop, param.UserID, conn, param.BetTypes, param.Num);
+      const tid = parseInt(param.id as string, 10);
+      const GameID = parseInt(param.GameID as string, 10);
+      const BetTypes = param.BetTypes as string;
+      const Num = param.Num as string;
+      const UserID = parseInt(param.UserID as string, 10);
+      const isStop = parseInt(param.isStop as string, 10);
+      const ans = await afunc.setStop(tid, GameID, isStop, UserID, conn, BetTypes, Num);
       if (ans) {
           msg.data = ans;
       } else {
@@ -1738,13 +1777,14 @@ app.get("/getBetHeaders", async (req, res) => {
   if (conn) {
         const uids: number[] = [];
         let upid: number[]|undefined = [];
+        const params: ICommonParams = {};
         const uparam = {
-            findString: param.UpName ? param.UpName : "ALL"
+            findString: param.UpName ? param.UpName as string : "ALL"
         };
 
         if (param.Types) {
             if (parseInt(param.Types + "", 10) === 1) {
-                param.UpId = param.UserID;
+                params.UpId = parseInt(param.UserID as string, 10);
             }
         }
         if (!param.UpId) {
@@ -1761,17 +1801,17 @@ app.get("/getBetHeaders", async (req, res) => {
                 upid.map((u: any) => {
                     tmpU.push(u.id);
                 });
-                param.UpId = tmpU.length === 1 ? tmpU[0] : tmpU ;
+                params.UpId = tmpU.length === 1 ? tmpU[0] : tmpU ;
             }
         }
-        const users = await getUsers(conn, param, "Member");
+        const users = await getUsers(conn, params, "Member");
         if (users) {
             users.map((itm) => {
                 uids.push(itm.id);
             });
         }
         console.log("getbetHeaders:", param);
-        const ans = await afunc.getBetHeaders(param, conn, uids);
+        const ans = await afunc.getBetHeaders(params, conn, uids);
        // console.log("AdminApi /getBetHeaders ans", ans);
         if (ans) {
           msg.data = ans;
@@ -1792,7 +1832,8 @@ app.get("/getTermIDByGameID", async (req: Request, res: Response) => {
     const conn = await getConnection();
     let msg: IMsg = {ErrNo: 0};
     if (conn) {
-        msg = await getTermIds(req.query.GameID, conn);
+        const GameID = parseInt(req.query.GameID as string, 10);
+        msg = await getTermIds(GameID, conn);
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get Connection error!";
@@ -1800,8 +1841,24 @@ app.get("/getTermIDByGameID", async (req: Request, res: Response) => {
     res.send(JSON.stringify(msg));
 });
 app.get("/getBetTotal", async (req, res) => {
-    const param: ICommonParams = req.query;
-    const sql: string = getBetTotalSql(param);
+    const param = req.query;
+    const params: ICommonParams = {};
+    if (param.UpId) {
+        params.UpId = parseInt(param.UpId as string, 10);
+    }
+    if (param.GameID) {
+        params.GameID = parseInt(param.GameID as string, 10);
+    }
+    if (param.SDate) {
+        params.SDate = param.SDate as string;
+    }
+    if (param.EDate) {
+        params.EDate = param.EDate as string;
+    }
+    if (param.Ledger) {
+        params.Ledger = param.Ledger as string;
+    }
+    const sql: string = getBetTotalSql(params);
     const msg: IMsg = {ErrNo: 0};
     const conn = await getConnection();
     if (conn) {
@@ -1837,7 +1894,8 @@ app.get("/getLastTerm", async (req, res) => {
     const conn = await getConnection();
     if (conn) {
         const param = req.query;
-        const term = await afunc.getLastTerm(param.GameID, conn);
+        const GameID = parseInt(param.GameID as string, 10);
+        const term = await afunc.getLastTerm(GameID, conn);
         if (term) {
             msg.data = term;
         } else {
@@ -1855,8 +1913,10 @@ app.get("/getEditRecord", async (req, res) => {
     const conn = await getConnection();
     if (conn) {
         const param = req.query;
+        const id = parseInt(param.id as string, 10);
+        const tb = param.tb as string;
         const sql = "select * from ParamsLog where uid=? and tb=?";
-        const ans = await doQuery(sql, conn, [param.id, param.tb]);
+        const ans = await doQuery(sql, conn, [id, tb]);
         if (ans) {
             msg.data = ans;
         } else {
@@ -1873,7 +1933,7 @@ app.get("/getEditRecord", async (req, res) => {
 app.get("/DelTerm", async (req, res) => {
     const msg: IMsg = { ErrNo: 0 };
     const param = req.query;
-    const tid = param.tid;
+    const tid = parseInt(param.tid as string, 10);
     const conn = await getConnection();
     if (conn) {
         const isEmpty: boolean = await isTermEmpty(tid, conn);
@@ -1902,7 +1962,7 @@ app.get("/DelTerm", async (req, res) => {
 app.get("/CancelTerm", async (req, res) => {
     let msg: IMsg = { ErrNo: 0 };
     const param = req.query;
-    const tid = param.tid;
+    const tid = parseInt(param.tid as string, 10);
     const conn = await getConnection();
     if (conn) {
         msg = await CancelTerm(tid, conn);
@@ -1915,7 +1975,7 @@ app.get("/CancelTerm", async (req, res) => {
 });
 app.get("/getBTCHashTable", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
-    const conn = await getConnection(true);
+    const conn = await getConnection(undefined, true);
     if (conn) {
         const p = req.query;
         const sql = `select height,hashvalue from btcBlocks limit ${p.idx},${p.steps}`;
@@ -1994,7 +2054,7 @@ app.get("/delHashAna", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
     const conn = await getConnection();
     if (conn) {
-        const id = parseInt(req.query.id, 10);
+        const id = parseInt(req.query.id as string, 10);
         const jt: JTable<IHashAna> = new JTable(conn, "HashAna");
         try {
             const ans = await jt.Delete(id);

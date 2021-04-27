@@ -1,3 +1,4 @@
+import ErrorCode from "../DataSchema/ErrCode";
 export interface IGameItem {
     id: string;
     name: string;
@@ -10,7 +11,7 @@ export interface IBTItem {
 }
 
 export interface IMsg {
-    ErrNo: number;
+    ErrNo?: ErrorCode;
     data?: object[]|object;
     debug?: string;
     ErrCon?: string;
@@ -110,6 +111,7 @@ export interface IGameAccessParams {
     startTime?: number;
     endTime?: number;
     getKey?: string;
+    gameType?: string; // cc: 數字貨幣, 其他： lottory
   }
 
 export interface IDbAns  {
@@ -217,9 +219,9 @@ export interface ICommonParams {
     NameOrNick?: string;
     SDate?: string;
     EDate?: string;
-    UpId?: number;
+    UpId?: number|number[];
     OnlyID?: boolean;
-    [key: string]: number|string|boolean|IParamLog[]|undefined;
+    [key: string]: number|number[]|string|boolean|IParamLog[]|undefined;
 }
 
 export interface IBasePayRateItm {
@@ -317,7 +319,10 @@ export interface IGameDataCaption {
     BetType: string;
 }
 export interface IKeyVal {
-    [key: string]: string|number;
+    Key?: string;
+    Val?: string | number;
+    Cond?: string;
+    [key: string]: string|number|undefined;
 }
 
 export interface IChaseNum {
@@ -355,4 +360,107 @@ export interface IHashAna {
     id?: number;
     Cond: string;
     AnaData: string;
+}
+// 下單資料
+export interface Order {
+    id: number;
+    Price: number;
+    AskType: number; // 0 市價, 1 限價
+    BuyType: number; // 0 買, 1 賣
+    Qty: number;
+    Amount: number;
+}
+export interface CryptoOrder {
+    id: number;
+    UserID: number;
+    ItemID: number;
+    Code: string;
+    Type: number;
+    BuyType: number;
+    Amount?: number; // USDT金額
+    OpenPrice?: number; // 建倉價格
+    OpenFee?: number;
+    ClosePrice?: number; // 平倉價格
+    CloseFee?: number;
+    OpenLimitPrice?: number; // 建倉限價價格
+    CloseLimitPrice?: number; // 平倉限價價格
+    CloseType?: number; // 平倉種類 0 市價, 1限價
+    CloseWin?: number; // 停利價格
+    CloseLose?: number; // 停損價格
+    OpenCredit?: number; // 開倉信用額度
+    CloseCredit?: number; // 平倉信用額度
+    ProcessStatus?: number;  // 0 等待處理 1 處理中
+    CreateTime?: number; // 建單時間
+    OpenTime?: number; // 新倉時間
+    CreateCloseTime?: number; // 平倉建單時間
+    CloseTime?: number; // 平倉時間
+}
+export interface AskTable {
+    id: number;
+    UserID: number;
+    ItemID: number;
+    Code: string;
+    AskType: number; // 0 市價, 1 限價
+    BuyType: number; // 0 買(多)單, 1 賣(空)單
+    Qty: number;
+    Price?: number; // 建倉價格
+    Amount?: number; // USDT金額
+    Fee?: number; // 手續費
+    AskFee?: number; // 手續費率
+    AskPrice?: number; // 下單價格
+    AskCredit?: number; // 下單時暫扣的信用額度
+    Credit?: number; // 信用額度
+    ProcStatus?: number;  // 0 等待處理 1 處理中 2 成交 3 取消
+    CreateTime?: number; // 建單時間
+    DealTime?: number; // 成交時間
+    ModifyTime?: number; // 修改時間
+    SetID?: number; // 平倉對象ID
+}
+export interface DealTable {
+    id: number;
+    UserID: number;
+    ItemID: number;
+    Code: string;
+    Type: number;
+    BuyType: number;
+    Amount?: number; // USDT金額
+    OpenPrice?: number; // 建倉價格
+    OpenFee?: number;
+    ClosePrice?: number; // 平倉價格
+    CloseFee?: number;
+    CloseType?: number; // 平倉種類 0 市價, 1限價
+
+    OpenCredit?: number; // 開倉信用額度
+    CloseCredit?: number; // 平倉信用額度
+    ProcessStatus?: number;  // 0 等待處理 1 處理中
+    CreateTime?: number; // 建單時間
+    OpenTime?: number; // 新倉時間
+    CreateCloseTime?: number; // 平倉建單時間
+    CloseTime?: number; // 平倉時間
+}
+export interface IHasID {
+    id?: number;
+}
+export interface WebParams {
+    sid: string;
+    UserID: number;
+    Account?: string;
+    UpId?: string;
+    TableName?: string;
+    TableData?: string;
+    TableDatas?: IHasID | IHasID[];
+    order?: Order;
+    [key: string]: number|string|boolean|IHasID|IHasID[]|Order|undefined;
+}
+export interface Items {
+    id: number;
+    Title?: string;
+    Code: string;
+    OpenFee: number;
+    CloseFee: number;
+    LoanFee: number;
+    BattleFee: number;
+    BattleLoanFee: number;
+    OpMark?: number;
+    IMG?: string;
 }

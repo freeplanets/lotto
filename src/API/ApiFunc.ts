@@ -2,7 +2,7 @@ import mariadb, {PoolConnection} from "mariadb";
 // import {getUsers} from "../API/MemberApi";
 import JTable from "../class/JTable";
 import {IChaseNum, ICommonParams, IDbAns, IMsg, IParamLog} from "../DataSchema/if";
-import {IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
+import {IGame, IPayClassParam, IPayRateItm, ITerms, IUserPartial} from "../DataSchema/user";
 import {doQuery} from "../func/db";
 
 export async function setPayRateData(GameID: number, PayClassID: number, ModifyID: number, data: any, conn: mariadb.PoolConnection): Promise<boolean> {
@@ -503,12 +503,12 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
     return msg;
 }
 
-export async function saveParamLog(PLog: IParamLog[], conn: mariadb.PoolConnection): Promise<IDbAns|undefined> {
+export async function saveParamLog(PLog: IParamLog[], conn: mariadb.PoolConnection): Promise<IMsg> {
     const jt: JTable<IParamLog> = new JTable(conn, "ParamsLog");
     return await jt.MultiInsert(PLog);
 }
 
-export async function setUser(user: IUserPartial, conn: PoolConnection): Promise<IDbAns|undefined> {
+export async function setUser(user: IUserPartial, conn: PoolConnection): Promise<IMsg> {
     const jt: JTable<IUserPartial> = new JTable(conn, "User");
     return await jt.Update(user);
 }

@@ -2,11 +2,11 @@ import mariadb from "mariadb";
 import JDate from "../class/JDate";
 import ErrCode from "../DataSchema/ErrCode";
 import {IBasePayRateItm, IBetTable, ICurOddsData, IDayReport,
-    IMsg, INumAvg, INumData, IStepG, IStrKeyNumer} from "../DataSchema/if";
+    IHasID, INumAvg, INumData, IStepG, IStrKeyNumer} from "../DataSchema/if";
 import {IGame} from "../DataSchema/user";
 import {doQuery} from "../func/db";
 import {getOtherSide} from "./Func";
-import JTable, {IHasID} from "./JTable";
+import JTable from "./JTable";
 interface ICurOddsT {
     id: 0;
     tid: number;

@@ -206,7 +206,7 @@ export class Bet implements IBet {
             Payout: payouts
         };
         const rlt = await jt.Insert(bh);
-        if (rlt.warningStatus === 0) {
+        if (rlt && rlt.warningStatus === 0) {
             const ts = new Date().getTime();
             const ansmc = await ModifyCredit(this.UserID, "", "-1", total * -1, ts + "ts" + this.UserID, this.conn);
             if (ansmc) {
@@ -218,7 +218,7 @@ export class Bet implements IBet {
                 return msg;
             }
             BetDetail.map((itm) => {
-                itm.betid = rlt.insertId;
+                itm.betid = rlt ? rlt.insertId : 0;
             });
             const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
@@ -395,7 +395,7 @@ export class Bet implements IBet {
         await this.conn.beginTransaction();
         const rlt = await jt.Insert(bh);
         console.log("Parlay SNB:", SNB);
-        if (rlt.warningStatus === 0) {
+        if (rlt && rlt.warningStatus === 0) {
             const ts = new Date().getTime();
             const ansmc = await ModifyCredit(this.UserID, "", "-1", bh.Total * -1, ts + "ts" + this.UserID, this.conn);
             if (ansmc) {
@@ -427,7 +427,7 @@ export class Bet implements IBet {
                     } else if (GType === GameTypes.D3) {
                         const tmp: IExProc = {
                             id: 0,
-                            betid: rlt.insertId,
+                            betid: rlt ? rlt.insertId : 0,
                             tid: this.tid,
                             GameID: this.GameID,
                             BetType,
@@ -449,7 +449,7 @@ export class Bet implements IBet {
                             if (GType === GameTypes.MarkSix && (BetType === 8 || BetType === 72)) {
                                 const tmp: IExProc = {
                                     id: 0,
-                                    betid: rlt.insertId,
+                                    betid: rlt ? rlt.insertId : 0,
                                     tid: this.tid,
                                     GameID: this.GameID,
                                     BetType,
@@ -467,7 +467,7 @@ export class Bet implements IBet {
                 const avgOdds: number = (isPASS ? passodds : this.AvgOrMin(oddsg, UseAvgOdds));
                 const bd: IBetTable = {
                     id: 0,
-                    betid: rlt.insertId,
+                    betid: rlt ? rlt.insertId : 0,
                     tid: this.tid,
                     UserID: this.UserID,
                     Account: this.Account,
@@ -555,7 +555,7 @@ export class Bet implements IBet {
     }
     public async ParOne(BetType: number, Odds: string, Nums: string, Amt: number): Promise<IMsg> {
         const msg: IMsg = {
-            ErrNo: 0
+            ErrNo: ErrCode.PASS
         };
         this.TermInfo = await this.getTermInfo(this.tid, this.conn);
         if (this.TermInfo) {
@@ -692,7 +692,7 @@ export class Bet implements IBet {
         await this.conn.beginTransaction();
         const rlt = await jt.Insert(bh);
         console.log("Parlay SNB:", SNB);
-        if (rlt.warningStatus === 0) {
+        if (rlt && rlt.warningStatus === 0) {
             const ts = new Date().getTime();
             const ansmc = await ModifyCredit(this.UserID, "", "-1", bh.Total * -1, ts + "ts" + this.UserID, this.conn);
             if (ansmc) {
@@ -711,7 +711,7 @@ export class Bet implements IBet {
                 if (set.Odds) { tmpOdds = set.Odds as number; }
                 const tmp: IExProc = {
                     id: 0,
-                    betid: rlt.insertId,
+                    betid: rlt ? rlt.insertId : 0,
                     tid: this.tid,
                     GameID: this.GameID,
                     BetType,
@@ -726,7 +726,7 @@ export class Bet implements IBet {
                 // const avgOdds: number = (isPASS ? odds : this.AvgOrMin(oddsg, UseAvgOdds));
             const bd: IBetTable = {
                     id: 0,
-                    betid: rlt.insertId,
+                    betid: rlt ? rlt.insertId : 0,
                     tid: this.tid,
                     UserID: this.UserID,
                     Account: this.Account,

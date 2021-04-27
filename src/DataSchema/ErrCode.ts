@@ -10,6 +10,10 @@ const enum ErrCode {
   DELETE_TERM_ERR = 8,
   NOT_DEFINED_ERR = 9,
   MISS_PARAMETER = 10,
-  NOT_ENOUGH_NUM = 11
+  NOT_ENOUGH_NUM = 11,
+  GET_CONNECTION_ERR = 12,
+  DB_QUERY_ERROR = 13,
+  TRY_CATCH_ERROR = 14,
+  NO_DATA_FOUND = 15,
 }
 export default ErrCode;

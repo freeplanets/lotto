@@ -10,7 +10,7 @@ const app: Router = express.Router();
 app.get("/doit", webFunc);
 app.post("/doit", webFunc);
 async function webFunc(req: Request, res: Response) {
-  let param: IFromCenter;
+  let param: any;
   let msg: IMsg = {ErrNo: 0, error: ""};
   if (req.query.op) {
     // console.log("query", req.query);
@@ -22,6 +22,17 @@ async function webFunc(req: Request, res: Response) {
   const conn: PoolConnection|undefined = await getConnection();
   if (conn) {
     // console.log("webFunc", param);
+    const params: IFromCenter = {
+      issueno: "",
+      lrid: "",
+      openbet: "",
+      lastresultissue: "",
+      op: "",
+      Method: ""
+    };
+    Object.keys(param).map((key) => {
+      params[key] = param[key] as string;
+    });
     const CC: CenterCall = new CenterCall(param, conn);
     if (param.op) {
       if (typeof(CC[param.op]) === "function") {
