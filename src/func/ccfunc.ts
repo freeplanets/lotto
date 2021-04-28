@@ -94,7 +94,8 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
         return msg;
       }
       const AskID = msg.insertId as number;
-      const mcAns = await ModifyCredit(UserID, Account, UpId, Amount * -1, sid, conn);
+      const ts = new Date().getTime();
+      const mcAns = await ModifyCredit(UserID, Account, UpId, Amount * -1, `${ts}ts${UserID}`, conn);
       if (!mcAns) {
         await conn.rollback();
         msg.ErrNo = ErrCode.DB_QUERY_ERROR;

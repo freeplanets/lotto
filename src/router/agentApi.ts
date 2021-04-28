@@ -489,7 +489,7 @@ async function ModifyCredit(uid: number, Account: string,
     if (ans[0]) {
         balance = balance + ans[0].balance;
     }
-    sql = `insert into UserCredit(uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;
+    sql = `uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;
     const param = [uid, Account, AgentId, idenkey, money, balance];
     const dbans: IDbAns = await conn.query(sql, param);
     if (dbans.affectedRows > 0) {
