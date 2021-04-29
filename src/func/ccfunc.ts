@@ -53,39 +53,41 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
 export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {};
   const UserID = param.UserID;
-  const UpId = param.UpId as string;
+  const UpId = param.UpId as number;
   const Account = param.Account as string;
-  const sid = param.sid;
+  // const sid = param.sid;
   if (!param.order) {
     msg.ErrNo = ErrCode.MISS_PARAMETER;
     msg.ErrCon = "No order found!!";
     return msg;
   }
   const order = param.order;
+  if ( !order.Amount || !order.Price) {
+    msg.ErrNo = ErrCode.MISS_PARAMETER;
+    msg.ErrCon = "No Price found";
+    return msg;
+  }    
   const jt = new JTable<Items>(conn, "Items");
   const Item = await jt.getOne(order.id);
   if (Item) {
     const newOrder: AskTable = {
       id: 0,
       UserID,
+      UpId,
       ItemID: Item.id,
       Code: Item.Code,
       AskType: order.AskType,
       BuyType: order.BuyType,
-      Qty: order.Qty,
+      Amount: order.Amount,
       AskFee: Item.OpenFee,
     };
-    if ((!order.Qty && !order.Amount ) || !order.Price) {
-      msg.ErrNo = ErrCode.MISS_PARAMETER;
-      msg.ErrCon = "No Price found";
-      return msg;
-    }
-    const Amount = order.Amount ? order.Amount : order.Price * order.Qty;
     const credit = await getUserCredit(UserID, conn);
-    if (credit && credit * 0.95 > Amount) {
+    if (credit > newOrder.Amount) {
       await conn.beginTransaction();
       newOrder.AskPrice = order.Price;
-      newOrder.AskCredit = Amount;
+      // newOrder.AskCredit = Amount;
+      newOrder.Fee = newOrder.AskFee * newOrder.Amount;
+      newOrder.Credit = newOrder.Amount + newOrder.Fee;
       const cojt = new JTable<AskTable>(conn, "AskTable");
       msg = await cojt.Insert(newOrder);
       if (msg.ErrNo !== 0) {
@@ -95,10 +97,10 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       }
       const AskID = msg.insertId as number;
       const ts = new Date().getTime();
-      const mcAns = await ModifyCredit(UserID, Account, UpId, Amount * -1, `${ts}ts${UserID}`, conn);
+      const mcAns = await ModifyCredit(UserID, Account, UpId, newOrder.Credit * -1, `${ts}ts${UserID}`, conn);
       if (!mcAns) {
         await conn.rollback();
-        msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+        msg.ErrNo = ErrCode.NO_CREDIT;
         return msg;
       } else {
         msg.balance = mcAns.balance;

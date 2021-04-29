@@ -2,7 +2,7 @@ import { Connection } from "mariadb";
 import { IDbAns } from "../DataSchema/if";
 
 export async function ModifyCredit(uid: number, Account: string,
-                                   AgentId: string, money: number, idenkey: string, conn: Connection, justquery?: boolean) {
+                                   AgentId: number, money: number, idenkey: string, conn: Connection, justquery?: boolean) {
     let  balance: number = await getUserCredit(uid, conn);
     if (justquery) {
         return { balance, orderId: 0};

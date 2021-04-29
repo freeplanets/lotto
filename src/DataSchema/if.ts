@@ -398,15 +398,16 @@ export interface CryptoOrder {
 export interface AskTable {
     id: number;
     UserID: number;
+    UpId: number;
     ItemID: number;
     Code: string;
     AskType: number; // 0 市價, 1 限價
     BuyType: number; // 0 買(多)單, 1 賣(空)單
-    Qty: number;
+    Qty?: number;
     Price?: number; // 建倉價格
-    Amount?: number; // USDT金額
+    Amount: number; // USDT金額
     Fee?: number; // 手續費
-    AskFee?: number; // 手續費率
+    AskFee: number; // 手續費率
     AskPrice?: number; // 下單價格
     AskCredit?: number; // 下單時暫扣的信用額度
     Credit?: number; // 信用額度
@@ -445,7 +446,7 @@ export interface WebParams {
     sid: string;
     UserID: number;
     Account?: string;
-    UpId?: string;
+    UpId?: number;
     TableName?: string;
     TableData?: string;
     TableDatas?: IHasID | IHasID[];
