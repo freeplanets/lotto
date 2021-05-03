@@ -1,7 +1,8 @@
 import {PoolConnection} from "mariadb";
 import JTable from "../class/JTable";
+import wsclient from "../components/webSC";
 import ErrCode from "../DataSchema/ErrCode";
-import { AskTable, IKeyVal, IMsg, Items, WebParams } from "../DataSchema/if";
+import { AskTable, IKeyVal, IMsg, Items, NoDelete, WebParams } from "../DataSchema/if";
 import { getUserCredit, ModifyCredit } from "../func/Credit";
 import { GetPostFunction } from "./ExpressAccess";
 
@@ -66,7 +67,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     msg.ErrNo = ErrCode.MISS_PARAMETER;
     msg.ErrCon = "No Price found";
     return msg;
-  }    
+  }
   const jt = new JTable<Items>(conn, "Items");
   const Item = await jt.getOne(order.id);
   if (Item) {
@@ -107,6 +108,11 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       }
       await conn.commit();
       msg.data = await cojt.getOne(AskID);
+      if (wsclient.isConnected) {
+        if (msg.data) {
+          wsclient.Send(JSON.stringify(msg.data));
+        }
+      }
     } else {
       msg.ErrNo = ErrCode.NO_CREDIT;
       msg.ErrCon = "No credit found";
@@ -126,4 +132,28 @@ export const getOrder: IMyFunction<WebParams> = async (param: WebParams, conn: P
   filter.push({ Key: "ProcStatus", Val: 1, Cond: "<="});
   const jt: JTable<AskTable> = new JTable(conn, "AskTable");
   return await jt.Lists(filter);
+};
+
+export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
+  let msg: IMsg = {};
+  if (param.AskID) {
+    const table: NoDelete = {
+      id: param.AskID as number,
+      ProcStatus: 3,
+    };
+    const jt: JTable<NoDelete> = new JTable(conn, "AskTable");
+    msg = await jt.Update(table);
+    if (msg.ErrNo === 0) {
+      const ans = await jt.getOne(table.id);
+      if (ans) {
+        if (wsclient.isConnected) {
+          wsclient.Send(JSON.stringify(ans));
+        }
+      }
+    }
+  } else {
+    msg.ErrNo = ErrCode.MISS_PARAMETER;
+    msg.ErrCon = "AskID not found!!";
+  }
+  return msg;
 };

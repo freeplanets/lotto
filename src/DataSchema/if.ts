@@ -465,3 +465,7 @@ export interface Items {
     OpMark?: number;
     IMG?: string;
 }
+export interface NoDelete {
+    id: number;
+    ProcStatus: number;
+}

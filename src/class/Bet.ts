@@ -208,7 +208,7 @@ export class Bet implements IBet {
         const rlt = await jt.Insert(bh);
         if (rlt && rlt.warningStatus === 0) {
             const ts = new Date().getTime();
-            const ansmc = await ModifyCredit(this.UserID, "", "-1", total * -1, ts + "ts" + this.UserID, this.conn);
+            const ansmc = await ModifyCredit(this.UserID, "", -1, total * -1, ts + "ts" + this.UserID, this.conn);
             if (ansmc) {
                 msg.balance = ansmc.balance;
             } else {
@@ -397,7 +397,7 @@ export class Bet implements IBet {
         console.log("Parlay SNB:", SNB);
         if (rlt && rlt.warningStatus === 0) {
             const ts = new Date().getTime();
-            const ansmc = await ModifyCredit(this.UserID, "", "-1", bh.Total * -1, ts + "ts" + this.UserID, this.conn);
+            const ansmc = await ModifyCredit(this.UserID, "", -1, bh.Total * -1, ts + "ts" + this.UserID, this.conn);
             if (ansmc) {
                 msg.balance = ansmc.balance;
             } else {
@@ -694,7 +694,7 @@ export class Bet implements IBet {
         console.log("Parlay SNB:", SNB);
         if (rlt && rlt.warningStatus === 0) {
             const ts = new Date().getTime();
-            const ansmc = await ModifyCredit(this.UserID, "", "-1", bh.Total * -1, ts + "ts" + this.UserID, this.conn);
+            const ansmc = await ModifyCredit(this.UserID, "", -1, bh.Total * -1, ts + "ts" + this.UserID, this.conn);
             if (ansmc) {
                 msg.balance = ansmc.balance;
             } else {
