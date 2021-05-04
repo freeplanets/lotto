@@ -129,7 +129,7 @@ export const getOrder: IMyFunction<WebParams> = async (param: WebParams, conn: P
   const UserID = param.UserID;
   const filter: IKeyVal[] = [];
   filter.push({ Key: "UserID", Val: UserID });
-  filter.push({ Key: "ProcStatus", Val: 1, Cond: "<="});
+  filter.push({ Key: "ProcStatus", Val: 2, Cond: "<="});
   const jt: JTable<AskTable> = new JTable(conn, "AskTable");
   return await jt.Lists(filter);
 };
