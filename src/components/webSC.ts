@@ -27,6 +27,10 @@ class WsClient {
     });
     ws.on("close", () => {
       console.log("connection close.");
+      setTimeout(() => {
+        this.createConnection();
+      }, 5000);
+      console.log("ws close state:", this.ws.readyState);
     });
     return ws;
   }

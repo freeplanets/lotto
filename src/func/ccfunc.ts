@@ -147,7 +147,10 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
       const ans = await jt.getOne(table.id);
       if (ans) {
         if (wsclient.isConnected) {
+          console.log("Send", JSON.stringify(ans));
           wsclient.Send(JSON.stringify(ans));
+        } else {
+          console.log("wsclinet gone away...", wsclient.isConnected);
         }
       }
     }
