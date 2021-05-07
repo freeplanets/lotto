@@ -8,32 +8,6 @@ const wsOptions: ClientOptions = {
 };
 
 class WsClient {
-  private ws: WebSocket;
-  private pingTimeout: any = 0;
-  constructor(private url: string, private opts: ClientOptions) {
-    // console.log('WsClient',url,opts)
-    this.ws = this.createConnection();
-  }
-  public createConnection() {
-    console.log("create connection!!");
-    const ws = new WebSocket(this.url, this.opts);
-    ws.on("open", (data) => {
-      console.log("WS connected:", data);
-      console.log("status", this.ws.readyState, this.ws.OPEN);
-      this.Send("First Message");
-    });
-    ws.on("message", (data) => {
-      console.log("message from WS:", data);
-    });
-    ws.on("close", () => {
-      console.log("connection close.");
-      setTimeout(() => {
-        this.createConnection();
-      }, 5000);
-      console.log("ws close state:", this.ws.readyState);
-    });
-    return ws;
-  }
   /*
   createConnection(){
     this.ws = new WebSocket(this.url, this.opts);
@@ -56,6 +30,37 @@ class WsClient {
     }
     return this.ws.readyState === this.ws.OPEN;
   }
+  private ws: WebSocket;
+  private pingTimeout: any = 0;
+  constructor(private url: string, private opts: ClientOptions) {
+    // console.log('WsClient',url,opts)
+    this.ws = this.createConnection();
+  }
+  public createConnection() {
+    console.log("create connection!!");
+    const ws = new WebSocket(this.url, this.opts);
+    ws.on("open", (data) => {
+      console.log("WS connected:", data);
+      console.log("status", this.ws.readyState, this.ws.OPEN);
+      this.Send("First Message");
+      this.registerChannel("AskCreator");
+    });
+    ws.on("message", (data) => {
+      console.log("message from WS:", data);
+    });
+    ws.on("ping", this.heartbeat);
+    ws.on("pong", this.heartbeat);
+    ws.on("close", () => {
+      console.log("connection close.");
+      /*
+      setTimeout(() => {
+        this.createConnection();
+      }, 5000);
+      console.log("ws close state:", this.ws.readyState);
+      */
+    });
+    return ws;
+  }
   public Send(msg: string) {
     if (this.ws.readyState === this.ws.OPEN) {
       console.log("Send Mesage to Server:", msg);
@@ -70,6 +75,18 @@ class WsClient {
         this.ws.close();
         console.log("done");
       }
+  }
+  private heartbeat() {
+    clearTimeout(this.pingTimeout);
+    this.pingTimeout = setTimeout(() => {
+      this.ws.terminate();
+    }, 30000 + 1000);
+  }
+  private registerChannel(channel: string) {
+    if (this.ws.readyState === this.ws.OPEN) {
+      console.log("Register Channel to Server:", channel);
+      this.ws.send(`SetChannel:${channel}`);
+    }
   }
 }
 const wsclient = new WsClient(wsSERVER, wsOptions);

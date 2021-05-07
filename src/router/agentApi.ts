@@ -7,6 +7,7 @@ import {IUser} from "../DataSchema/user";
 import {ModifyCredit} from "../func/Credit";
 import {getConnection} from "../func/db";
 
+
 interface IAnsData {
     code: number;
     fullUrl?: string; // :"http://<server>?userCode=10001&token=FBE54A7273EE4F15B363C3F98F32B19F&lang=zh-CN&gameId=0",
@@ -124,6 +125,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
         const User: IUser | boolean = await getUser(Account, login.AgentID, conn);
         if (User) {
             msg.data = User as IUser;
+            msg.wsServer = process.env.WS_SERVER;
         }
     } else {
         msg.ErrNo = 9;

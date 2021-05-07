@@ -81,6 +81,7 @@ app.get("/login", async (req, res) => {
                 if (logkey) {
                     info.sid = logkey ;
                     msg.data = info;
+                    msg.wsServer = process.env.WS_SERVER;
                 } else {
                     msg.ErrNo = 9;
                     msg.ErrCon = "login error!!";
