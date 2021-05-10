@@ -7,7 +7,6 @@ import {IUser} from "../DataSchema/user";
 import {ModifyCredit} from "../func/Credit";
 import {getConnection} from "../func/db";
 
-
 interface IAnsData {
     code: number;
     fullUrl?: string; // :"http://<server>?userCode=10001&token=FBE54A7273EE4F15B363C3F98F32B19F&lang=zh-CN&gameId=0",
@@ -132,6 +131,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
         msg.ErrCon = "Error: Member not found!!";
     }
     conn.release();
+    console.log("memberlogin getUser:", msg, process.env.WS_SERVER);
     res.send(JSON.stringify(msg));
 });
 agentApi.get("/2", async (req: Request, res: Response) => {
