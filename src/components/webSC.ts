@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import { timeStamp } from "node:console";
 import WebSocket, { ClientOptions } from "ws";
 
 dotenv.config();
@@ -9,33 +8,16 @@ const wsOptions: ClientOptions = {
 };
 
 class WsClient {
-  /*
-  createConnection(){
-    this.ws = new WebSocket(this.url, this.opts);
-    this.ws.on("open", (data) => {
-      console.log("WS connected:", data);
-      console.log("status", this.ws.readyState, this.ws.OPEN);
-      this.Send("First Message");
-    });
-    this.ws.on("message", (data) => {
-      console.log("message from WS:", data);
-    });
-    this.ws.on("close", () => {
-      console.log("connection close.");
-    });
-  }
-  */
   get isConnected() {
+    if (!this.ws) { return false; }
     return this.ws.readyState === this.ws.OPEN;
   }
-  private ws: WebSocket;
+  private ws!: WebSocket;
   private pingTimeout: any = 0;
   constructor(private url: string, private opts: ClientOptions) {
     // console.log('WsClient',url,opts)
-    this.ws = this.createConnection();
-  }
-  public Reconnect() {
-    this.ws = this.createConnection();
+    // this.ws = this.createConnection();
+    this.createConnection();
   }
   public Send(msg: string) {
     if (this.ws.readyState === this.ws.OPEN) {
@@ -54,33 +36,32 @@ class WsClient {
   }
   private createConnection() {
     console.log("create connection!!");
-    const ws = new WebSocket(this.url, this.opts);
-    ws.on("open", (data) => {
+    this.ws = new WebSocket(this.url, this.opts);
+    this.ws.on("error", (data) => {
+      console.log("error:", data);
+    });
+    this.ws.on("disconnect", (data) => {
+      console.log("disconnect:", data);
+    });
+    this.ws.on("open", (data) => {
       console.log("WS connected:", data);
       console.log("status", this.ws.readyState, this.ws.OPEN);
       this.Send("First Message");
       this.registerChannel("AskCreator");
     });
-    ws.on("message", (data) => {
+    this.ws.on("message", (data) => {
       console.log("message from WS:", data);
     });
     // ws.on("ping", this.heartbeat);
     // ws.on("pong", this.heartbeat);
-    ws.on("close", () => {
+    this.ws.on("close", () => {
       console.log("connection close.");
       const me = this;
       setTimeout(() => {
         console.log("do reconnect");
-        me.Reconnect();
+        me.createConnection();
       }, 15000);
-      /*
-      setTimeout(() => {
-        this.createConnection();
-      }, 5000);
-      console.log("ws close state:", this.ws.readyState);
-      */
     });
-    return ws;
   }
   private heartbeat() {
     clearTimeout(this.pingTimeout);
