@@ -160,3 +160,48 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
   }
   return msg;
 };
+
+export const ModifyOrder = async (ask:AskTable, conn: PoolConnection) => {
+  let msg: IMsg = {};
+  if(ask.ProcStatus === 2 && ask.Amount && ask.AskType === 0){
+    const credit = await getUserCredit(ask.UserID, conn);
+    ask.Fee = ask.AskFee * ask.Amount;
+    ask.Credit = ask.Amount + ask.Fee;  
+    if (credit < (ask.Amount+ask.Fee)) {
+      msg.ErrNo = ErrCode.NO_CREDIT;
+      msg.ErrCon = "No credit found";
+      return;
+    }
+  }
+
+  await conn.beginTransaction();
+  const cojt = new JTable<AskTable>(conn, "AskTable");
+  if(ask.ProcStatus === 0){
+    msg = await cojt.Insert(ask);   
+  } else {
+    msg = await cojt.Update(ask);
+  }
+  if (msg.ErrNo !== 0) {
+    await conn.rollback();
+    msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+    return msg;
+  }
+
+  const ts = new Date().getTime();
+  const mcAns = await ModifyCredit(UserID, Account, UpId, newOrder.Credit * -1, `${ts}ts${UserID}`, conn);
+  if (!mcAns) {
+    await conn.rollback();
+    msg.ErrNo = ErrCode.NO_CREDIT;
+    return msg;
+  } else {
+    msg.balance = mcAns.balance;
+  }
+  await conn.commit();
+  msg.data = await cojt.getOne(AskID);
+  if (wsclient.isConnected) {
+    if (msg.data) {
+      wsclient.Send(JSON.stringify(msg.data));
+    }
+  }
+  return msg;
+};
