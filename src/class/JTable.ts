@@ -25,7 +25,11 @@ interface ITBIdxes {
 const ED = new eds();
 export default class JTable<T extends IHasID> {
     private query = doQuery;
+    private extFilter = '';
     constructor(private conn: mariadb.PoolConnection, private TableName: string) {}
+    set ExtFilter(f:string){
+        this.extFilter = f;
+    }
     public async getOne(id: number|IKeyVal): Promise<T|undefined> {
         const param: any = [];
         const field: string[] = [];
@@ -135,8 +139,11 @@ export default class JTable<T extends IHasID> {
             params.push(v[key]);
         });
         if (v.id) { params.push(v.id); }
-        let ans: IMsg = {};
-        const sql = `update ${this.TableName} set ` + fields.join(",") + " where id = ?";
+        let ans: IMsg = { ErrNo: ErrCode.PASS };
+        let sql = `update ${this.TableName} set ` + fields.join(",") + " where id = ?";
+        if(this.extFilter) {
+            sql = sql + this.extFilter;
+        }
         // console.log("JTable Update", sql, params);
         await this.conn.query(sql, params).then((row) => {
             ans = row;
@@ -181,7 +188,7 @@ export default class JTable<T extends IHasID> {
             insert into ${this.TableName}(${fields.join(",")}) values(${vals.join(",")})
         `;
         // console.log("JTable Insert:", sql, params);
-        let ans: IMsg = {};
+        let ans: IMsg = { ErrNo: ErrCode.PASS };
         await this.conn.query(sql, params).then((rows) => {
             ans = rows;
             ans.ErrNo = ErrCode.PASS;
@@ -198,7 +205,7 @@ export default class JTable<T extends IHasID> {
         const fields: string[] = [];
         const vals: string[] = [];
         let cnt = 0;
-        let ans: IMsg = {};
+        let ans: IMsg = { ErrNo: ErrCode.PASS};
         try {
             v.map((itm) => {
                 const params: any[] = [];

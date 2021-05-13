@@ -100,7 +100,7 @@ agentApi.get("/1", async (req: Request, res: Response) => {
 });
 agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     const param = req.query;
-    console.log("memberlogin", param);
+    // console.log("memberlogin", param);
     // const conn = await dbPool.getConnection();
     const msg: IMsg = {ErrNo: 0};
     const conn = await getConnection();
@@ -131,7 +131,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
         msg.ErrCon = "Error: Member not found!!";
     }
     conn.release();
-    console.log("memberlogin getUser:", msg, process.env.WS_SERVER);
+    // console.log("memberlogin getUser:", msg, process.env.WS_SERVER);
     res.send(JSON.stringify(msg));
 });
 agentApi.get("/2", async (req: Request, res: Response) => {
@@ -249,11 +249,11 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
 }
 export async function addLoginInfo(uid: number, Account: string, AgentId: string, skey: string, conn: Connection, isAdmin?: boolean) {
     const act1 = await chkLoginAction(uid, conn, isAdmin);
-    console.log("after chkLoginAction", act1);
+    // console.log("after chkLoginAction", act1);
     if (act1) {
         const act2 = await chkLogin(uid, conn, isAdmin);
         if (act2) {
-            console.log("after chkLogin", act2);
+            // console.log("after chkLogin", act2);
             return {logkey: act2.logkey};
         }
     }
@@ -271,7 +271,7 @@ function getUser(Account: string, AgentId: string, conn: Connection ): Promise<I
         const param: {[key: number]: any} = [Account, AgentId];
         const sql = "select m.*,u.PayClass from Member m,User u where m.UpId=u.id and m.Account=? and m.UpId=?";
         conn.query(sql, param).then((rows) => {
-            console.log("getUser:", rows.length, sql, param);
+            // console.log("getUser:", rows.length, sql, param);
             if (rows.length === 0) {
                 resolve(false);
             }
@@ -310,7 +310,7 @@ async function getUserLogin( Account: string, skey: string, conn: Connection, is
 async function chkLogin(uid: number, conn: Connection, isAdmin?: boolean) {
     const sql = `select * from LoginInfo where uid=? and isActive=1 and AgentID${isAdmin ? "=" : "<>"}0`;
     const ans = await conn.query(sql, [uid]);
-    console.log("chkLogin", sql);
+    // console.log("chkLogin", sql);
     if (ans.length > 0) { return ans[0]; }
     return false;
 }
@@ -327,7 +327,7 @@ async function chkLoginAction(uid: number, conn: Connection, isAdmin?: boolean) 
         and AgentID${isAdmin ? "=" : "<>"}0
         and CURRENT_TIMESTAMP-timeproc>${staytime}`;
     const ans: IDbAns = await conn.query(sql);
-    console.log("chkLoginAction", sql, ans);
+    // console.log("chkLoginAction", sql, ans);
     if (ans) { return true; }
     return false;
 }

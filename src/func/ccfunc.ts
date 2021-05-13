@@ -5,6 +5,7 @@ import ErrCode from "../DataSchema/ErrCode";
 import { AskTable, IKeyVal, IMsg, Items, NoDelete, WebParams } from "../DataSchema/if";
 import { getUserCredit, ModifyCredit } from "../func/Credit";
 import { GetPostFunction } from "./ExpressAccess";
+import ATACreator from '../components/ATACreator';
 
 interface IMyFunction<T> extends GetPostFunction {
   (param: T, conn: PoolConnection): IMsg;
@@ -125,7 +126,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
 };
 
 export const getOrder: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
-  const msg: IMsg = {};
+  const msg: IMsg = { ErrNo: ErrCode.PASS };
   const UserID = param.UserID;
   const filter: IKeyVal[] = [];
   filter.push({ Key: "UserID", Val: UserID });
@@ -135,7 +136,7 @@ export const getOrder: IMyFunction<WebParams> = async (param: WebParams, conn: P
 };
 
 export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
-  let msg: IMsg = {};
+  let msg: IMsg = { ErrNo: ErrCode.PASS };
   if (param.AskID) {
     const table: NoDelete = {
       id: param.AskID as number,
@@ -162,46 +163,6 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
 };
 
 export const ModifyOrder = async (ask:AskTable, conn: PoolConnection) => {
-  let msg: IMsg = {};
-  if(ask.ProcStatus === 2 && ask.Amount && ask.AskType === 0){
-    const credit = await getUserCredit(ask.UserID, conn);
-    ask.Fee = ask.AskFee * ask.Amount;
-    ask.Credit = ask.Amount + ask.Fee;  
-    if (credit < (ask.Amount+ask.Fee)) {
-      msg.ErrNo = ErrCode.NO_CREDIT;
-      msg.ErrCon = "No credit found";
-      return;
-    }
-  }
-
-  await conn.beginTransaction();
-  const cojt = new JTable<AskTable>(conn, "AskTable");
-  if(ask.ProcStatus === 0){
-    msg = await cojt.Insert(ask);   
-  } else {
-    msg = await cojt.Update(ask);
-  }
-  if (msg.ErrNo !== 0) {
-    await conn.rollback();
-    msg.ErrNo = ErrCode.DB_QUERY_ERROR;
-    return msg;
-  }
-
-  const ts = new Date().getTime();
-  const mcAns = await ModifyCredit(UserID, Account, UpId, newOrder.Credit * -1, `${ts}ts${UserID}`, conn);
-  if (!mcAns) {
-    await conn.rollback();
-    msg.ErrNo = ErrCode.NO_CREDIT;
-    return msg;
-  } else {
-    msg.balance = mcAns.balance;
-  }
-  await conn.commit();
-  msg.data = await cojt.getOne(AskID);
-  if (wsclient.isConnected) {
-    if (msg.data) {
-      wsclient.Send(JSON.stringify(msg.data));
-    }
-  }
-  return msg;
+  const ata:ATACreator = new ATACreator(ask,conn,'AskTable');
+  return ata.doit();
 };
