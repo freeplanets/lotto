@@ -1,11 +1,10 @@
-import {PoolConnection} from "mariadb";
+import { PoolConnection } from "mariadb";
 import JTable from "../class/JTable";
+import ATACreator from "../components/ATACreator";
 import wsclient from "../components/webSC";
 import ErrCode from "../DataSchema/ErrCode";
-import { AskTable, IKeyVal, IMsg, Items, NoDelete, WebParams } from "../DataSchema/if";
-import { getUserCredit, ModifyCredit } from "../func/Credit";
+import { AskTable, IHasID, IKeyVal, IMsg, Items, NoDelete, WebParams } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
-import ATACreator from '../components/ATACreator';
 
 interface IMyFunction<T> extends GetPostFunction {
   (param: T, conn: PoolConnection): IMsg;
@@ -83,40 +82,13 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       Amount: order.Amount,
       AskFee: Item.OpenFee,
     };
-    const credit = await getUserCredit(UserID, conn);
-    if (credit > newOrder.Amount) {
-      await conn.beginTransaction();
-      newOrder.AskPrice = order.Price;
-      // newOrder.AskCredit = Amount;
-      newOrder.Fee = newOrder.AskFee * newOrder.Amount;
-      newOrder.Credit = newOrder.Amount + newOrder.Fee;
-      const cojt = new JTable<AskTable>(conn, "AskTable");
-      msg = await cojt.Insert(newOrder);
-      if (msg.ErrNo !== 0) {
-        await conn.rollback();
-        msg.ErrNo = ErrCode.DB_QUERY_ERROR;
-        return msg;
-      }
-      const AskID = msg.insertId as number;
-      const ts = new Date().getTime();
-      const mcAns = await ModifyCredit(UserID, Account, UpId, newOrder.Credit * -1, `${ts}ts${UserID}`, conn);
-      if (!mcAns) {
-        await conn.rollback();
-        msg.ErrNo = ErrCode.NO_CREDIT;
-        return msg;
-      } else {
-        msg.balance = mcAns.balance;
-      }
-      await conn.commit();
-      msg.data = await cojt.getOne(AskID);
+    msg = await ModifyOrder(newOrder, conn);
+    if (msg.ErrNo === ErrCode.PASS) {
       if (wsclient.isConnected) {
         if (msg.data) {
           wsclient.Send(JSON.stringify(msg.data));
         }
       }
-    } else {
-      msg.ErrNo = ErrCode.NO_CREDIT;
-      msg.ErrCon = "No credit found";
     }
   } else {
     msg.ErrNo = ErrCode.NO_DATA_FOUND;
@@ -142,14 +114,12 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
       id: param.AskID as number,
       ProcStatus: 3,
     };
-    const jt: JTable<NoDelete> = new JTable(conn, "AskTable");
-    msg = await jt.Update(table);
-    if (msg.ErrNo === 0) {
-      const ans = await jt.getOne(table.id);
-      if (ans) {
+    msg = await ModifyOrder(table, conn);
+    if (msg.ErrNo === ErrCode.PASS) {
+      if (msg.data) {
         if (wsclient.isConnected) {
-          console.log("Send", JSON.stringify(ans));
-          wsclient.Send(JSON.stringify(ans));
+          console.log("Send", JSON.stringify(msg.data));
+          wsclient.Send(JSON.stringify(msg.data));
         } else {
           console.log("wsclinet gone away...", wsclient.isConnected);
         }
@@ -162,7 +132,7 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
   return msg;
 };
 
-export const ModifyOrder = async (ask:AskTable, conn: PoolConnection) => {
-  const ata:ATACreator = new ATACreator(ask,conn,'AskTable');
+export const ModifyOrder = async (ask: IHasID, conn: PoolConnection) => {
+  const ata: ATACreator = new ATACreator(ask, conn, "AskTable");
   return ata.doit();
 };
