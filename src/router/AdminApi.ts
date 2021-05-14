@@ -2030,6 +2030,7 @@ app.post("/saveHashAna", async (req, res) => {
         const param = req.body;
         const jt: JTable<IHashAna> = new JTable(conn, "HashAna");
         const data: IHashAna = {
+            id: 0,
             Cond: param.Cond,
             AnaData: param.AnaData.replace(/\\"/g, '"')
         };

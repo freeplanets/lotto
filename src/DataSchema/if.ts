@@ -1,4 +1,8 @@
 import ErrorCode from "../DataSchema/ErrCode";
+export interface IHasID {
+    id: number;
+    [key: string]: any;
+}
 export interface IGameItem {
     id: string;
     name: string;
@@ -347,8 +351,7 @@ export interface IProbTable {
     ModifyID?: number;
  }
 
-export interface IDfOddsItems {
-    id?: number;
+export interface IDfOddsItems extends IHasID {
     GType: string;
     BetType: number;
     SubType: number;
@@ -356,8 +359,7 @@ export interface IDfOddsItems {
     ModifyID?: number;
 }
 
-export interface IHashAna {
-    id?: number;
+export interface IHashAna extends IHasID {
     Cond: string;
     AnaData: string;
 }
@@ -395,8 +397,7 @@ export interface CryptoOrder {
     CreateCloseTime?: number; // 平倉建單時間
     CloseTime?: number; // 平倉時間
 }
-export interface AskTable {
-    id: number;
+export interface AskTable extends IHasID {
     UserID: number;
     UpId: number;
     ItemID: number;
@@ -439,9 +440,6 @@ export interface DealTable {
     CreateCloseTime?: number; // 平倉建單時間
     CloseTime?: number; // 平倉時間
 }
-export interface IHasID {
-    id?: number;
-}
 export interface WebParams {
     sid: string;
     UserID: number;
@@ -465,7 +463,6 @@ export interface Items {
     OpMark?: number;
     IMG?: string;
 }
-export interface NoDelete {
-    id: number;
+export interface NoDelete extends IHasID {
     ProcStatus: number;
 }

@@ -1,6 +1,6 @@
 import mariadb from "mariadb";
 import ErrCode from "../DataSchema/ErrCode";
-import {IHasID, IKeyVal, IMsg} from "../DataSchema/if";
+import {IDbAns, IHasID, IKeyVal, IMsg} from "../DataSchema/if";
 import {doQuery} from "../func/db";
 import eds from "./EncDecString";
 interface ITableIndex {
@@ -25,9 +25,9 @@ interface ITBIdxes {
 const ED = new eds();
 export default class JTable<T extends IHasID> {
     private query = doQuery;
-    private extFilter = '';
+    private extFilter = "";
     constructor(private conn: mariadb.PoolConnection, private TableName: string) {}
-    set ExtFilter(f:string){
+    set ExtFilter(f: string) {
         this.extFilter = f;
     }
     public async getOne(id: number|IKeyVal): Promise<T|undefined> {
@@ -139,23 +139,25 @@ export default class JTable<T extends IHasID> {
             params.push(v[key]);
         });
         if (v.id) { params.push(v.id); }
-        let ans: IMsg = { ErrNo: ErrCode.PASS };
+        const ans: IMsg = { ErrNo: ErrCode.PASS };
         let sql = `update ${this.TableName} set ` + fields.join(",") + " where id = ?";
-        if(this.extFilter) {
+        if (this.extFilter) {
             sql = sql + this.extFilter;
         }
         // console.log("JTable Update", sql, params);
-        await this.conn.query(sql, params).then((row) => {
-            ans = row;
+        await this.conn.query(sql, params).then((row: IDbAns) => {
+            if (row.affectedRows === 0) {
+                ans.ErrNo = ErrCode.DB_QUERY_ERROR;
+                ans.ErrCon = "Update Error!!";
+                ans.debug = sql;
+            }
             // console.log("JTable Upate ans:", ans);
-            ans.ErrNo = ErrCode.PASS;
         }).catch((err) => {
             // ans = false;
             console.log("JTable Upate err:", err);
             ans.ErrNo = ErrCode.DB_QUERY_ERROR;
             ans.Error = err;
         });
-
         return ans;
     }
     public async Insert(v: T): Promise<IMsg> {

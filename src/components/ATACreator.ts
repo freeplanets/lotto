@@ -1,21 +1,25 @@
-import NewOrder from './class/NewOrder';
-import Deal from './class/Deal';
-import AskTableAccess from './class/AskTableAccess';
-import { PoolConnection } from 'mariadb';
-import { AskTable, IMsg } from '../DataSchema/if';
+import { PoolConnection } from "mariadb";
+import { IHasID, IMsg } from "../DataSchema/if";
+import AskTableAccess from "./class/AskTableAccess";
+import DealOrder from "./class/DealOrder";
+import DeleteOrder from "./class/DeleteOrder";
+import NewOrder from "./class/NewOrder";
 
 export default class ATACreator {
-  private ATA:AskTableAccess<AskTable>;
-  constructor(ask:AskTable, conn:PoolConnection, tableName:string){
-    switch(ask.ProcStatus){
-      case 2:
-        this.ATA = new Deal(ask,conn,tableName);
+  private ATA: AskTableAccess<IHasID>;
+  constructor(ask: IHasID, conn: PoolConnection, tableName: string) {
+    switch (ask.ProcStatus) {
+      case 2: // 成交後處理
+        this.ATA = new DealOrder(ask, conn, tableName);
         break;
-      default:
-        this.ATA = new NewOrder(ask,conn,tableName);
-    } 
+      case 3: // 刪除
+        this.ATA = new DeleteOrder(ask, conn, tableName);
+        break;
+      default: // 新單
+        this.ATA = new NewOrder(ask, conn, tableName);
+    }
   }
-  async doit():Promise<IMsg>{
+  public async doit(): Promise<IMsg> {
     return await this.ATA.doit();
   }
 }
