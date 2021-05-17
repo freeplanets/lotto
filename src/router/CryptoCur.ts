@@ -8,6 +8,9 @@ app.get("/test", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.f);
 });
 app.get("/Save", (req: Request, res: Response) => {
+  EA.process(req, res, ccfunc.save);
+});
+app.get("/SaveData", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.savedata);
 });
 app.get("/GetData", (req: Request, res: Response) => {

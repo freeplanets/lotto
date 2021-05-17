@@ -15,17 +15,54 @@ export const f: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConn
   conn.release();
   return msg;
 };
-export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
+export const save: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {ErrNo: 0};
+  console.log("savedata", param);
   if (param.TableName && param.TableData) {
     const jt = new JTable(conn, param.TableName);
-    if (typeof param.TableData === "string") { param.TableDatas = JSON.parse(param.TableData.replace(/\\/g, "")); }
+    if (typeof param.TableData === "string") {
+      param.TableDatas = JSON.parse(param.TableData.replace(/\\/g, ""));
+    }
     if (param.TableDatas) {
       if (Array.isArray(param.TableDatas)) {
-        console.log("saveData", param.TableDatas.length, param.TableDatas);
+        // console.log("saveData", param.TableDatas.length, param.TableDatas);
         msg = await jt.MultiInsert(param.TableDatas);
       } else {
-        console.log("saveData", param.TableDatas);
+        // console.log("saveData", param.TableDatas);
+        if (param.TableDatas.id) {
+          msg = await jt.Update(param.TableDatas);
+        } else {
+          msg = await jt.Insert(param.TableDatas);
+        }
+      }
+    }
+  } else {
+    msg.ErrNo = ErrCode.MISS_PARAMETER;
+    msg.ErrCon = "Missing Table Name!!";
+  }
+  return msg;
+};
+export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
+  let msg: IMsg = {ErrNo: 0};
+  console.log("savedata", param);
+  if (param.TableName && param.TableData) {
+    const jt = new JTable(conn, param.TableName);
+    if (typeof param.TableData === "string") {
+      param.TableDatas = JSON.parse(param.TableData.replace(/\\/g, ""));
+    }
+    if (param.TableDatas) {
+      if (Array.isArray(param.TableDatas)) {
+        // console.log("saveData", param.TableDatas.length, param.TableDatas);
+        // msg = await jt.MultiInsert(param.TableDatas);
+        param.TableDatas.forEach(async (itm) => {
+          if (itm.id) {
+            msg = await jt.Update(itm);
+          } else {
+            msg = await jt.Insert(itm);
+          }
+        });
+      } else {
+        // console.log("saveData", param.TableDatas);
         if (param.TableDatas.id) {
           msg = await jt.Update(param.TableDatas);
         } else {
