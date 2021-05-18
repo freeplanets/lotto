@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import WebSocket, { ClientOptions } from "ws";
 
 dotenv.config();
-const wsSERVER = `ws://${process.env.WS_SERVER}`;
+const wsSERVER =  process.env.WS_SERVER === "localhost:4001" ? `ws://${process.env.WS_SERVER}` : `wss://${process.env.WS_SERVER}`;
 const wsOptions: ClientOptions = {
   // localAddress: 'localhost',
 };
