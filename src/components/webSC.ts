@@ -35,7 +35,7 @@ class WsClient {
       }
   }
   private createConnection() {
-    console.log("create connection!!");
+    console.log("create connection!!", wsSERVER);
     this.ws = new WebSocket(this.url, this.opts);
     this.ws.on("error", (data) => {
       console.log("error:", data);
