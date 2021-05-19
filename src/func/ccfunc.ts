@@ -3,7 +3,7 @@ import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
 import wsclient from "../components/webSC";
 import ErrCode from "../DataSchema/ErrCode";
-import { AskTable, IHasID, IKeyVal, IMsg, Items, NoDelete, WebParams } from "../DataSchema/if";
+import { AskTable, HasUID, IKeyVal, IMsg, Items, NoDelete, WebParams } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
 
 interface IMyFunction<T> extends GetPostFunction {
@@ -118,6 +118,8 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       BuyType: order.BuyType,
       Amount: order.Amount,
       AskFee: Item.OpenFee,
+      Price:0,
+      Qty:0,
     };
     msg = await ModifyOrder(newOrder, conn);
     if (msg.ErrNo === ErrCode.PASS) {
@@ -135,7 +137,6 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
 };
 
 export const getOrder: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
-  const msg: IMsg = { ErrNo: ErrCode.PASS };
   const UserID = param.UserID;
   const filter: IKeyVal[] = [];
   filter.push({ Key: "UserID", Val: UserID });
@@ -149,6 +150,7 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
   if (param.AskID) {
     const table: NoDelete = {
       id: param.AskID as number,
+      UserID: param.UserID,
       ProcStatus: 3,
     };
     msg = await ModifyOrder(table, conn);
@@ -169,7 +171,7 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
   return msg;
 };
 
-export const ModifyOrder = async (ask: IHasID, conn: PoolConnection) => {
+export const ModifyOrder = async (ask: HasUID, conn: PoolConnection) => {
   const ata: ATACreator = new ATACreator(ask, conn, "AskTable");
   return ata.doit();
 };

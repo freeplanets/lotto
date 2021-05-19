@@ -6,7 +6,7 @@ const wsSERVER =  process.env.WS_SERVER === "localhost:4001" ? `ws://${process.e
 const wsOptions: ClientOptions = {
   // localAddress: 'localhost',
 };
-
+const ChannelName = 'AskCreator';
 class WsClient {
   get isConnected() {
     if (!this.ws) { return false; }
@@ -47,7 +47,7 @@ class WsClient {
       console.log("WS connected:", data);
       console.log("status", this.ws.readyState, this.ws.OPEN);
       this.Send("First Message");
-      this.registerChannel("AskCreator");
+      this.registerChannel(ChannelName);
     });
     this.ws.on("message", (data) => {
       console.log("message from WS:", data);

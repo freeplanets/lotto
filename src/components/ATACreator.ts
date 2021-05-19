@@ -1,13 +1,13 @@
 import { PoolConnection } from "mariadb";
-import { IHasID, IMsg } from "../DataSchema/if";
+import { HasUID, IMsg } from "../DataSchema/if";
 import AskTableAccess from "./class/AskTableAccess";
 import DealOrder from "./class/DealOrder";
 import DeleteOrder from "./class/DeleteOrder";
 import NewOrder from "./class/NewOrder";
 
 export default class ATACreator {
-  private ATA: AskTableAccess<IHasID>;
-  constructor(ask: IHasID, conn: PoolConnection, tableName: string) {
+  private ATA: AskTableAccess<HasUID>;
+  constructor(ask: HasUID, conn: PoolConnection, tableName: string) {
     switch (ask.ProcStatus) {
       case 2: // 成交後處理
         this.ATA = new DealOrder(ask, conn, tableName);

@@ -3,6 +3,9 @@ export interface IHasID {
     id: number;
     [key: string]: any;
 }
+export interface HasUID extends IHasID {
+    UserID: number;
+}
 export interface IGameItem {
     id: string;
     name: string;
@@ -364,13 +367,87 @@ export interface IHashAna extends IHasID {
     AnaData: string;
 }
 // 下單資料
-export interface Order {
-    id: number;
-    Price: number;
-    AskType: number; // 0 市價, 1 限價
-    BuyType: number; // 0 買, 1 賣
+// 下單資料
+export interface Order extends IHasID {
+    Price:number;
+    AskType:number; // 0 市價, 1 限價
+    BuyType:number; // 0 買, 1 賣
+    Qty:number;
+    Amount:number;
+    Lever?:number;
+    LongT?:number;
+    ShortT?:number;
+}
+export interface AskTable extends HasUID {
+    UpId: number;
+    ItemID: number;
+    Code: string;
+    AskType:number; // 0 市價, 1 限價
+    BuyType:number; // 0 買, 1 賣
+    Amount: number; // USDT金額
+    Price:number;
+    Qty:number;
+    Fee?: number; // 手續費
+    AskFee: number; // 手續費率
+    AskPrice?: number; // 下單價格
+    LeverCredit?: number; // 下單時暫扣的信用額度
+    ExtCredit?: number; // 下單後變動的信用額度,只能增加
+    Lever?:number;
+    LongT?:number;
+    ShortT?:number;
+    ProcStatus?: number;  // 0 等待處理 1 處理中 2 成交 3 取消
+    CreateTime?: number; // 建單時間
+    DealTime?: number; // 成交時間
+    ModifyTime?: number; // 修改時間
+    SetID?: number; // 平倉對象ID
+}
+export interface LeverTable extends HasUID {
+    ItemID: number;
+    Code: string;
+    BuyID: number;  // 買進時 AskTable id
+    SellID: number;  // 賣出進時 AskTable id
+    Qty:number;
+    BuyAmount?: number; // USDT金額
+    SellAmount?:number;
+    BuyPrice?: number; // 建倉價格
+    SellPrice?: number;
+    ProcessStatus?: number;  // 0 等待處理 1 處理中
+    BuyTime?: number; // 買進時間
+    SellTime?: number; // 賣出時間
+}
+export interface TotalLedger extends HasUID {
+    ItemID: number;
     Qty: number;
-    Amount: number;
+}
+export interface Ledger extends TotalLedger {
+    AskID: number;
+    CreateTime:number;
+}
+export interface WebParams {
+    sid: string;
+    UserID: number;
+    Account?: string;
+    UpId?: number;
+    TableName?: string;
+    TableData?: string;
+    TableDatas?: IHasID | IHasID[];
+    order?: Order;
+    [key: string]: number|string|boolean|IHasID|IHasID[]|Order|undefined;
+}
+export interface Items {
+    id: number;
+    Title?: string;
+    Code: string;
+    OpenFee: number;
+    CloseFee: number;
+    LoanFee: number;
+    BattleFee: number;
+    BattleLoanFee: number;
+    OpMark?: number;
+    IMG?: string;
+}
+export interface NoDelete extends HasUID {
+    ProcStatus: number;
 }
 export interface CryptoOrder {
     id: number;
@@ -396,73 +473,4 @@ export interface CryptoOrder {
     OpenTime?: number; // 新倉時間
     CreateCloseTime?: number; // 平倉建單時間
     CloseTime?: number; // 平倉時間
-}
-export interface AskTable extends IHasID {
-    UserID: number;
-    UpId: number;
-    ItemID: number;
-    Code: string;
-    AskType: number; // 0 市價, 1 限價
-    BuyType: number; // 0 買(多)單, 1 賣(空)單
-    Qty?: number;
-    Price?: number; // 建倉價格
-    Amount: number; // USDT金額
-    Fee?: number; // 手續費
-    AskFee: number; // 手續費率
-    AskPrice?: number; // 下單價格
-    AskCredit?: number; // 下單時暫扣的信用額度
-    Credit?: number; // 信用額度
-    ProcStatus?: number;  // 0 等待處理 1 處理中 2 成交 3 取消
-    CreateTime?: number; // 建單時間
-    DealTime?: number; // 成交時間
-    ModifyTime?: number; // 修改時間
-    SetID?: number; // 平倉對象ID
-}
-export interface DealTable {
-    id: number;
-    UserID: number;
-    ItemID: number;
-    Code: string;
-    Type: number;
-    BuyType: number;
-    Amount?: number; // USDT金額
-    OpenPrice?: number; // 建倉價格
-    OpenFee?: number;
-    ClosePrice?: number; // 平倉價格
-    CloseFee?: number;
-    CloseType?: number; // 平倉種類 0 市價, 1限價
-
-    OpenCredit?: number; // 開倉信用額度
-    CloseCredit?: number; // 平倉信用額度
-    ProcessStatus?: number;  // 0 等待處理 1 處理中
-    CreateTime?: number; // 建單時間
-    OpenTime?: number; // 新倉時間
-    CreateCloseTime?: number; // 平倉建單時間
-    CloseTime?: number; // 平倉時間
-}
-export interface WebParams {
-    sid: string;
-    UserID: number;
-    Account?: string;
-    UpId?: number;
-    TableName?: string;
-    TableData?: string;
-    TableDatas?: IHasID | IHasID[];
-    order?: Order;
-    [key: string]: number|string|boolean|IHasID|IHasID[]|Order|undefined;
-}
-export interface Items {
-    id: number;
-    Title?: string;
-    Code: string;
-    OpenFee: number;
-    CloseFee: number;
-    LoanFee: number;
-    BattleFee: number;
-    BattleLoanFee: number;
-    OpMark?: number;
-    IMG?: string;
-}
-export interface NoDelete extends IHasID {
-    ProcStatus: number;
 }
