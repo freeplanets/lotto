@@ -19,6 +19,9 @@ export default class ATACreator {
         this.ATA = new NewOrder(ask, conn, tableName);
     }
   }
+  public getATA() {
+    return this.ATA;
+  }
   public async doit(): Promise<IMsg> {
     return await this.ATA.doit();
   }

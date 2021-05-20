@@ -4,9 +4,9 @@ import AskTableAccess from "./AskTableAccess";
 
 export default class DeleteOrder extends AskTableAccess<HasUID> {
   public async doit(): Promise<IMsg> {
-    let msg:IMsg={ ErrNo: ErrCode.PASS };
+    let msg: IMsg = { ErrNo: ErrCode.PASS };
     const ans = await this.tb.getOne(this.ask.id);
-    if(ans) {
+    if (ans) {
       this.conn.beginTransaction();
       const ask = ans as AskTable;
       const credit = ask.Amount + ( ask.Fee ? ask.Fee : 0 );
@@ -18,8 +18,8 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
       this.tb.ExtFilter = " ProcStatus = 0 ";
       msg = await this.tb.Update(this.ask);
       if (msg.ErrNo === ErrCode.PASS) {
-        const ans = await this.tb.getOne(this.ask.id);
-        if (ans) { msg.data = ans; }
+        const ansAsk = await this.tb.getOne(this.ask.id);
+        if (ansAsk) { msg.data = ansAsk; }
       } else {
         await this.conn.rollback();
         return msg;

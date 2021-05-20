@@ -369,46 +369,47 @@ export interface IHashAna extends IHasID {
 // 下單資料
 // 下單資料
 export interface Order extends IHasID {
-    Price:number;
-    AskType:number; // 0 市價, 1 限價
-    BuyType:number; // 0 買, 1 賣
-    Qty:number;
-    Amount:number;
-    Lever?:number;
-    LongT?:number;
-    ShortT?:number;
+    Price: number;
+    AskType: number; // 0 市價, 1 限價
+    BuyType: number; // 0 買, 1 賣
+    Qty: number;
+    Amount: number;
+    Lever?: number;
+    LongT?: number;
+    ShortT?: number;
 }
 export interface AskTable extends HasUID {
     UpId: number;
     ItemID: number;
     Code: string;
-    AskType:number; // 0 市價, 1 限價
-    BuyType:number; // 0 買, 1 賣
+    AskType: number; // 0 市價, 1 限價
+    BuyType: number; // 0 買, 1 賣
     Amount: number; // USDT金額
-    Price:number;
-    Qty:number;
+    Price: number;
+    Qty: number;
     Fee?: number; // 手續費
     AskFee: number; // 手續費率
     AskPrice?: number; // 下單價格
     LeverCredit?: number; // 下單時暫扣的信用額度
     ExtCredit?: number; // 下單後變動的信用額度,只能增加
-    Lever?:number;
-    LongT?:number;
-    ShortT?:number;
+    Lever?: number;
+    LongT?: number;
+    ShortT?: number;
     ProcStatus?: number;  // 0 等待處理 1 處理中 2 成交 3 取消
     CreateTime?: number; // 建單時間
     DealTime?: number; // 成交時間
     ModifyTime?: number; // 修改時間
-    SetID?: number; // 平倉對象ID
+    SetID?: number; // 平倉對象ID -> System下單
+    USetID?: number; // 平倉對象ID -> 會員下單
 }
 export interface LeverTable extends HasUID {
     ItemID: number;
     Code: string;
     BuyID: number;  // 買進時 AskTable id
     SellID: number;  // 賣出進時 AskTable id
-    Qty:number;
+    Qty: number;
     BuyAmount?: number; // USDT金額
-    SellAmount?:number;
+    SellAmount?: number;
     BuyPrice?: number; // 建倉價格
     SellPrice?: number;
     ProcessStatus?: number;  // 0 等待處理 1 處理中
@@ -421,7 +422,7 @@ export interface TotalLedger extends HasUID {
 }
 export interface Ledger extends TotalLedger {
     AskID: number;
-    CreateTime:number;
+    CreateTime: number;
 }
 export interface WebParams {
     sid: string;
@@ -441,9 +442,9 @@ export interface Items {
     OpenFee: number;
     CloseFee: number;
     LoanFee: number;
-    BattleFee: number;
-    BattleLoanFee: number;
-    OpMark?: number;
+    StopGain: number;
+    StopLose: number;
+    Type?: number;
     IMG?: string;
 }
 export interface NoDelete extends HasUID {

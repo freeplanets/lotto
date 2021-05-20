@@ -118,8 +118,8 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       BuyType: order.BuyType,
       Amount: order.Amount,
       AskFee: Item.OpenFee,
-      Price:0,
-      Qty:0,
+      Price: 0,
+      Qty: 0,
     };
     msg = await ModifyOrder(newOrder, conn);
     if (msg.ErrNo === ErrCode.PASS) {

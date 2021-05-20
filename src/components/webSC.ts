@@ -1,12 +1,17 @@
 import dotenv from "dotenv";
 import WebSocket, { ClientOptions } from "ws";
+import { AskTable, IMsg } from "../DataSchema/if";
+import ATAFactor from "./ATAFactor";
 
 dotenv.config();
+
+const ATAF = new ATAFactor();
+
 const wsSERVER =  process.env.WS_SERVER === "localhost:4001" ? `ws://${process.env.WS_SERVER}` : `wss://${process.env.WS_SERVER}`;
 const wsOptions: ClientOptions = {
   // localAddress: 'localhost',
 };
-const ChannelName = 'AskCreator';
+const ChannelName = "AskCreator";
 class WsClient {
   get isConnected() {
     if (!this.ws) { return false; }
@@ -49,8 +54,16 @@ class WsClient {
       this.Send("First Message");
       this.registerChannel(ChannelName);
     });
-    this.ws.on("message", (data) => {
+    this.ws.on("message", async (data) => {
       console.log("message from WS:", data);
+      try {
+        const ask: AskTable = JSON.parse(data as string);
+        const Askman = await ATAF.getATA(ask);
+        const msg = await Askman.doit();
+        if (msg.data) { this.ws.send(JSON.stringify(msg.data)); }
+      } catch (error) {
+        console.log("message json parse error:", data, error);
+      }
     });
     // ws.on("ping", this.heartbeat);
     // ws.on("pong", this.heartbeat);

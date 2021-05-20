@@ -1,6 +1,6 @@
 import { PoolConnection } from "mariadb";
 import ErrCode from "../../DataSchema/ErrCode";
-import { AskTable, IMsg, HasUID } from "../../DataSchema/if";
+import { AskTable, HasUID, IDbAns, IMsg } from "../../DataSchema/if";
 import AskTableAccess from "./AskTableAccess";
 
 export default class DealOrder extends AskTableAccess<HasUID> {
@@ -33,7 +33,28 @@ export default class DealOrder extends AskTableAccess<HasUID> {
         return msg;
       }
     }
+    if (ask.Lever && !ask.SetID && !ask.USetID ) {
+      msg = await this.CreateSettleAsk(ask);
+      if (msg.ErrNo !== ErrCode.PASS) {
+        await this.conn.rollback();
+        msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+        return msg;
+      }
+    }
     await this.conn.commit();
+    return msg;
+  }
+  private async CreateSettleAsk(ask: AskTable): Promise<IMsg> {
+    ask.AskPrice = 0,
+    ask.Price = 0,
+    ask.BuyType = 1;
+    ask.SetID = ask.id;
+    const msg = await this.tb.Insert(ask);
+    const ans = msg as IDbAns;
+    if (ans.insertId) {
+      const tmp = await this.tb.getOne(ans.insertId);
+      if (tmp) { msg.data = tmp; }
+    }
     return msg;
   }
 }
