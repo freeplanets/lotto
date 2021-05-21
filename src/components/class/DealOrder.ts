@@ -2,6 +2,7 @@ import { PoolConnection } from "mariadb";
 import ErrCode from "../../DataSchema/ErrCode";
 import { AskTable, HasUID, IDbAns, IMsg } from "../../DataSchema/if";
 import AskTableAccess from "./AskTableAccess";
+import LedgerFactor from "../LedgerFactor";
 
 export default class DealOrder extends AskTableAccess<HasUID> {
   constructor(ask: HasUID, conn: PoolConnection, tableName: string) {
@@ -10,7 +11,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
   public async doit(): Promise<IMsg> {
     let msg: IMsg = { ErrNo: ErrCode.PASS };
     const ask: AskTable = this.ask as AskTable;
-    if (ask.Amount === 0 ) {
+    if (ask.Amount === 0 && ask.BuyType ===0 ) {
       msg.ErrNo = ErrCode.MISS_PARAMETER;
       msg.ErrCon = "Amount=0";
       return msg;
@@ -41,8 +42,17 @@ export default class DealOrder extends AskTableAccess<HasUID> {
         return msg;
       }
     }
+    msg = await this.AddToLedger(ask);
+    if(msg.ErrNo !== ErrCode.PASS) {
+      await this.conn.rollback();
+      return msg;
+    }
     await this.conn.commit();
     return msg;
+  }
+  private async AddToLedger(ask:AskTable) {
+    const ledgerF:LedgerFactor = new LedgerFactor(ask,this.conn);
+     return await ledgerF.AddToLedger();
   }
   private async CreateSettleAsk(ask: AskTable): Promise<IMsg> {
     ask.AskPrice = 0,

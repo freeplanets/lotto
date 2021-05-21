@@ -3,7 +3,7 @@ import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
 import wsclient from "../components/webSC";
 import ErrCode from "../DataSchema/ErrCode";
-import { AskTable, HasUID, IKeyVal, IMsg, Items, NoDelete, WebParams } from "../DataSchema/if";
+import { AskTable, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
 
 interface IMyFunction<T> extends GetPostFunction {
@@ -92,7 +92,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
   let msg: IMsg = {};
   const UserID = param.UserID;
   const UpId = param.UpId as number;
-  const Account = param.Account as string;
+  // const Account = param.Account as string;
   // const sid = param.sid;
   if (!param.order) {
     msg.ErrNo = ErrCode.MISS_PARAMETER;
@@ -113,6 +113,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       UserID,
       UpId,
       ItemID: Item.id,
+      ItemType: Item.Type,
       Code: Item.Code,
       AskType: order.AskType,
       BuyType: order.BuyType,
@@ -121,6 +122,15 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       Price: 0,
       Qty: 0,
     };
+    if (order.Lever) {
+      const lvr = new JTable<Lever>(conn, "Lever");
+      const lvAns = await lvr.getOne(order.Lever);
+      if (lvAns) {
+        newOrder.AskFee = newOrder.ItemType === 1 ? lvAns.LongT : lvAns.ShortT;
+        newOrder.StopGain = Item.StopGain;
+        newOrder.StopLose = Item.StopLose;
+      }
+    }
     msg = await ModifyOrder(newOrder, conn);
     if (msg.ErrNo === ErrCode.PASS) {
       if (wsclient.isConnected) {

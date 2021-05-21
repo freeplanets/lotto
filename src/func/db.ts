@@ -1,5 +1,8 @@
 import dotenv from "dotenv";
 import mariadb, { PoolConnection } from "mariadb";
+import { IMsg, IDbAns } from '../DataSchema/if';
+import ErrCode from '../DataSchema/ErrCode';
+
 dotenv.config();
 // console.log("dotenv:", process.env);
 export const port = process.env.SERVER_PORT;  // default port to listen
@@ -89,7 +92,7 @@ export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): 
         query = conn.query(sql, params);
     } else {
         query = conn.query(sql);
-    }
+    }    
     // console.log("doQuery:", sql, params);
     return new Promise((resolve, reject) => {
         query.then((res) => {
@@ -101,6 +104,27 @@ export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): 
                 console.log(key, ">", err[key]);
             });
             resolve(false);
+        });
+    });
+}
+export function Query(sql: string, conn: PoolConnection, params?: IAxParams): Promise<IMsg> {
+    const msg:IMsg = { ErrNo: ErrCode.PASS };
+    // console.log("doQuery:", sql, params);
+    return new Promise((resolve) => {
+        conn.query(sql, params).then((res:IDbAns) => {
+            if(res.affectedRows > 0) resolve(msg);
+            msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+            msg.dbans = res;
+            resolve(msg);
+        }).catch((err) => {
+            // console.log("doQuery", sql, params, err);
+            // console.log("doQuery:", err, "SQL:", sql, "params:", params, "\nErrNo:", err.errno);
+            Object.keys(err).map((key) => {
+                console.log(key, ">", err[key]);
+            });
+            msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+            msg.error = err;
+            resolve(msg);
         });
     });
 }

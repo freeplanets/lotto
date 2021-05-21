@@ -375,12 +375,17 @@ export interface Order extends IHasID {
     Qty: number;
     Amount: number;
     Lever?: number;
-    LongT?: number;
-    ShortT?: number;
+}
+export interface Lever extends IHasID {
+    Multiples: number;
+    LongT: number;
+    ShortT: number;
+    ModifyID: number;
 }
 export interface AskTable extends HasUID {
     UpId: number;
     ItemID: number;
+    ItemType: number;
     Code: string;
     AskType: number; // 0 市價, 1 限價
     BuyType: number; // 0 買, 1 賣
@@ -393,8 +398,8 @@ export interface AskTable extends HasUID {
     LeverCredit?: number; // 下單時暫扣的信用額度
     ExtCredit?: number; // 下單後變動的信用額度,只能增加
     Lever?: number;
-    LongT?: number;
-    ShortT?: number;
+    StopGain?: number;
+    StopLose?: number;
     ProcStatus?: number;  // 0 等待處理 1 處理中 2 成交 3 取消
     CreateTime?: number; // 建單時間
     DealTime?: number; // 成交時間
@@ -402,28 +407,20 @@ export interface AskTable extends HasUID {
     SetID?: number; // 平倉對象ID -> System下單
     USetID?: number; // 平倉對象ID -> 會員下單
 }
-export interface LeverTable extends HasUID {
+export interface LedgerLever extends HasUID {
     ItemID: number;
-    Code: string;
+    ItemType: number;
     BuyID: number;  // 買進時 AskTable id
-    SellID: number;  // 賣出進時 AskTable id
+    SellID?: number;  // 賣出進時 AskTable id
     Qty: number;
-    BuyAmount?: number; // USDT金額
-    SellAmount?: number;
-    BuyPrice?: number; // 建倉價格
+    BuyPrice: number; // 建倉價格
     SellPrice?: number;
-    ProcessStatus?: number;  // 0 等待處理 1 處理中
-    BuyTime?: number; // 買進時間
+    GainLose?: number; // 輸贏
+    Lever: number;  // 槓桿
+    BuyTime: number; // 買進時間
     SellTime?: number; // 賣出時間
 }
-export interface TotalLedger extends HasUID {
-    ItemID: number;
-    Qty: number;
-}
-export interface Ledger extends TotalLedger {
-    AskID: number;
-    CreateTime: number;
-}
+
 export interface WebParams {
     sid: string;
     UserID: number;
@@ -444,7 +441,7 @@ export interface Items {
     LoanFee: number;
     StopGain: number;
     StopLose: number;
-    Type?: number;
+    Type: number;
     IMG?: string;
 }
 export interface NoDelete extends HasUID {
@@ -474,4 +471,13 @@ export interface CryptoOrder {
     OpenTime?: number; // 新倉時間
     CreateCloseTime?: number; // 平倉建單時間
     CloseTime?: number; // 平倉時間
+}
+
+export interface LedgerTotal extends HasUID {
+    ItemID: number;
+    Qty: number;
+}
+export interface Ledger extends LedgerTotal {
+    AskID: number;
+    CreateTime?: number;
 }
