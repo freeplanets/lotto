@@ -1,4 +1,19 @@
 import ErrorCode from "../DataSchema/ErrCode";
+
+export enum FuncKey {
+    SET_CHANNEL = "SetChannel",
+}
+export interface WsMsg {
+    Func?: FuncKey;
+    Asks?: AskTable | AskTable[];
+    Ask?: AskTable;
+    AskToClient?: AskTable;
+    Balance?: number;
+    Message?: string;
+    ChannelName?: string;
+    UserID?: number;
+    [key: string]: any;
+}
 export interface IHasID {
     id: number;
     [key: string]: any;
@@ -20,6 +35,7 @@ export interface IBTItem {
 export interface IMsg {
     ErrNo?: ErrorCode;
     data?: object[]|object;
+    NewAsk?: object[]|object;   // 系統產生之新單 槓桿用
     debug?: string;
     ErrCon?: string;
     [key: string]: any;

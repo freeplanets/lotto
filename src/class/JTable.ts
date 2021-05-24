@@ -45,7 +45,7 @@ export default class JTable<T extends IHasID> {
         }
         const sql = `select * from ${this.TableName} where ${field.join(" and ")}`;
         let mb: T | undefined;
-        // console.log("getone", sql, param);
+        // console.log("getone debug:", sql, param);
         const ans = await this.query(sql, this.conn, param);
         /*
         await this.conn.query(sql).then((row) => {
@@ -135,21 +135,29 @@ export default class JTable<T extends IHasID> {
                 }
                 return;
             }
+            if (!v[key]) { return; }
             fields.push( key + "=?");
             params.push(v[key]);
         });
-        if (v.id) { params.push(v.id); }
+        if (v.id) {
+            params.push(v.id);
+            console.log("update: do push id");
+        } else {
+            console.log("update: no id found!");
+        }
         const ans: IMsg = { ErrNo: ErrCode.PASS };
         let sql = `update ${this.TableName} set ` + fields.join(",") + " where id = ?";
         if (this.extFilter) {
-            sql = sql + this.extFilter;
+            sql = `${sql} and ${this.extFilter}`;
+            // console.log("Update with extFilter:", sql, params);
         }
         // console.log("JTable Update", sql, params);
         await this.conn.query(sql, params).then((row: IDbAns) => {
             if (row.affectedRows === 0) {
                 ans.ErrNo = ErrCode.DB_QUERY_ERROR;
                 ans.ErrCon = "Update Error!!";
-                ans.debug = sql;
+                // ans.debug = sql;
+                // ans.debugParam = params;
             }
             // console.log("JTable Upate ans:", ans);
         }).catch((err) => {
@@ -157,6 +165,7 @@ export default class JTable<T extends IHasID> {
             console.log("JTable Upate err:", err);
             ans.ErrNo = ErrCode.DB_QUERY_ERROR;
             ans.Error = err;
+            ans.debug = sql;
         });
         return ans;
     }

@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import WebSocket, { ClientOptions } from "ws";
-import { AskTable, IMsg } from "../DataSchema/if";
+import { AskTable, FuncKey, WsMsg } from "../DataSchema/if";
 import ATAFactor from "./ATAFactor";
 
 dotenv.config();
@@ -24,10 +24,23 @@ class WsClient {
     // this.ws = this.createConnection();
     this.createConnection();
   }
-  public Send(msg: string) {
-    if (this.ws.readyState === this.ws.OPEN) {
+  public SendMessage(msg: string) {
+    if (this.ws.readyState === WebSocket.OPEN) {
       console.log("Send Mesage to Server:", msg);
-      this.ws.send(msg);
+      const wsmsg: WsMsg = {
+        Message: msg,
+      };
+      this.ws.send(JSON.stringify(wsmsg));
+    }
+  }
+  public Send(msg: AskTable) {
+    if (this.ws.readyState === WebSocket.OPEN) {
+      console.log("Send Mesage to Server:", msg);
+      // this.ws.send(msg);
+      const wsmsg: WsMsg = {
+        Ask: msg
+      };
+      this.ws.send(JSON.stringify(wsmsg));
     }
   }
   public Close() {
@@ -51,16 +64,31 @@ class WsClient {
     this.ws.on("open", (data) => {
       console.log("WS connected:", data);
       console.log("status", this.ws.readyState, this.ws.OPEN);
-      this.Send("First Message");
+      this.SendMessage("First Message");
       this.registerChannel(ChannelName);
     });
     this.ws.on("message", async (data) => {
       console.log("message from WS:", data);
       try {
-        const ask: AskTable = JSON.parse(data as string);
-        const Askman = await ATAF.getATA(ask);
-        const msg = await Askman.doit();
-        if (msg.data) { this.ws.send(JSON.stringify(msg.data)); }
+        const wsmsg: WsMsg = JSON.parse(data as string);
+        if (wsmsg.Ask) {
+          // const ask: AskTable = JSON.parse(data as string);
+          const ask = wsmsg.Ask;
+          const Askman = await ATAF.getATA(ask);
+          const msg = await Askman.doit();
+          // console.log("after doit:", msg);
+          if (msg.data) {
+            if ( this.ws.readyState === WebSocket.OPEN ) {
+              console.log("Send msg to WS");
+              this.ws.send(JSON.stringify(msg.data));
+            } else {
+              console.log(`WS Server error, code:${this.ws.readyState}, try build store mesage function later!`);
+            }
+          }
+        }
+        if (wsmsg.Message) {
+          console.log("Message from server:", wsmsg.Message);
+        }
       } catch (error) {
         console.log("message json parse error:", data, error);
       }
@@ -85,7 +113,12 @@ class WsClient {
   private registerChannel(channel: string) {
     if (this.ws.readyState === this.ws.OPEN) {
       console.log("Register Channel to Server:", channel);
-      this.ws.send(`SetChannel:${channel}`);
+      const msg: WsMsg = {
+        Func: FuncKey.SET_CHANNEL,
+        ChannelName: channel,
+      };
+      // this.ws.send(`SetChannel:${channel}`);
+      this.ws.send(JSON.stringify(msg));
     }
   }
 }

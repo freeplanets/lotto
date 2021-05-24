@@ -118,15 +118,21 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       AskType: order.AskType,
       BuyType: order.BuyType,
       Amount: order.Amount,
-      AskFee: Item.OpenFee,
+      AskFee: 0,
       Price: 0,
       Qty: 0,
     };
+    if (order.BuyType === 0) {
+      newOrder.AskFee = Item.Type === 1 ? Item.OpenFee : Item.CloseFee;
+    }
     if (order.Lever) {
+      newOrder.Lever = order.Lever;
       const lvr = new JTable<Lever>(conn, "Lever");
       const lvAns = await lvr.getOne(order.Lever);
       if (lvAns) {
-        newOrder.AskFee = newOrder.ItemType === 1 ? lvAns.LongT : lvAns.ShortT;
+        if (newOrder.BuyType === 0) {
+          newOrder.AskFee = newOrder.ItemType === 1 ? lvAns.LongT : lvAns.ShortT;
+        }
         newOrder.StopGain = Item.StopGain;
         newOrder.StopLose = Item.StopLose;
       }
@@ -135,7 +141,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     if (msg.ErrNo === ErrCode.PASS) {
       if (wsclient.isConnected) {
         if (msg.data) {
-          wsclient.Send(JSON.stringify(msg.data));
+          wsclient.Send(msg.data as AskTable);
         }
       }
     }
@@ -168,7 +174,7 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
       if (msg.data) {
         if (wsclient.isConnected) {
           console.log("Send", JSON.stringify(msg.data));
-          wsclient.Send(JSON.stringify(msg.data));
+          wsclient.Send(msg.data as AskTable);
         } else {
           console.log("wsclinet gone away...", wsclient.isConnected);
         }
