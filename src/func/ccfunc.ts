@@ -1,6 +1,7 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
+import UserInfoCrypto from "../components/class/UserInfoCrypto";
 import wsclient from "../components/webSC";
 import ErrCode from "../DataSchema/ErrCode";
 import { AskTable, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams } from "../DataSchema/if";
@@ -156,7 +157,7 @@ export const getOrder: IMyFunction<WebParams> = async (param: WebParams, conn: P
   const UserID = param.UserID;
   const filter: IKeyVal[] = [];
   filter.push({ Key: "UserID", Val: UserID });
-  filter.push({ Key: "ProcStatus", Val: 2, Cond: "<="});
+  filter.push({ Key: "ProcStatus", Val: 2, Cond: "<"});
   const jt: JTable<AskTable> = new JTable(conn, "AskTable");
   return await jt.Lists(filter);
 };
@@ -186,7 +187,16 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
   }
   return msg;
 };
-
+export const getLedgerInfo: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
+  const UserID = param.UserID;
+  const uic: UserInfoCrypto = new UserInfoCrypto(UserID, conn);
+  return uic.getLedger();
+};
+export const getLedgerLeverInfo: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
+  const UserID = param.UserID;
+  const uic: UserInfoCrypto = new UserInfoCrypto(UserID, conn);
+  return uic.getLedgerLever();
+};
 export const ModifyOrder = async (ask: HasUID, conn: PoolConnection) => {
   const ata: ATACreator = new ATACreator(ask, conn, "AskTable");
   return ata.doit();

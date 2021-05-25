@@ -26,7 +26,7 @@ class WsClient {
   }
   public SendMessage(msg: string) {
     if (this.ws.readyState === WebSocket.OPEN) {
-      console.log("Send Mesage to Server:", msg);
+      // console.log("Send Mesage to Server:", msg);
       const wsmsg: WsMsg = {
         Message: msg,
       };
@@ -35,7 +35,7 @@ class WsClient {
   }
   public Send(msg: AskTable) {
     if (this.ws.readyState === WebSocket.OPEN) {
-      console.log("Send Mesage to Server:", msg);
+      // onsole.log("Send Mesage to Server:", msg);
       // this.ws.send(msg);
       const wsmsg: WsMsg = {
         Ask: msg

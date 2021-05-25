@@ -203,7 +203,7 @@ async function CreditAC(params, res: Response, ac: number) {
         msg.data = data;
     }
     conn.release();
-    console.log("CreditAC ModifyCredit:", msg);
+    // console.log("CreditAC ModifyCredit:", msg);
     res.send(JSON.stringify(msg));
 }
 async function getAgent(id: string, conn: Connection) {

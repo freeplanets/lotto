@@ -141,9 +141,6 @@ export default class JTable<T extends IHasID> {
         });
         if (v.id) {
             params.push(v.id);
-            console.log("update: do push id");
-        } else {
-            console.log("update: no id found!");
         }
         const ans: IMsg = { ErrNo: ErrCode.PASS };
         let sql = `update ${this.TableName} set ` + fields.join(",") + " where id = ?";

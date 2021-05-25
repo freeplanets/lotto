@@ -54,7 +54,7 @@ export default class CreditAccess {
       let balance = msg.balance as number;
       balance = balance + money;
       if (balance < 0) {
-        console.log("ModifyCredit chk balanace:", balance, "Money:", money);
+        // console.log("ModifyCredit chk balanace:", balance, "Money:", money);
         msg.ErrNo = ErrCode.NO_CREDIT;
         msg.ErrCon = "Insufficient credit.";
         return msg;
@@ -63,7 +63,7 @@ export default class CreditAccess {
       const sql = `insert into UserCredit(uid,idenkey,DepWD,Balance) values(?,?,?,?)`;
       const param = [this.UserID, idenkey, money, balance];
       const dbans: IDbAns = await this.conn.query(sql, param);
-      console.log("ModifyCredit:", sql, dbans);
+      // console.log("ModifyCredit:", sql, dbans);
       if (dbans.affectedRows > 0) {
         // return true;
         const bans =  await this.ModifyUserCredit(balance);

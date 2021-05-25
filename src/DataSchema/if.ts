@@ -2,6 +2,7 @@ import ErrorCode from "../DataSchema/ErrCode";
 
 export enum FuncKey {
     SET_CHANNEL = "SetChannel",
+    CLIENT_INFO = "ClientInfo"
 }
 export interface WsMsg {
     Func?: FuncKey;

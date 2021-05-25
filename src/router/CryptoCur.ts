@@ -22,4 +22,10 @@ app.post("/SendOrder", (req: Request, res: Response) => {
 app.get("/GetOrder", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.getOrder);
 });
+app.get("/GetLedgerInfo", (req: Request, res: Response) => {
+  EA.process(req, res, ccfunc.getLedgerInfo);
+});
+app.get("/GetLedgerLever", (req: Request, res: Response) => {
+  EA.process(req, res, ccfunc.getLedgerLeverInfo);
+});
 export default app;
