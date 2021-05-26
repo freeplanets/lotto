@@ -27,7 +27,7 @@ export default class ATACreator {
     return this.ATA;
   }
   public async doit(): Promise<IMsg> {
-    const msg: IMsg = this.ATA.doit();
+    const msg: IMsg = await this.ATA.doit();
     msg.checkName = this.checkName;
     return msg;
   }

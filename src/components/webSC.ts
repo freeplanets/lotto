@@ -78,9 +78,15 @@ class WsClient {
           const msg = await Askman.doit();
           // console.log("after doit:", msg);
           if (msg.data) {
+            const newWsmsg: WsMsg = {};
+            if (Array.isArray(msg.data)) {
+              newWsmsg.Asks = msg.data as AskTable[];
+            } else {
+              newWsmsg.Ask = msg.data as AskTable;
+            }
             if ( this.ws.readyState === WebSocket.OPEN ) {
               console.log("Send msg to WS");
-              this.ws.send(JSON.stringify(msg.data));
+              this.ws.send(JSON.stringify(newWsmsg));
             } else {
               console.log(`WS Server error, code:${this.ws.readyState}, try build store mesage function later!`);
             }

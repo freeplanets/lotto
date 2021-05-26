@@ -53,13 +53,14 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     // console.log("DealOrder doit before commit", msg);
     await this.conn.commit();
     const askOne = await this.tb.getOne(ask.id);
+    const tmp: AskTable[] = [];
+    if (askOne) { tmp.push(askOne as AskTable); }
     if (msg.NewAsk) {
-      const tmp: AskTable[] = [];
       const newask = msg.NewAsk as AskTable;
       tmp.push(newask);
-      if (askOne) { tmp.push(askOne as AskTable); }
-      msg.data = tmp;
     }
+    if ( tmp.length > 0 ) { msg.data = tmp; }
+    // console.log("DealOrder doit done:", msg);
     return msg;
   }
   private async AddToLedger(ask: AskTable) {

@@ -1,8 +1,7 @@
 import { PoolConnection } from "mariadb";
-import { get } from "node:https";
 import JTable from "../../class/JTable";
 import ErrCode from "../../DataSchema/ErrCode";
-import { AskTable, FuncKey, IKeyVal, IMsg, LedgerLever, LedgerTotal, WsMsg } from "../../DataSchema/if";
+import { AskTable, IKeyVal, IMsg, LedgerLever, LedgerTotal} from "../../DataSchema/if";
 import { getUserCredit } from "../../func/Credit";
 
 export default class UserInfoCrypto {
@@ -61,6 +60,7 @@ export default class UserInfoCrypto {
         msg.LedgerTotal = ans.data;
       }
     }
+    /*
     ans = await this.getLedgerLever();
     if (ans.ErrNo === ErrCode.PASS) {
       if (ans.data) {
@@ -68,6 +68,7 @@ export default class UserInfoCrypto {
       }
     }
     msg.balance = await this.getCredit();
+    */
     return msg;
   }
 }

@@ -101,7 +101,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     return msg;
   }
   const order = param.order;
-  if ( !order.Amount || !order.Price) {
+  if ( !order.Amount || !order.AskPrice) {
     msg.ErrNo = ErrCode.MISS_PARAMETER;
     msg.ErrCon = "No Price found";
     return msg;
@@ -118,6 +118,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       Code: Item.Code,
       AskType: order.AskType,
       BuyType: order.BuyType,
+      AskPrice: order.AskPrice,
       Amount: order.Amount,
       AskFee: 0,
       Price: 0,
@@ -190,7 +191,7 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
 export const getLedgerInfo: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   const UserID = param.UserID;
   const uic: UserInfoCrypto = new UserInfoCrypto(UserID, conn);
-  return uic.getLedger();
+  return uic.getLedgerInfo();
 };
 export const getLedgerLeverInfo: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   const UserID = param.UserID;

@@ -180,7 +180,7 @@ async function CreditAC(params, res: Response, ac: number) {
     } else {
         param = decParam(eds.Decrypted(params.param));
     }
-    console.log("agentApi/1 param:", param);
+    // console.log("agentApi/1 param:", param);
     const hasUser: IUser | boolean = await getUser(param.userCode, params.agentId, conn) as IUser;
     if (!hasUser) {
         data.code = 9;
@@ -415,7 +415,7 @@ async function getGameDataCaption(req, res) {
 }
 async function register(params, res: Response) {
     // const params = req.query;
-    console.log("agentApi/1 :", params);
+    // console.log("agentApi/1 :", params);
     const msg: IMsg = {ErrNo: 0};
     const data: IAnsData = {code: 0};
     const conn = await getConnection();
@@ -426,7 +426,7 @@ async function register(params, res: Response) {
         return;
     }
     const Agent: IUser = await getAgent(params.agentId, conn);
-    console.log("agent Api /1", Agent);
+    // console.log("agent Api /1", Agent);
     if (Agent.DfKey) {
         const eds = new EDS(Agent.DfKey);
         let param: IGameAccessParams;
@@ -445,7 +445,7 @@ async function register(params, res: Response) {
         } else {
             param = decParam(eds.Decrypted(params.param));
         }
-        console.log("agentApi/1 param:", param);
+        // console.log("agentApi/1 param:", param);
         const ans: boolean = await addUser(params.agentId, Agent.PayClassID, param, conn);
         // console.log("after addUser:", ans);
         if (ans) {
