@@ -51,7 +51,7 @@ export default class UserInfoCrypto {
     let ans: IMsg = await this.getOrder();
     if (ans.ErrNo === ErrCode.PASS) {
       if (ans.data) {
-        msg.Asks = ans.data;
+        msg.Asks = ans.data as AskTable[];
       }
     }
     ans = await this.getLedger();

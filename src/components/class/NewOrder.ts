@@ -25,7 +25,9 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     }
     AskID = msg.insertId as number;
     this.conn.commit();
-    msg.data = await this.tb.getOne(AskID);
+    const hasOne = await this.tb.getOne(AskID);
+    if (hasOne) { msg.Ask = hasOne as AskTable; }
+    msg.Balance = await this.getBalance();
     return msg;
   }
 }

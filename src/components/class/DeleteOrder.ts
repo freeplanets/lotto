@@ -28,6 +28,7 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
     } else {
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;
     }
+    msg.Balance = await this.getBalance();
     return msg;
   }
 }

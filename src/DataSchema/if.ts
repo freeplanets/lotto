@@ -37,8 +37,12 @@ export interface IMsg {
     ErrNo?: ErrorCode;
     data?: object[]|object;
     NewAsk?: object[]|object;   // 系統產生之新單 槓桿用
+    Ask?: AskTable;
+    Asks?: AskTable[];
     debug?: string;
     ErrCon?: string;
+    Balance?: number;
+    LedgerTotal?: any;
     [key: string]: any;
 }
 

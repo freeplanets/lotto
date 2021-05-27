@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import WebSocket, { ClientOptions } from "ws";
+import ErrCode from "../DataSchema/ErrCode";
 import { AskTable, FuncKey, WsMsg } from "../DataSchema/if";
 import ATAFactor from "./ATAFactor";
 
@@ -33,14 +34,15 @@ class WsClient {
       this.ws.send(JSON.stringify(wsmsg));
     }
   }
-  public Send(msg: AskTable) {
-    if (this.ws.readyState === WebSocket.OPEN) {
-      // onsole.log("Send Mesage to Server:", msg);
-      // this.ws.send(msg);
-      const wsmsg: WsMsg = {
-        Ask: msg
-      };
-      this.ws.send(JSON.stringify(wsmsg));
+  public Send(msg: string) {
+    console.log("before Send Mesage:", msg);
+    if (!this.isConnected) { return; }
+    console.log("Send Mesage:");
+    // this.ws.send(msg);
+    try {
+      this.ws.send(msg);
+    } catch (err) {
+      console.log("WsClient Send error:", err);
     }
   }
   public Close() {
@@ -76,20 +78,19 @@ class WsClient {
           const ask = wsmsg.Ask;
           const Askman = await ATAF.getATA(ask);
           const msg = await Askman.doit();
-          // console.log("after doit:", msg);
-          if (msg.data) {
-            const newWsmsg: WsMsg = {};
-            if (Array.isArray(msg.data)) {
-              newWsmsg.Asks = msg.data as AskTable[];
-            } else {
-              newWsmsg.Ask = msg.data as AskTable;
-            }
+          console.log("after doit:", JSON.stringify(msg));
+          if (msg.ErrNo === ErrCode.PASS ) {
+            const newWsmsg: WsMsg = Object.assign({}, msg);
+            delete newWsmsg.ErrNo;
+            console.log("before send", JSON.stringify(newWsmsg));
             if ( this.ws.readyState === WebSocket.OPEN ) {
               console.log("Send msg to WS");
               this.ws.send(JSON.stringify(newWsmsg));
             } else {
               console.log(`WS Server error, code:${this.ws.readyState}, try build store mesage function later!`);
             }
+          } else {
+            console.log(JSON.stringify(msg));
           }
         }
         if (wsmsg.Message) {

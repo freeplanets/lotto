@@ -4,7 +4,7 @@ import ATACreator from "../components/ATACreator";
 import UserInfoCrypto from "../components/class/UserInfoCrypto";
 import wsclient from "../components/webSC";
 import ErrCode from "../DataSchema/ErrCode";
-import { AskTable, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams } from "../DataSchema/if";
+import { AskTable, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
 
 interface IMyFunction<T> extends GetPostFunction {
@@ -141,11 +141,9 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     }
     msg = await ModifyOrder(newOrder, conn);
     if (msg.ErrNo === ErrCode.PASS) {
-      if (wsclient.isConnected) {
-        if (msg.data) {
-          wsclient.Send(msg.data as AskTable);
-        }
-      }
+      const wsmsg: WsMsg = Object.assign({}, msg);
+      delete wsmsg.ErrNo;
+      wsclient.Send(JSON.stringify(wsmsg));
     }
   } else {
     msg.ErrNo = ErrCode.NO_DATA_FOUND;
@@ -173,14 +171,9 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
     };
     msg = await ModifyOrder(table, conn);
     if (msg.ErrNo === ErrCode.PASS) {
-      if (msg.data) {
-        if (wsclient.isConnected) {
-          console.log("Send", JSON.stringify(msg.data));
-          wsclient.Send(msg.data as AskTable);
-        } else {
-          console.log("wsclinet gone away...", wsclient.isConnected);
-        }
-      }
+      const wsmsg: WsMsg = Object.assign({}, msg);
+      delete wsmsg.ErrNo;
+      wsclient.Send(JSON.stringify(wsmsg));
     }
   } else {
     msg.ErrNo = ErrCode.MISS_PARAMETER;

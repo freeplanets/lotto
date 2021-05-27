@@ -9,7 +9,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     super(ask, conn, tableName);
   }
   public async doit(): Promise<IMsg> {
-    let msg: IMsg = { ErrNo: ErrCode.PASS };
+    const msg: IMsg = { ErrNo: ErrCode.PASS };
     const ask: AskTable = this.ask as AskTable;
     if (ask.Amount === 0 && ask.BuyType === 0 ) {
       msg.ErrNo = ErrCode.MISS_PARAMETER;
@@ -18,8 +18,8 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     }
     await this.conn.beginTransaction();
     this.tb.ExtFilter = " ProcStatus < 2 ";
-    msg = await this.tb.Update(ask);
-    if ( msg.ErrNo !== ErrCode.PASS ) {
+    const update = await this.tb.Update(ask);
+    if ( update.ErrNo !== ErrCode.PASS ) {
       await this.conn.rollback();
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;
       return msg;
@@ -28,45 +28,58 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     ask.Fee = ask.AskFee * ask.Amount;
     if (ask.BuyType === 1) {
       const Credit = ask.Amount - ask.Fee;
-      msg = await this.creditA.ModifyCredit(Credit);
-      if (msg.ErrNo !== ErrCode.PASS ) {
+      const modifycredit = await this.creditA.ModifyCredit(Credit);
+      if ( modifycredit.ErrNo !== ErrCode.PASS ) {
         await this.conn.rollback();
         msg.ErrNo = ErrCode.NO_CREDIT;
         return msg;
       }
     }
 
-    msg = await this.AddToLedger(ask);
-    if (msg.ErrNo !== ErrCode.PASS) {
+    const lgmsg = await this.AddToLedger(ask);
+    if (lgmsg.ErrNo !== ErrCode.PASS) {
       await this.conn.rollback();
       return msg;
     }
 
+    let NewAsk: AskTable|undefined;
     if (ask.Lever && !ask.SetID && !ask.USetID ) {
-      msg = await this.CreateSettleAsk(ask);
-      if (msg.ErrNo !== ErrCode.PASS) {
+      const csa = await this.CreateSettleAsk(ask);
+      if (csa.ErrNo !== ErrCode.PASS) {
         await this.conn.rollback();
         msg.ErrNo = ErrCode.DB_QUERY_ERROR;
         return msg;
       }
+      if (csa.NewAsk) { NewAsk = csa.NewAsk as AskTable; }
     }
     // console.log("DealOrder doit before commit", msg);
     await this.conn.commit();
     const askOne = await this.tb.getOne(ask.id);
     const tmp: AskTable[] = [];
     if (askOne) { tmp.push(askOne as AskTable); }
-    if (msg.NewAsk) {
-      const newask = msg.NewAsk as AskTable;
-      tmp.push(newask);
+    if (NewAsk) {
+      tmp.push(NewAsk);
     }
-    if ( tmp.length > 0 ) { msg.data = tmp; }
-    // console.log("DealOrder doit done:", msg);
+    if ( tmp.length > 0 ) {
+      if (tmp.length === 1 ) {
+        msg.Ask = tmp[0];
+      } else {
+        msg.Asks = tmp;
+      }
+    }
+    if ( lgmsg.LedgerTotal ) { msg.LedgerTotal = lgmsg.LedgerTotal; }
+    msg.Balance = await this.getBalance();
+    console.log("DealOrder doit done:", msg);
     return msg;
   }
   private async AddToLedger(ask: AskTable) {
     const ledgerF: LedgerFactor = new LedgerFactor(ask, this.conn);
     const msg = await ledgerF.AddToLedger();
-    // console.log("DealOrder AddToLedger:", msg);
+    if ( msg.ErrNo === ErrCode.PASS ) {
+      const ldMsg = await ledgerF.GetLedger();
+      console.log("DealOrder AddToLedger:", ldMsg);
+      if ( ldMsg.LedgerTotal) { msg.LedgerTotal = ldMsg.LedgerTotal; }
+    }
     return msg;
   }
   private async CreateSettleAsk(ask: AskTable): Promise<IMsg> {
