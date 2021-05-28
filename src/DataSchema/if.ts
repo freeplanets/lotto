@@ -396,6 +396,7 @@ export interface Order extends IHasID {
     Qty: number;
     Amount: number;
     Lever?: number;
+    USetID?: number; // 平倉對象ID -> 會員下單
 }
 export interface Lever extends IHasID {
     Multiples: number;

@@ -28,4 +28,7 @@ app.get("/GetLedgerInfo", (req: Request, res: Response) => {
 app.get("/GetLedgerLever", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.getLedgerLeverInfo);
 });
+app.get("/GetLedgerDetail", (req: Request, res: Response) => {
+  EA.process(req, res, ccfunc.getLedgerDetail);
+});
 export default app;

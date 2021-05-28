@@ -1,7 +1,7 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../../class/JTable";
 import ErrCode from "../../DataSchema/ErrCode";
-import { AskTable, IKeyVal, IMsg, LedgerLever, LedgerTotal} from "../../DataSchema/if";
+import { AskTable, IKeyVal, IMsg, Ledger, LedgerLever, LedgerTotal} from "../../DataSchema/if";
 import { getUserCredit } from "../../func/Credit";
 
 export default class UserInfoCrypto {
@@ -20,6 +20,27 @@ export default class UserInfoCrypto {
       Val: this.UserID
     };
     const jt: JTable<LedgerTotal> = new JTable(this.conn, "LedgerTotal");
+    const ans = await jt.Lists(filter);
+    if (ans) {
+      msg.data = ans.data;
+    } else {
+      msg.ErrNo = ErrCode.NO_DATA_FOUND;
+    }
+    return msg;
+  }
+  public async getLedgerDetail(itemid: number): Promise<IMsg> {
+    const msg: IMsg = { ErrNo: ErrCode.PASS };
+    const filter: IKeyVal[] = [
+      {
+        Key: "UserID",
+        Val: this.UserID
+      },
+      {
+        Key: "ItemID",
+        Val: itemid
+      }
+    ] ;
+    const jt: JTable<Ledger> = new JTable(this.conn, "Ledger");
     const ans = await jt.Lists(filter);
     if (ans) {
       msg.data = ans.data;

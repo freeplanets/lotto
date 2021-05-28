@@ -34,6 +34,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
         msg.ErrNo = ErrCode.NO_CREDIT;
         return msg;
       }
+      console.log("ModifyCredit", modifycredit);
     }
 
     const lgmsg = await this.AddToLedger(ask);
@@ -41,6 +42,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       await this.conn.rollback();
       return msg;
     }
+    console.log("AddToLedger", lgmsg);
 
     let NewAsk: AskTable|undefined;
     if (ask.Lever && !ask.SetID && !ask.USetID ) {
@@ -69,7 +71,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     }
     if ( lgmsg.LedgerTotal ) { msg.LedgerTotal = lgmsg.LedgerTotal; }
     msg.Balance = await this.getBalance();
-    console.log("DealOrder doit done:", msg);
+    // console.log("DealOrder doit done:", msg);
     return msg;
   }
   private async AddToLedger(ask: AskTable) {
@@ -77,7 +79,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     const msg = await ledgerF.AddToLedger();
     if ( msg.ErrNo === ErrCode.PASS ) {
       const ldMsg = await ledgerF.GetLedger();
-      console.log("DealOrder AddToLedger:", ldMsg);
+      // console.log("DealOrder AddToLedger:", ldMsg);
       if ( ldMsg.LedgerTotal) { msg.LedgerTotal = ldMsg.LedgerTotal; }
     }
     return msg;

@@ -101,10 +101,26 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     return msg;
   }
   const order = param.order;
-  if ( !order.Amount || !order.AskPrice) {
-    msg.ErrNo = ErrCode.MISS_PARAMETER;
-    msg.ErrCon = "No Price found";
-    return msg;
+  /*
+  console.log("SendData param order check");
+  Object.keys(order).forEach((key) => {
+    console.log(key, order[key], typeof(order[key]));
+  });
+  */
+  if ( !order.BuyType ) {   // 買
+    if ( !order.Amount || !order.AskPrice) {
+      msg.ErrNo = ErrCode.MISS_PARAMETER;
+      msg.ErrCon = "No Price found";
+      return msg;
+    }
+  } else { // 賣
+    if (!order.USetID) { // 非會員平倉單
+      if ( !((order.Qty && !order.Amount) || (!order.Qty && order.Amount)) ) {
+        msg.ErrNo = ErrCode.MISS_PARAMETER;
+        msg.ErrCon = " Qty XOR Amount false!!";
+        return msg;
+      }
+    }
   }
   const jt = new JTable<Items>(conn, "Items");
   const Item = await jt.getOne(order.id);
@@ -122,7 +138,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       Amount: order.Amount,
       AskFee: 0,
       Price: 0,
-      Qty: 0,
+      Qty: order.Qty ? order.Qty : 0,
     };
     if (order.BuyType === 0) {
       newOrder.AskFee = Item.Type === 1 ? Item.OpenFee : Item.CloseFee;
@@ -190,6 +206,12 @@ export const getLedgerLeverInfo: IMyFunction<WebParams> = async (param: WebParam
   const UserID = param.UserID;
   const uic: UserInfoCrypto = new UserInfoCrypto(UserID, conn);
   return uic.getLedgerLever();
+};
+export const getLedgerDetail: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
+  const UserID = param.UserID;
+  const ItemID = param.ItemID as number;
+  const uic: UserInfoCrypto = new UserInfoCrypto(UserID, conn);
+  return uic.getLedgerDetail(ItemID);
 };
 export const ModifyOrder = async (ask: HasUID, conn: PoolConnection) => {
   const ata: ATACreator = new ATACreator(ask, conn, "AskTable");

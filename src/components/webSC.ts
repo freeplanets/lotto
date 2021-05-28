@@ -35,9 +35,9 @@ class WsClient {
     }
   }
   public Send(msg: string) {
-    console.log("before Send Mesage:", msg);
+    // console.log("before Send Mesage:", msg);
     if (!this.isConnected) { return; }
-    console.log("Send Mesage:");
+    // console.log("Send Mesage:");
     // this.ws.send(msg);
     try {
       this.ws.send(msg);
@@ -70,7 +70,7 @@ class WsClient {
       this.registerChannel(ChannelName);
     });
     this.ws.on("message", async (data) => {
-      console.log("message from WS:", data);
+      // console.log("message from WS:", data);
       try {
         const wsmsg: WsMsg = JSON.parse(data as string);
         if (wsmsg.Ask) {
@@ -78,13 +78,13 @@ class WsClient {
           const ask = wsmsg.Ask;
           const Askman = await ATAF.getATA(ask);
           const msg = await Askman.doit();
-          console.log("after doit:", JSON.stringify(msg));
+          // console.log("after doit:", JSON.stringify(msg));
           if (msg.ErrNo === ErrCode.PASS ) {
             const newWsmsg: WsMsg = Object.assign({}, msg);
             delete newWsmsg.ErrNo;
-            console.log("before send", JSON.stringify(newWsmsg));
+            // console.log("before send", JSON.stringify(newWsmsg));
             if ( this.ws.readyState === WebSocket.OPEN ) {
-              console.log("Send msg to WS");
+              // console.log("Send msg to WS");
               this.ws.send(JSON.stringify(newWsmsg));
             } else {
               console.log(`WS Server error, code:${this.ws.readyState}, try build store mesage function later!`);
