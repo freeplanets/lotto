@@ -123,10 +123,10 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     }
   }
   const jt = new JTable<Items>(conn, "Items");
-  const Item = await jt.getOne(order.id);
+  const Item = await jt.getOne(order.ItemID);
   if (Item) {
     const newOrder: AskTable = {
-      id: 0,
+      id: order.id,
       UserID,
       UpId,
       ItemID: Item.id,
@@ -139,7 +139,12 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       AskFee: 0,
       Price: 0,
       Qty: order.Qty ? order.Qty : 0,
+      ProcStatus: 0,
     };
+    if (order.USetID) {
+      newOrder.USetID = order.USetID;
+      newOrder.SetID = 0;
+    }
     if (order.BuyType === 0) {
       newOrder.AskFee = Item.Type === 1 ? Item.OpenFee : Item.CloseFee;
     }
@@ -155,6 +160,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
         newOrder.StopLose = Item.StopLose;
       }
     }
+    console.log("before ModifyOrder:", JSON.stringify(newOrder));
     msg = await ModifyOrder(newOrder, conn);
     if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);

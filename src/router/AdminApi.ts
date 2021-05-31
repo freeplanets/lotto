@@ -1156,7 +1156,7 @@ app.get("/GameList", async (req, res) => {
     return;
   }
   const jt: JTable<IGame> = new JTable(conn, "Games");
-  const games: IGame[] = await jt.List();
+  const games: IGame[] | undefined = await jt.List();
   // console.log("AdminApi /GameList", JSON.stringify(games));
   if (games) {
       msg.data = games;

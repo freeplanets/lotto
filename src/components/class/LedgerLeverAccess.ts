@@ -9,7 +9,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
     super(conn, tablename);
   }
   public async add(ask: AskTable): Promise<IMsg> {
-    const msg: IMsg = { ErrNo: ErrCode.PASS };
+    // const msg: IMsg = { ErrNo: ErrCode.PASS };
     if (ask.USetID || ask.SetID) {
       return await this.SettleOne(ask);
     } else {
@@ -17,7 +17,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
     }
   }
   private async SettleOne(ask: AskTable): Promise<IMsg> {
-    console.log("LedgerLeverAccess SettleOne", ask.SetID, ask.USetID);
+    // console.log("LedgerLeverAccess SettleOne", ask.SetID, ask.USetID);
     const msg: IMsg = { ErrNo: ErrCode.PASS };
     let SearchID = ask.SetID ? ask.SetID : 0;
     if (ask.USetID) { SearchID = ask.USetID; }
@@ -25,14 +25,44 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
       Key: "BuyID",
       Val: SearchID,
     };
-    const ldg: LedgerLever[] | false = await this.jtable.List(kv);
+    const ldg: LedgerLever[] | undefined = await this.jtable.List(kv);
+    // console.log("SettleOne", JSON.stringify(kv), JSON.stringify(ldg), JSON.stringify(ask));
     if (ldg) {
-      const ldgOne = ldg[0];
-      ldgOne.SellID = ask.id;
-      ldgOne.SellPrice = ask.Price;
-      ldgOne.GainLose = ( ldgOne.SellPrice - ldgOne.BuyPrice ) * ldgOne.ItemType * ldgOne.Lever * ldgOne.Qty;
-      ldgOne.SellTime = ask.DealTime;
-      return await this.jtable.Update(ldgOne);
+      let ldgOne: LedgerLever;
+      if (ldg.length > 0) {
+        ldgOne = ldg[0];
+        ldgOne.SellID = ask.id;
+        ldgOne.SellPrice = ask.Price;
+        ldgOne.GainLose = ( ldgOne.SellPrice - ldgOne.BuyPrice ) * ldgOne.ItemType * ldgOne.Lever * ldgOne.Qty;
+        ldgOne.SellTime = ask.DealTime;
+        return await this.jtable.Update(ldgOne);
+      } else {
+        const jt: JTable<AskTable> = new JTable(this.conn, "AskTable");
+        const ans = await jt.getOne(SearchID);
+        if (ans) {
+          const Lever = ans.Lever ? ans.Lever : 0;
+          ldgOne = {
+            id: 0,
+            UserID: ans.UserID,
+            ItemID: ans.ItemID,
+            ItemType: ans.ItemType,
+            BuyID: ans.id,
+            SellID: ask.id,
+            Qty: ans.Qty,
+            BuyPrice: ans.Price,
+            SellPrice: ask.Price,
+            Lever,
+            GainLose: ( ask.Price - ans.Price ) * ans.ItemType * Lever * ans.Qty,
+            BuyTime: ans.DealTime ? ans.DealTime : 0,
+            SellTime: ask.DealTime ? ask.DealTime : 0,
+          };
+          return await this.jtable.Insert(ldgOne);
+        } else {
+          msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+          msg.ErrCon = "LedgerLever and Ask record not found!";
+          return msg;
+        }
+      }
     } else {
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;
       msg.ErrCon = "LedgerLever record not found!";

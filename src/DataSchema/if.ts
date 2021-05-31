@@ -390,6 +390,7 @@ export interface IHashAna extends IHasID {
 // 下單資料
 // 下單資料
 export interface Order extends IHasID {
+    ItemID: number;
     Price: number;
     AskType: number; // 0 市價, 1 限價
     BuyType: number; // 0 買, 1 賣

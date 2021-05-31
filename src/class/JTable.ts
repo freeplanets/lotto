@@ -45,7 +45,7 @@ export default class JTable<T extends IHasID> {
         }
         const sql = `select * from ${this.TableName} where ${field.join(" and ")}`;
         let mb: T | undefined;
-        // console.log("getone debug:", sql, param);
+        console.log("getone debug:", sql, param);
         const ans = await this.query(sql, this.conn, param);
         /*
         await this.conn.query(sql).then((row) => {
@@ -70,14 +70,14 @@ export default class JTable<T extends IHasID> {
         const msg: IMsg = {ErrNo: 0};
         const ans = await this.List(keys);
         if (ans) {
-            msg.data = ans;
+            msg.data = ans as T[];
         } else {
             msg.ErrNo = ErrCode.NO_DATA_FOUND;
             msg.ErrCon = "No Data!!";
         }
         return msg;
     }
-    public async List(keys?: IKeyVal | IKeyVal[]) {
+    public async List(keys?: IKeyVal | IKeyVal[]): Promise<T[] | undefined> {
         let filter = "1";
         if (keys) {
             if (Array.isArray(keys)) {
@@ -92,12 +92,12 @@ export default class JTable<T extends IHasID> {
             }
         }
         const sql = `select * from ${this.TableName} where ${filter}`;
-        let mb: T[] | any;
-        // console.log("JTable List sql", sql);
+        let mb: T[] | undefined;
+        console.log("JTable List sql", sql);
         await this.conn.query(sql).then((row) => {
             mb = row;
         }).catch((err) => {
-            mb = false;
+            // mb = false;
             console.log(err);
         });
         // console.log("JTable List mb", mb);
@@ -135,7 +135,7 @@ export default class JTable<T extends IHasID> {
                 }
                 return;
             }
-            if (!v[key]) { return; }
+            if (typeof(v[key]) === "undefined") { return; }
             fields.push( key + "=?");
             params.push(v[key]);
         });
@@ -148,7 +148,7 @@ export default class JTable<T extends IHasID> {
             sql = `${sql} and ${this.extFilter}`;
             // console.log("Update with extFilter:", sql, params);
         }
-        // console.log("JTable Update", sql, params);
+        console.log("JTable Update", sql, params);
         await this.conn.query(sql, params).then((row: IDbAns) => {
             if (row.affectedRows === 0) {
                 ans.ErrNo = ErrCode.DB_QUERY_ERROR;
@@ -156,7 +156,7 @@ export default class JTable<T extends IHasID> {
                 // ans.debug = sql;
                 // ans.debugParam = params;
             }
-            // console.log("JTable Upate ans:", ans);
+            console.log("JTable Update ans:", row);
         }).catch((err) => {
             // ans = false;
             console.log("JTable Upate err:", err);

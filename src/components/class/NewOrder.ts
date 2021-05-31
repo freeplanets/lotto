@@ -7,6 +7,7 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     let msg: IMsg = { ErrNo: ErrCode.PASS };
     const ask: AskTable = this.ask as AskTable;
     await this.conn.beginTransaction();
+    console.log("NewOrder doit:", JSON.stringify(ask));
     if (ask.BuyType === 0) {
       ask.Fee = ask.Amount * ask.AskFee;
       const credit = ask.Amount + ask.Fee;
@@ -17,17 +18,25 @@ export default class NewOrder extends AskTableAccess<HasUID> {
       }
     }
     let AskID = 0;
-    msg = await this.tb.Insert(ask);
+    if (ask.id) {
+      console.log("NewOrder doit update");
+      msg = await this.tb.Update(ask);
+      AskID = ask.id;
+    } else {
+      msg = await this.tb.Insert(ask);
+      AskID = msg.insertId as number;
+    }
     if (msg.ErrNo !== 0) {
+      console.log("NewOrder doit error:", msg);
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;
       await this.conn.rollback();
       return msg;
     }
-    AskID = msg.insertId as number;
     this.conn.commit();
     const hasOne = await this.tb.getOne(AskID);
     if (hasOne) { msg.Ask = hasOne as AskTable; }
     msg.Balance = await this.getBalance();
+    console.log("NewOrder doit before return:", JSON.stringify(msg));
     return msg;
   }
 }
