@@ -42,7 +42,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       await this.conn.rollback();
       return msg;
     }
-    console.log("AddToLedger", lgmsg);
+    console.log("AddToLedger", JSON.stringify(lgmsg));
 
     let NewAsk: AskTable|undefined;
     if (ask.Lever && !ask.SetID && !ask.USetID ) {

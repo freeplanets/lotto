@@ -31,4 +31,7 @@ app.get("/GetLedgerLever", (req: Request, res: Response) => {
 app.get("/GetLedgerDetail", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.getLedgerDetail);
 });
+app.post("/DeleteOrder", (req: Request, res: Response) => {
+  EA.process(req, res, ccfunc.DeleteOrder);
+});
 export default app;

@@ -7,7 +7,7 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     let msg: IMsg = { ErrNo: ErrCode.PASS };
     const ask: AskTable = this.ask as AskTable;
     await this.conn.beginTransaction();
-    console.log("NewOrder doit:", JSON.stringify(ask));
+    // console.log("NewOrder doit:", JSON.stringify(ask));
     if (ask.BuyType === 0) {
       ask.Fee = ask.Amount * ask.AskFee;
       const credit = ask.Amount + ask.Fee;

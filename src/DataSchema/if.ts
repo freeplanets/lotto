@@ -8,7 +8,6 @@ export interface WsMsg {
     Func?: FuncKey;
     Asks?: AskTable | AskTable[];
     Ask?: AskTable;
-    AskToClient?: AskTable;
     Balance?: number;
     Message?: string;
     ChannelName?: string;

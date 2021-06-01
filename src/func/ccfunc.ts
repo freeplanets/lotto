@@ -151,16 +151,23 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     if (order.Lever) {
       newOrder.Lever = order.Lever;
       const lvr = new JTable<Lever>(conn, "Lever");
-      const lvAns = await lvr.getOne(order.Lever);
+      const leverParam: IKeyVal = {
+        Multiples: order.Lever,
+      };
+      const lvAns = await lvr.getOne(leverParam);
       if (lvAns) {
         if (newOrder.BuyType === 0) {
           newOrder.AskFee = newOrder.ItemType === 1 ? lvAns.LongT : lvAns.ShortT;
         }
         newOrder.StopGain = Item.StopGain;
         newOrder.StopLose = Item.StopLose;
+      } else {
+        msg.ErrNo = ErrCode.NO_DATA_FOUND;
+        msg.ErrCon = "No Lever data found";
+        return msg;
       }
     }
-    console.log("before ModifyOrder:", JSON.stringify(newOrder));
+    // console.log("before ModifyOrder:", JSON.stringify(newOrder));
     msg = await ModifyOrder(newOrder, conn);
     if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);
