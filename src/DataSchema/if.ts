@@ -349,6 +349,7 @@ export interface IKeyVal {
     Key?: string;
     Val?: string | number;
     Cond?: string;
+    Val2?: string | number;
     [key: string]: string|number|undefined;
 }
 
@@ -451,8 +452,10 @@ export interface WebParams {
     TableName?: string;
     TableData?: string;
     TableDatas?: IHasID | IHasID[];
+    Filter?: IKeyVal | IKeyVal[];
+    Fields?: string | string[];
     order?: Order;
-    [key: string]: number|string|boolean|IHasID|IHasID[]|Order|undefined;
+    [key: string]: any;
 }
 export interface Items {
     id: number;

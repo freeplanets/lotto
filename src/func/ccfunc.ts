@@ -81,7 +81,7 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
   let msg: IMsg = {};
   if (param.TableName) {
     const jt = new JTable(conn, param.TableName);
-    msg = await jt.Lists();
+    msg = await jt.Lists(param.Filter, param.Fields);
   } else {
     msg.ErrNo = ErrCode.MISS_PARAMETER;
     msg.ErrCon = "Missing Table Name!!";

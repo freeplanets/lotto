@@ -1,8 +1,10 @@
 import mariadb from "mariadb";
+import FilterFactory from "../components/FilterFactory";
 import ErrCode from "../DataSchema/ErrCode";
 import {IDbAns, IHasID, IKeyVal, IMsg} from "../DataSchema/if";
 import {doQuery} from "../func/db";
 import eds from "./EncDecString";
+
 interface ITableIndex {
     Table: string;
     Non_unique: number;
@@ -66,9 +68,9 @@ export default class JTable<T extends IHasID> {
         }
         return mb;
     }
-    public async Lists(keys?: IKeyVal | IKeyVal[]): Promise<IMsg> {
+    public async Lists(keys?: IKeyVal | IKeyVal[], fields?: string|string[]): Promise<IMsg> {
         const msg: IMsg = {ErrNo: 0};
-        const ans = await this.List(keys);
+        const ans = await this.List(keys, fields);
         if (ans) {
             msg.data = ans as T[];
         } else {
@@ -77,21 +79,49 @@ export default class JTable<T extends IHasID> {
         }
         return msg;
     }
-    public async List(keys?: IKeyVal | IKeyVal[]): Promise<T[] | undefined> {
-        let filter = "1";
+    public async List(keys?: IKeyVal | IKeyVal[], fields?: string|string[]): Promise<T[] | undefined> {
+        let filter = "";
         if (keys) {
+            filter = new FilterFactory(keys).getFilter();
+            /*
             if (Array.isArray(keys)) {
-                const tmp: string[] = [];
-                keys.map((itm) => {
-                    tmp.push(` ${itm.Key} ${itm.Cond ? itm.Cond : "=" } ${typeof(itm.Val) === "number" ? itm.Val : "'" + itm.Val + "'" } `);
+                const tmp = keys.map((itm) => {
+                    return ` ${itm.Key} ${itm.Cond ? itm.Cond : "=" } ${typeof(itm.Val) === "number" ? itm.Val : "'" + itm.Val + "'" } `;
 
                 });
                 if (tmp.length > 0) { filter = tmp.join("and"); }
             } else {
-                filter = ` ${keys.Key} ${keys.Cond ? keys.Cond : "=" } ${typeof(keys.Val) === "number" ? keys.Val : "'" + keys.Val + "'"} `;
+                if(keys.Key){
+                    filter = ` ${keys.Key} ${keys.Cond ? keys.Cond : "=" } ${typeof(keys.Val) === "number" ? keys.Val : "'" + keys.Val + "'"} `;
+                } else {
+                    const tmp = Object.keys(keys).map((key)=>{
+                        let ftr = '';
+                        switch(typeof keys[key]) {
+                            case 'number':
+                                ftr = `${key} = ${keys[key]}`;
+                                break;
+                            case 'boolean':
+                                ftr = `${key}`;
+                                break;
+                            default:
+                                ftr = `${key} = ''`
+                        }
+                        return ftr;
+                    });
+                }
+            }
+            */
+        }
+        if ( !filter ) { filter = "1"; }
+        let fds = "*";
+        if (fields) {
+            if (Array.isArray(fields)) {
+                if (fields.length > 0) { fds = fields.join(","); }
+            } else {
+                fds = fields;
             }
         }
-        const sql = `select * from ${this.TableName} where ${filter}`;
+        const sql = `select ${fds} from ${this.TableName} where ${filter}`;
         let mb: T[] | undefined;
         // console.log("JTable List sql", sql);
         await this.conn.query(sql).then((row) => {
