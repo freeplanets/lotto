@@ -123,7 +123,7 @@ export default class JTable<T extends IHasID> {
         }
         const sql = `select ${fds} from ${this.TableName} where ${filter}`;
         let mb: T[] | undefined;
-        // console.log("JTable List sql", sql);
+        // console.log("JTable List sql", sql, keys);
         await this.conn.query(sql).then((row) => {
             mb = row;
         }).catch((err) => {

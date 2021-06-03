@@ -80,8 +80,23 @@ export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: P
 export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {};
   if (param.TableName) {
+    // console.log("getdata:", param);
     const jt = new JTable(conn, param.TableName);
-    msg = await jt.Lists(param.Filter, param.Fields);
+    let fields: IKeyVal | IKeyVal[] | undefined;
+    if (Array.isArray(param.Filter)) {
+      fields = param.Filter.map((itm) => {
+        if (typeof(itm) === "string") {
+          itm = JSON.parse(itm);
+        }
+        return itm;
+      });
+    } else {
+      if (typeof(param.Filter) === "string") {
+        param.Filter = JSON.parse(param.Filter);
+      }
+      fields = param.Filter;
+    }
+    msg = await jt.Lists(fields, param.Fields);
   } else {
     msg.ErrNo = ErrCode.MISS_PARAMETER;
     msg.ErrCon = "Missing Table Name!!";
