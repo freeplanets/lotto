@@ -92,7 +92,17 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
       });
     } else {
       if (typeof(param.Filter) === "string") {
-        param.Filter = JSON.parse(param.Filter);
+        try {
+          const filter = `${param.Filter}`.replace(/\\/g, "");
+          // console.log("getdata", param.Filter, filter);
+          param.Filter = JSON.parse(filter);
+        } catch (err) {
+          msg.ErrNo = ErrCode.MISS_PARAMETER;
+          msg.ErrCon = "Filter parse error";
+          msg.error = err;
+          msg.Filter = param.Filter;
+          return msg;
+        }
       }
       fields = param.Filter;
     }

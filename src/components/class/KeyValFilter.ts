@@ -24,7 +24,11 @@ export default class KeyValFilter extends AFilter {
     return ` ${f.Key} ${f.Cond} ${str} `;
   }
   private addQuotationMarks(v: any): string {
-    return typeof(v) === "string" ? `'${v}'` : `${v}`;
+    let tmp = v;
+    if (typeof(v) === "string") {
+      if (v.indexOf("(") === -1) { tmp = `'${v}'`; }
+    }
+    return tmp;
   }
   private noKeyElement(filter: IKeyVal): string {
     const tmp = Object.keys(filter).map((key) => {
