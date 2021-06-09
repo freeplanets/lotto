@@ -1,11 +1,14 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../class/JTable";
+// import Mqtt from "../class/Mqtt/mqtt";
 import ATACreator from "../components/ATACreator";
 import UserInfoCrypto from "../components/class/UserInfoCrypto";
 import wsclient from "../components/webSC";
 import ErrCode from "../DataSchema/ErrCode";
 import { AskTable, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
+
+//const mqtt = new Mqtt();
 
 interface IMyFunction<T> extends GetPostFunction {
   (param: T, conn: PoolConnection): IMsg;
@@ -126,30 +129,33 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     return msg;
   }
   const order = param.order;
-  /*
-  console.log("SendData param order check");
-  Object.keys(order).forEach((key) => {
-    console.log(key, order[key], typeof(order[key]));
-  });
-  */
-  if ( !order.BuyType ) {   // 買
-    if ( !order.Amount || !order.AskPrice) {
-      msg.ErrNo = ErrCode.MISS_PARAMETER;
-      msg.ErrCon = "No Price found";
-      return msg;
-    }
-  } else { // 賣
-    if (!order.USetID) { // 非會員平倉單
-      if ( !((order.Qty && !order.Amount) || (!order.Qty && order.Amount)) ) {
+  let Odr: HasUID = {
+    id: order.id,
+    UserID
+  };
+  if (order.ProcStatus !== 3) {
+    if ( !order.BuyType ) {   // 買
+      if ( !order.Amount || !order.AskPrice) {
         msg.ErrNo = ErrCode.MISS_PARAMETER;
-        msg.ErrCon = " Qty XOR Amount false!!";
+        msg.ErrCon = "No Price found";
         return msg;
       }
+    } else { // 賣
+      if (!order.USetID) { // 非會員平倉單
+        if ( !((order.Qty && !order.Amount) || (!order.Qty && order.Amount)) ) {
+          msg.ErrNo = ErrCode.MISS_PARAMETER;
+          msg.ErrCon = " Qty XOR Amount false!!";
+          return msg;
+        }
+      }
     }
-  }
-  const jt = new JTable<Items>(conn, "Items");
-  const Item = await jt.getOne(order.ItemID);
-  if (Item) {
+    const jt = new JTable<Items>(conn, "Items");
+    const Item = await jt.getOne(order.ItemID);
+    if (!Item) {
+      msg.ErrNo = ErrCode.NO_DATA_FOUND;
+      msg.ErrCon = "Item not found!!";
+      return msg;
+    }
     const newOrder: AskTable = {
       id: order.id,
       UserID,
@@ -192,17 +198,19 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
         return msg;
       }
     }
+    Odr = newOrder;
+  } else {
+    Odr.ProcStatus = order.ProcStatus;
+  }
     // console.log("before ModifyOrder:", JSON.stringify(newOrder));
-    msg = await ModifyOrder(newOrder, conn);
-    if (msg.ErrNo === ErrCode.PASS) {
+  msg = await ModifyOrder(Odr, conn);
+  if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);
       delete wsmsg.ErrNo;
       wsclient.Send(JSON.stringify(wsmsg));
+      // mqtt.sendAsk(JSON.stringify(wsmsg));
     }
-  } else {
-    msg.ErrNo = ErrCode.NO_DATA_FOUND;
-    msg.ErrCon = "Item not found!!";
-  }
+
   return msg;
 };
 
