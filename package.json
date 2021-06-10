@@ -18,8 +18,6 @@
     "@types/crypto-js": "^3.1.43",
     "@types/minimist": "^1.2.0",
     "@types/node-schedule": "^1.3.0",
-    "aws-mqtt": "^1.0.0",
-    "aws-sdk": "^2.924.0",
     "cors": "^2.8.5",
     "crypto-js": "^4.0.0",
     "dotenv": "^8.2.0",

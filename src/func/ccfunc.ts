@@ -1,14 +1,11 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../class/JTable";
-// import Mqtt from "../class/Mqtt/mqtt";
 import ATACreator from "../components/ATACreator";
 import UserInfoCrypto from "../components/class/UserInfoCrypto";
 import wsclient from "../components/webSC";
 import ErrCode from "../DataSchema/ErrCode";
 import { AskTable, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
-
-//const mqtt = new Mqtt();
 
 interface IMyFunction<T> extends GetPostFunction {
   (param: T, conn: PoolConnection): IMsg;
@@ -208,7 +205,6 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       const wsmsg: WsMsg = Object.assign({}, msg);
       delete wsmsg.ErrNo;
       wsclient.Send(JSON.stringify(wsmsg));
-      // mqtt.sendAsk(JSON.stringify(wsmsg));
     }
 
   return msg;
