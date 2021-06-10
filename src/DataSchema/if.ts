@@ -464,7 +464,7 @@ export interface Items {
     Code: string;
     OpenFee: number;
     CloseFee: number;
-    LoanFee: number;
+    isLoan: number;
     StopGain: number;
     StopLose: number;
     Type: number;
