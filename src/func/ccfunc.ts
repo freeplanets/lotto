@@ -158,7 +158,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       UserID,
       UpId,
       ItemID: Item.id,
-      ItemType: Item.Type,
+      ItemType: order.ItemType,
       Code: Item.Code,
       AskType: order.AskType,
       BuyType: order.BuyType,
@@ -173,9 +173,12 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       newOrder.USetID = order.USetID;
       newOrder.SetID = 0;
     }
+    /*
     if (order.BuyType === 0) {
       newOrder.AskFee = Item.Type === 1 ? Item.OpenFee : Item.CloseFee;
     }
+    */
+    newOrder.AskFee = order.BuyType ? Item.CloseFee : Item.OpenFee;
     if (order.Lever) {
       newOrder.Lever = order.Lever;
       const lvr = new JTable<Lever>(conn, "Lever");

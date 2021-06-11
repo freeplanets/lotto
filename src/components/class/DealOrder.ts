@@ -57,9 +57,11 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     // console.log("DealOrder doit before commit", msg);
     await this.conn.commit();
     const askOne = await this.tb.getOne(ask.id);
+    // console.log("DealOrder askOne", JSON.stringify(askOne));
     const tmp: AskTable[] = [];
     if (askOne) { tmp.push(askOne as AskTable); }
     if (NewAsk) {
+      console.log("DealOrder has NewAsk", JSON.stringify(NewAsk));
       tmp.push(NewAsk);
     }
     if ( tmp.length > 0 ) {
@@ -71,7 +73,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     }
     if ( lgmsg.LedgerTotal ) { msg.LedgerTotal = lgmsg.LedgerTotal; }
     msg.Balance = await this.getBalance();
-    // console.log("DealOrder doit done:", msg);
+    console.log("DealOrder doit done:", JSON.stringify(msg));
     return msg;
   }
   private async AddToLedger(ask: AskTable) {
@@ -95,11 +97,11 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     ask.SetID = ask.id;
     ask.ProcStatus = 1;
     const msg = await this.tb.Insert(ask);
-    console.log("DealOrder CreateSettleAsk:", msg);
+    // console.log("DealOrder CreateSettleAsk:", msg);
     const ans = msg as IDbAns;
     if (ans.insertId) {
       const tmp = await this.tb.getOne(ans.insertId);
-      console.log("CreateSettleAsk after getOne:", tmp);
+      // console.log("CreateSettleAsk after getOne:", tmp);
       if (tmp) { msg.NewAsk = tmp; }
     }
     return msg;
