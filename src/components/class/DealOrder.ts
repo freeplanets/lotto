@@ -95,6 +95,8 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     ask.AskFee = 0,
     ask.BuyType = 1;
     ask.SetID = ask.id;
+    ask.GainPrice = this.GainPrice(ask);
+    ask.LosePrice = this.LosePrice(ask);
     ask.ProcStatus = 1;
     const msg = await this.tb.Insert(ask);
     // console.log("DealOrder CreateSettleAsk:", msg);
@@ -105,5 +107,23 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       if (tmp) { msg.NewAsk = tmp; }
     }
     return msg;
+  }
+  private GainPrice(ask: AskTable): number {
+    const StopGain = ask.StopGain ? ask.StopGain : 0;
+    const Lever = ask.Lever ? ask.Lever : 1;
+    const LeverCredit = ask.LeverCredit ? ask.LeverCredit : 0;
+    const addPrice = ((StopGain * LeverCredit * ask.ItemType) / Lever) / ask.Qty;
+    const price = ask.AskPrice ? ask.AskPrice : 0;
+    // console.log("GainPrice", addPrice , StopGain, LeverCredit, ask.ItemType, Lever, ask.Qty);
+    return addPrice + price;
+  }
+  private LosePrice(ask: AskTable): number {
+    const StopLose = ask.StopLose ? ask.StopLose : 0;
+    const Lever = ask.Lever ? ask.Lever : 1;
+    const LeverCredit = ask.LeverCredit ? ask.LeverCredit : 0;
+    const addPrice = ((((1 - StopLose) * LeverCredit - LeverCredit) * ask.ItemType) / Lever) / ask.Qty;
+    const price = ask.AskPrice ? ask.AskPrice : 0;
+    // console.log("LosePrice", addPrice , StopLose, LeverCredit, ask.ItemType, Lever, ask.Qty);
+    return addPrice + price;
   }
 }
