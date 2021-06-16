@@ -422,6 +422,8 @@ export interface AskTable extends HasUID {
     LeverCredit?: number; // 下單時暫扣的信用額度
     ExtCredit?: number; // 下單後變動的信用額度,只能增加
     Lever?: number;
+    GainPrice?: number;
+    LosePrice?: number;
     StopGain?: number;
     StopLose?: number;
     ProcStatus?: number;  // 0 等待處理 1 處理中 2 成交 3 取消

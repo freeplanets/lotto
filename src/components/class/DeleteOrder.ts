@@ -19,7 +19,7 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
       msg = await this.tb.Update(this.ask);
       if (msg.ErrNo === ErrCode.PASS) {
         const ansAsk = await this.tb.getOne(this.ask.id);
-        if (ansAsk) { msg.data = ansAsk; }
+        if (ansAsk) { msg.Ask = ansAsk as AskTable; }
       } else {
         await this.conn.rollback();
         return msg;
