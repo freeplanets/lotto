@@ -398,6 +398,8 @@ export interface Order extends IHasID {
     Amount: number;
     Lever?: number;
     USetID?: number; // 平倉對象ID -> 會員下單
+    GainPrice?: number;
+    LosePrice?: number;
     ProcStatus?: number;
 }
 export interface Lever extends IHasID {

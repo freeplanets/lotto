@@ -126,6 +126,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     return msg;
   }
   const order = param.order;
+  // console.log("SendOrder order:", order);
   let Odr: HasUID = {
     id: order.id,
     UserID
@@ -181,6 +182,8 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     newOrder.AskFee = order.BuyType ? Item.CloseFee : Item.OpenFee;
     if (order.Lever) {
       newOrder.Lever = order.Lever;
+      if (order.GainPrice) { newOrder.GainPrice = order.GainPrice; }
+      if (order.LosePrice) { newOrder.LosePrice = order.LosePrice; }
       const lvr = new JTable<Lever>(conn, "Lever");
       const leverParam: IKeyVal = {
         Multiples: order.Lever,
@@ -202,7 +205,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
   } else {
     Odr.ProcStatus = order.ProcStatus;
   }
-    // console.log("before ModifyOrder:", JSON.stringify(newOrder));
+  // console.log("before ModifyOrder:", JSON.stringify(Odr));
   msg = await ModifyOrder(Odr, conn);
   if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);
