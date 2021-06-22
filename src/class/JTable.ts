@@ -1,6 +1,6 @@
 import mariadb from "mariadb";
 import FilterFactory from "../components/FilterFactory";
-import ErrCode from "../DataSchema/ErrCode";
+import { ErrCode } from "../DataSchema/ENum";
 import {IDbAns, IHasID, IKeyVal, IMsg} from "../DataSchema/if";
 import {doQuery} from "../func/db";
 import eds from "./EncDecString";

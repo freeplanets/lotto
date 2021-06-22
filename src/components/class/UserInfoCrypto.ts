@@ -1,6 +1,6 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../../class/JTable";
-import ErrCode from "../../DataSchema/ErrCode";
+import { ErrCode } from "../../DataSchema/ENum";
 import { AskTable, IKeyVal, IMsg, Ledger, LedgerLever, LedgerTotal} from "../../DataSchema/if";
 import { getUserCredit } from "../../func/Credit";
 

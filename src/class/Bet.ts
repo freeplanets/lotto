@@ -1,5 +1,5 @@
 import mariadb from "mariadb";
-import ErrCode from "../DataSchema/ErrCode";
+import { ErrCode } from "../DataSchema/ENum";
 import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
     IBetTable, ICurOddsData, IDayReport, IMsg, INumAvg, INumData, IStrKeyNumer} from "../DataSchema/if";
 import {IGame, ITerms} from "../DataSchema/user";

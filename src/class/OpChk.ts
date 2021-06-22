@@ -1,6 +1,6 @@
 import mariadb from "mariadb";
 import JDate from "../class/JDate";
-import ErrCode from "../DataSchema/ErrCode";
+import { ErrCode } from "../DataSchema/ENum";
 import {IBasePayRateItm, IBetTable, ICurOddsData, IDayReport,
     IHasID, INumAvg, INumData, IStepG, IStrKeyNumer} from "../DataSchema/if";
 import {IGame} from "../DataSchema/user";

@@ -9,7 +9,7 @@ export async function ModifyCredit(uid: number, Account: string,
     }
     balance = balance + money;
     if (balance < 0) {
-        console.log("ModifyCredit chk balanace:", balance, "Money:", money);
+        // console.log("ModifyCredit chk balanace:", balance, "Money:", money);
         return false;
     }
     const sql = `insert into UserCredit(uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;

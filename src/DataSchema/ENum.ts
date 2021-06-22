@@ -1,4 +1,4 @@
-const enum ErrCode {
+export enum ErrCode {
   PASS = 0,
   LESS_MIN_HAND = 1,
   OVER_MAX_HAND = 2,
@@ -16,4 +16,20 @@ const enum ErrCode {
   TRY_CATCH_ERROR = 14,
   NO_DATA_FOUND = 15,
 }
-export default ErrCode;
+
+export enum FuncKey {
+	SET_CHANNEL = "SetChannel",
+	CLIENT_INFO = "ClientInfo"
+}
+
+export enum CreditType {
+	DEPOSIT = 0,
+	WITHDRAW,
+	CRYPTOCUR,
+}
+
+export enum MemoType {
+	NEW = 0,
+	SETTLE,
+	DELETE,
+}

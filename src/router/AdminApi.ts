@@ -14,7 +14,7 @@ import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
-import ErrCode from "../DataSchema/ErrCode";
+import { ErrCode } from "../DataSchema/ENum";
 import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IDfOddsItems, IGameDataCaption , IGameItem , IGameResult, IHashAna, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import {doQuery, getConnection, IAxParams} from "../func/db";

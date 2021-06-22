@@ -1,11 +1,7 @@
-import ErrorCode from "../DataSchema/ErrCode";
+import * as ENUM from "./ENum";
 
-export enum FuncKey {
-    SET_CHANNEL = "SetChannel",
-    CLIENT_INFO = "ClientInfo"
-}
 export interface WsMsg {
-    Func?: FuncKey;
+    Func?: ENUM.FuncKey;
     Asks?: AskTable | AskTable[];
     Ask?: AskTable;
     Balance?: number;
@@ -33,7 +29,7 @@ export interface IBTItem {
 }
 
 export interface IMsg {
-    ErrNo?: ErrorCode;
+    ErrNo?: ENUM.ErrCode;
     data?: object[]|object;
     NewAsk?: object[]|object;   // 系統產生之新單 槓桿用
     Ask?: AskTable;
@@ -434,6 +430,7 @@ export interface AskTable extends HasUID {
     ModifyTime?: number; // 修改時間
     SetID?: number; // 平倉對象ID -> System下單
     USetID?: number; // 平倉對象ID -> 會員下單
+    isUserSettle?: number; // 會員平倉
 }
 export interface LedgerLever extends HasUID {
     ItemID: number;
@@ -443,6 +440,8 @@ export interface LedgerLever extends HasUID {
     Qty: number;
     BuyPrice: number; // 建倉價格
     SellPrice?: number;
+    BuyFee: number;
+    SellFee?: number;
     GainLose?: number; // 輸贏
     Lever: number;  // 槓桿
     BuyTime: number; // 買進時間
@@ -510,4 +509,24 @@ export interface LedgerTotal extends HasUID {
 export interface Ledger extends LedgerTotal {
     AskID: number;
     CreateTime?: number;
+    Amount: number;
+    Fee: number;
+}
+/**
+ * CreditMemo
+ * database type varchar 256
+ * save data after JSON.stringify
+ */
+export interface CreditMemo {
+    Type: ENUM.CreditType;
+    Message: object;
+}
+export interface MemoCryptoCur {
+    Type: ENUM.MemoType;
+    AskID?: number;
+    ItemID: number;
+    ItemType: number;
+    Amount: number;
+    Fee?: number;
+    Qty: number;
 }

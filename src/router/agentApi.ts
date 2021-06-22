@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from "express";
 import {Connection} from "mariadb";
 import EDS from "../class/EncDecString";
-import ErrCode from "../DataSchema/ErrCode";
+import { ErrCode } from "../DataSchema/ENum";
 import {IDbAns, IGameAccessParams, IMsg} from "../DataSchema/if";
 import {IUser} from "../DataSchema/user";
 import {ModifyCredit} from "../func/Credit";

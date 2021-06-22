@@ -1,6 +1,6 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../../class/JTable";
-import ErrCode from "../../DataSchema/ErrCode";
+import { ErrCode } from "../../DataSchema/ENum";
 import { AskTable, IKeyVal, IMsg, LedgerLever } from "../../DataSchema/if";
 import ALedger from "./ALedger";
 
@@ -9,12 +9,17 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
     super(conn, tablename);
   }
   public async add(ask: AskTable): Promise<IMsg> {
-    // const msg: IMsg = { ErrNo: ErrCode.PASS };
+    console.log("LedgerLeverAccess add:", ask.id, ask.SetID, ask.USetID);
+    let  msg: IMsg = { ErrNo: ErrCode.PASS };
     if (ask.USetID || ask.SetID) {
-      return await this.SettleOne(ask);
-    } else {
+      msg = await this.SettleOne(ask);
+    }
+    return msg;
+    /*
+    else {
       return await this.CreateNew(ask);
     }
+    */
   }
   private async SettleOne(ask: AskTable): Promise<IMsg> {
     // console.log("LedgerLeverAccess SettleOne", ask.SetID, ask.USetID);
@@ -28,6 +33,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
     const ldg: LedgerLever[] | undefined = await this.jtable.List(kv);
     // console.log("SettleOne", JSON.stringify(kv), JSON.stringify(ldg), JSON.stringify(ask));
     if (ldg) {
+      // console.log("LedgerLeverAccess SettleOne chk1");
       let ldgOne: LedgerLever;
       if (ldg.length > 0) {
         ldgOne = ldg[0];
@@ -37,6 +43,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
         ldgOne.SellTime = ask.DealTime;
         return await this.jtable.Update(ldgOne);
       } else {
+        // console.log("LedgerLeverAccess SettleOne chk2");
         const jt: JTable<AskTable> = new JTable(this.conn, "AskTable");
         const ans = await jt.getOne(SearchID);
         if (ans) {
@@ -51,6 +58,8 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
             Qty: ans.Qty,
             BuyPrice: ans.Price,
             SellPrice: ask.Price,
+            BuyFee: ans.Fee ? ans.Fee : 0,
+            SellFee: ask.Fee,
             Lever,
             GainLose: ( ask.Price - ans.Price ) * ans.ItemType * Lever * ans.Qty,
             BuyTime: ans.DealTime ? ans.DealTime : 0,
@@ -79,6 +88,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
       ItemType: ask.ItemType,
       BuyID: ask.id,
       BuyPrice: ask.Price,
+      BuyFee: ask.Fee ? ask.Fee : 0,
       Qty: ask.Qty,
       Lever: ask.Lever as number,
       BuyTime: ask.DealTime as number,

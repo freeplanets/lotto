@@ -1,5 +1,5 @@
 import { PoolConnection } from "mariadb";
-import ErrCode from "../DataSchema/ErrCode";
+import { ErrCode } from "../DataSchema/ENum";
 import { AskTable, IHasID, IMsg } from "../DataSchema/if";
 import ALedger from "./class/ALedger";
 import LedgerAccess from "./class/LedgerAccess";

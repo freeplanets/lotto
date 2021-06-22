@@ -3,7 +3,7 @@ import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
 import UserInfoCrypto from "../components/class/UserInfoCrypto";
 import wsclient from "../components/webSC";
-import ErrCode from "../DataSchema/ErrCode";
+import { ErrCode } from "../DataSchema/ENum";
 import { AskTable, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
 
@@ -131,7 +131,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     id: order.id,
     UserID
   };
-  if (order.ProcStatus !== 3) {
+  if ( !order.ProcStatus || order.ProcStatus < 2) {
     if ( !order.BuyType ) {   // 買
       if ( !order.Amount || !order.AskPrice) {
         msg.ErrNo = ErrCode.MISS_PARAMETER;
@@ -203,9 +203,13 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     }
     Odr = newOrder;
   } else {
-    Odr.ProcStatus = order.ProcStatus;
+    if (order.ProcStatus === 2 ) {
+      Odr.isUserSettle = 1;
+    } else {
+      Odr.ProcStatus = order.ProcStatus;
+    }
   }
-  // console.log("before ModifyOrder:", JSON.stringify(Odr));
+  console.log("before ModifyOrder:", JSON.stringify(Odr));
   msg = await ModifyOrder(Odr, conn);
   if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Pool, PoolConnection } from "mariadb";
-import ErrCode from "../DataSchema/ErrCode";
+import { ErrCode } from "../DataSchema/ENum";
 import {IKeyVal, IMsg} from "../DataSchema/if";
 import {getConnection} from "./db";
 export type GetPostFunction = (param: any, conn: PoolConnection) => Promise<IMsg>;

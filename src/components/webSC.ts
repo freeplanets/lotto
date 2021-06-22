@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import WebSocket, { ClientOptions } from "ws";
-import ErrCode from "../DataSchema/ErrCode";
-import { AskTable, FuncKey, WsMsg } from "../DataSchema/if";
+import { ErrCode, FuncKey } from "../DataSchema/ENum";
+import { WsMsg } from "../DataSchema/if";
 import ATAFactor from "./ATAFactor";
 
 dotenv.config();

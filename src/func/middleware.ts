@@ -1,6 +1,6 @@
 import {Request, Response } from "express";
 import mariadb from "mariadb";
-import ErrCode from "../DataSchema/ErrCode";
+import { ErrCode } from "../DataSchema/ENum";
 import {IDbAns, IMsg} from "../DataSchema/if";
 import * as db from "../func/db";
 const staytime: number = 3000000;   // sec

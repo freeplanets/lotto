@@ -1,6 +1,6 @@
 import { PoolConnection } from "mariadb";
-import ErrCode from "../../DataSchema/ErrCode";
-import { IDbAns, IMsg } from "../../DataSchema/if";
+import { ErrCode } from "../../DataSchema/ENum";
+import { CreditMemo, IDbAns, IMsg } from "../../DataSchema/if";
 
 export default class CreditAccess {
   constructor(private UserID: number, private conn: PoolConnection) {}
@@ -44,7 +44,7 @@ export default class CreditAccess {
       });
     });
   }
-  public async ModifyCredit(money: number, justquery?: boolean): Promise<IMsg> {
+  public async ModifyCredit(money: number, memo: CreditMemo , justquery?: boolean): Promise<IMsg> {
     const  msg = await this.getUserCredit();
     if (justquery) {
       msg.orderId = 0;
@@ -60,20 +60,25 @@ export default class CreditAccess {
         return msg;
       }
       const idenkey = `${new Date().getTime()}ts${this.UserID}`;
-      const sql = `insert into UserCredit(uid,idenkey,DepWD,Balance) values(?,?,?,?)`;
-      const param = [this.UserID, idenkey, money, balance];
-      const dbans: IDbAns = await this.conn.query(sql, param);
-      // console.log("ModifyCredit:", sql, dbans);
-      if (dbans.affectedRows > 0) {
-        // return true;
-        const bans =  await this.ModifyUserCredit(balance);
-        if (bans.ErrNo === ErrCode.PASS) {
-          msg.balance = balance;
-          msg.orderId = dbans.insertId;
-          return msg;
-          // return { balance, orderId: dbans.insertId};
+      const sql = `insert into UserCredit(uid,idenkey,DepWD,Balance,memo) values(?,?,?,?,?)`;
+      const param = [this.UserID, idenkey, money, balance, JSON.stringify(memo)];
+      this.conn.query(sql, param).then(async (dbans: IDbAns) => {
+        // const dbans: IDbAns = await
+        if (dbans.affectedRows > 0) {
+          // return true;
+          const bans =  await this.ModifyUserCredit(balance);
+          if (bans.ErrNo === ErrCode.PASS) {
+            msg.balance = balance;
+            msg.orderId = dbans.insertId;
+            return msg;
+            // return { balance, orderId: dbans.insertId};
+          }
         }
-      }
+      }).catch((err) => {
+        msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+        msg.debug = err;
+      });
+      // console.log("ModifyCredit:", sql, dbans);
     }
     return msg;
   }

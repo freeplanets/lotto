@@ -1,5 +1,5 @@
-import ErrCode from "../../DataSchema/ErrCode";
-import { AskTable, HasUID, IMsg } from "../../DataSchema/if";
+import { CreditType, ErrCode, MemoType } from "../../DataSchema/ENum";
+import { AskTable, CreditMemo, HasUID, IMsg, MemoCryptoCur } from "../../DataSchema/if";
 import AskTableAccess from "./AskTableAccess";
 
 export default class DeleteOrder extends AskTableAccess<HasUID> {
@@ -10,7 +10,20 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
       this.conn.beginTransaction();
       const ask = ans as AskTable;
       const credit = ask.Amount + ( ask.Fee ? ask.Fee : 0 );
-      msg = await this.creditA.ModifyCredit(credit);
+      const memoMsg: MemoCryptoCur = {
+        Type: MemoType.DELETE,
+        AskID: ask.id,
+        ItemID: ask.ItemID,
+        ItemType: ask.ItemType,
+        Amount: ask.Amount,
+        Fee: ask.Fee,
+        Qty: ask.Qty,
+      };
+      const memo: CreditMemo = {
+        Type: CreditType.CRYPTOCUR,
+        Message: memoMsg,
+      };
+      msg = await this.creditA.ModifyCredit(credit, memo);
       if ( msg.ErrNo !== ErrCode.PASS ) {
         await this.conn.rollback();
         return msg;

@@ -1,6 +1,6 @@
 import { PoolConnection } from "mariadb";
-import ErrCode from "../../DataSchema/ErrCode";
-import { AskTable, HasUID, IDbAns, IMsg } from "../../DataSchema/if";
+import { CreditType, ErrCode, MemoType } from "../../DataSchema/ENum";
+import { AskTable, CreditMemo, HasUID, IDbAns, IMsg, MemoCryptoCur } from "../../DataSchema/if";
 import LedgerFactor from "../LedgerFactor";
 import AskTableAccess from "./AskTableAccess";
 
@@ -28,13 +28,26 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     ask.Fee = ask.AskFee * ask.Amount;
     if (ask.BuyType === 1) {
       const Credit = ask.Amount - ask.Fee;
-      const modifycredit = await this.creditA.ModifyCredit(Credit);
+      const memoMsg: MemoCryptoCur = {
+        Type: ask.BuyType ? MemoType.SETTLE : MemoType.NEW,
+        AskID: ask.id,
+        ItemID: ask.ItemID,
+        ItemType: ask.ItemType,
+        Amount: ask.Amount,
+        Fee: ask.Fee,
+        Qty: ask.Qty
+      };
+      const memo: CreditMemo = {
+        Type: CreditType.CRYPTOCUR,
+        Message: memoMsg,
+      };
+      const modifycredit = await this.creditA.ModifyCredit(Credit, memo);
       if ( modifycredit.ErrNo !== ErrCode.PASS ) {
         await this.conn.rollback();
         msg.ErrNo = ErrCode.NO_CREDIT;
         return msg;
       }
-      console.log("ModifyCredit", modifycredit);
+      // console.log("ModifyCredit", modifycredit);
     }
 
     const lgmsg = await this.AddToLedger(ask);
@@ -42,7 +55,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       await this.conn.rollback();
       return msg;
     }
-    console.log("AddToLedger", JSON.stringify(lgmsg));
+    // console.log("AddToLedger", JSON.stringify(lgmsg));
 
     let NewAsk: AskTable|undefined;
     if (ask.Lever && !ask.SetID && !ask.USetID ) {
@@ -73,7 +86,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     }
     if ( lgmsg.LedgerTotal ) { msg.LedgerTotal = lgmsg.LedgerTotal; }
     msg.Balance = await this.getBalance();
-    console.log("DealOrder doit done:", JSON.stringify(msg));
+    // console.log("DealOrder doit done:", JSON.stringify(msg));
     return msg;
   }
   private async AddToLedger(ask: AskTable) {

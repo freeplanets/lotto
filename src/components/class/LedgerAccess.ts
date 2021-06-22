@@ -1,6 +1,6 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../../class/JTable";
-import ErrCode from "../../DataSchema/ErrCode";
+import { ErrCode } from "../../DataSchema/ENum";
 import { AskTable, IKeyVal, IMsg, Ledger, LedgerTotal } from "../../DataSchema/if";
 import { Query } from "../../func/db";
 import ALedger from "./ALedger";
@@ -17,6 +17,8 @@ export default class LedgerAccess extends ALedger<Ledger> {
       ItemID: ask.ItemID,
       AskID: ask.id,
       Qty: ask.Qty * key,
+      Amount: ask.Amount,
+      Fee: ask.Fee ? ask.Fee : 0,
     };
     // const jt = new JTable<Ledger>(conn, "Ledger");
     const msg: IMsg = await this.jtable.Insert(ledger);

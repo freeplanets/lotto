@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import mariadb, { PoolConnection } from "mariadb";
-import ErrCode from "../DataSchema/ErrCode";
+import { ErrCode } from "../DataSchema/ENum";
 import { IDbAns, IMsg } from "../DataSchema/if";
 
 dotenv.config();
