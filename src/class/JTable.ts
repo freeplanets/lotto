@@ -68,7 +68,7 @@ export default class JTable<T extends IHasID> {
         }
         return mb;
     }
-    public async Lists(keys?: IKeyVal | IKeyVal[], fields?: string|string[]): Promise<IMsg> {
+    public async Lists(keys?: string | IKeyVal | IKeyVal[], fields?: string|string[]): Promise<IMsg> {
         const msg: IMsg = {ErrNo: 0};
         const ans = await this.List(keys, fields);
         if (ans) {
@@ -79,7 +79,7 @@ export default class JTable<T extends IHasID> {
         }
         return msg;
     }
-    public async List(keys?: IKeyVal | IKeyVal[], fields?: string|string[]): Promise<T[] | undefined> {
+    public async List(keys?: string | IKeyVal | IKeyVal[], fields?: string|string[]): Promise<T[] | undefined> {
         let filter = "";
         if (keys) {
             filter = new FilterFactory(keys).getFilter();

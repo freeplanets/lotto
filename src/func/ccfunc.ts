@@ -49,7 +49,13 @@ export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: P
   if (param.TableName && param.TableData) {
     const jt = new JTable(conn, param.TableName);
     if (typeof param.TableData === "string") {
-      param.TableDatas = JSON.parse(param.TableData.replace(/\\/g, ""));
+      try {
+        param.TableDatas = JSON.parse(param.TableData.replace(/\\/g, ""));
+      } catch (err) {
+        msg.ErrNo = ErrCode.MISS_PARAMETER;
+        msg.ErrCon = "TableData parse error!!";
+        return msg;
+      }
     }
     if (param.TableDatas) {
       if (Array.isArray(param.TableDatas)) {
@@ -82,9 +88,9 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
   if (param.TableName) {
     // console.log("getdata:", param);
     const jt = new JTable(conn, param.TableName);
-    let fields: IKeyVal | IKeyVal[] | undefined;
+    let filters: string | IKeyVal | IKeyVal[] | undefined;
     if (Array.isArray(param.Filter)) {
-      fields = param.Filter.map((itm) => {
+      filters = param.Filter.map((itm) => {
         if (typeof(itm) === "string") {
           itm = JSON.parse(itm);
         }
@@ -92,21 +98,22 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
       });
     } else {
       if (typeof(param.Filter) === "string") {
+        const filter = `${param.Filter}`.replace(/\\/g, "");
         try {
-          const filter = `${param.Filter}`.replace(/\\/g, "");
           // console.log("getdata", param.Filter, filter);
-          param.Filter = JSON.parse(filter);
+          filters = JSON.parse(filter);
         } catch (err) {
-          msg.ErrNo = ErrCode.MISS_PARAMETER;
-          msg.ErrCon = "Filter parse error";
-          msg.error = err;
-          msg.Filter = param.Filter;
-          return msg;
+          // msg.ErrNo = ErrCode.MISS_PARAMETER;
+          // msg.ErrCon = "Filter parse error";
+          // msg.error = err;
+          // msg.Filter = param.Filter;
+          // return msg;
+          filters = filter;
         }
       }
-      fields = param.Filter;
+      // filters = param.Filter;
     }
-    msg = await jt.Lists(fields, param.Fields);
+    msg = await jt.Lists(filters, param.Fields);
   } else {
     msg.ErrNo = ErrCode.MISS_PARAMETER;
     msg.ErrCon = "Missing Table Name!!";
