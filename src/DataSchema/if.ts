@@ -416,7 +416,7 @@ export interface AskTable extends HasUID {
     Qty: number;
     Fee?: number; // 手續費
     AskFee: number; // 手續費率
-    AskPrice?: number; // 下單價格
+    AskPrice: number; // 下單價格
     LeverCredit?: number; // 下單時暫扣的信用額度
     ExtCredit?: number; // 下單後變動的信用額度,只能增加
     Lever?: number;
@@ -470,6 +470,8 @@ export interface Items {
     isLoan: number;
     StopGain: number;
     StopLose: number;
+    Closed: number;
+    OneHand: number;
     Type: number;
     IMG?: string;
 }

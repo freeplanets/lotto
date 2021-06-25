@@ -3,7 +3,7 @@ import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
 import UserInfoCrypto from "../components/class/UserInfoCrypto";
 import wsclient from "../components/webSC";
-import { ErrCode } from "../DataSchema/ENum";
+import { ErrCode, StopType } from "../DataSchema/ENum";
 import { AskTable, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
 
@@ -161,6 +161,18 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       msg.ErrCon = "Item not found!!";
       return msg;
     }
+    if (Item.isLoan) {
+      let ST = StopType.LONG_STOP;
+      if ( order.ItemType === -1 ) { ST = StopType.SHORT_STOP; }
+      const isClosed: boolean = !!(Item.Closed & ST);
+      if (isClosed) {
+        let str = "short";
+        if (ST === StopType.LONG_STOP ) { str = "long"; }
+        msg.ErrNo = ErrCode.NUM_STOPED;
+        msg.ErrCon = `Not accpet new ${str} order now!!`;
+        return msg;
+      }
+    }
     const newOrder: AskTable = {
       id: order.id,
       UserID,
@@ -188,6 +200,14 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
     */
     newOrder.AskFee = order.BuyType ? Item.CloseFee : Item.OpenFee;
     if (order.Lever) {
+      if (Item.OneHand) {
+        const onehand = (newOrder.Amount / newOrder.AskPrice) * order.Lever;
+        if (onehand > Item.OneHand) {
+          msg.ErrNo = ErrCode.OVER_MAX_HAND;
+          msg.ErrCon = "Over onehand!";
+          return msg;
+        }
+      }
       newOrder.Lever = order.Lever;
       if (order.GainPrice) { newOrder.GainPrice = order.GainPrice; }
       if (order.LosePrice) { newOrder.LosePrice = order.LosePrice; }

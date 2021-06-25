@@ -33,3 +33,9 @@ export enum MemoType {
 	SETTLE,
 	DELETE,
 }
+export enum StopType {
+  OPEN = 0,
+  LONG_STOP = 1,
+  SHORT_STOP = 2,
+  STOPED = 3
+}
