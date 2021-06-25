@@ -18,7 +18,7 @@ export const f: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConn
 };
 export const save: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {ErrNo: 0};
-  console.log("savedata", param);
+  // console.log("savedata", param);
   if (param.TableName && param.TableData) {
     const jt = new JTable(conn, param.TableName);
     if (typeof param.TableData === "string") {
@@ -45,7 +45,7 @@ export const save: IMyFunction<WebParams> = async (param: WebParams, conn: PoolC
 };
 export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {ErrNo: 0};
-  console.log("savedata", param);
+  // console.log("savedata", param);
   if (param.TableName && param.TableData) {
     const jt = new JTable(conn, param.TableName);
     if (typeof param.TableData === "string") {
