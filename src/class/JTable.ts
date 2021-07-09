@@ -192,7 +192,7 @@ export default class JTable<T extends IHasID> {
             // console.log("JTable Update ans:", row);
         }).catch((err) => {
             // ans = false;
-            console.log("JTable Upate err:", err, v);
+            console.log("JTable Upate err:", err);
             ans.ErrNo = ErrCode.DB_QUERY_ERROR;
             ans.Error = err;
             ans.debug = sql;
