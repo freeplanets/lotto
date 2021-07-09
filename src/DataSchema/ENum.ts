@@ -16,10 +16,21 @@ export enum ErrCode {
   TRY_CATCH_ERROR = 14,
   NO_DATA_FOUND = 15,
 }
-
 export enum FuncKey {
 	SET_CHANNEL = "SetChannel",
-	CLIENT_INFO = "ClientInfo"
+	CLIENT_INFO = "ClientInfo",
+  MESSAGE = "sendMessage",
+  SAVE_MESSAGE = "saveMessage",
+}
+export enum PriceCheckType {
+  CurPrice = 0,
+  LimitPrice = 1,
+}
+export enum Channels {
+  ASK = "AskChannel",
+  API_SERVER = "AskCreator",
+  ADMIN = "AdminChannel",
+  PUB = "PublicChannel",
 }
 
 export enum CreditType {

@@ -1,7 +1,7 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
-import UserInfoCrypto from "../components/class/UserInfoCrypto";
+import UserInfoCrypto from "../components/class/Ledger/UserInfoCrypto";
 import wsclient from "../components/webSC";
 import { ErrCode, StopType } from "../DataSchema/ENum";
 import { AskTable, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";

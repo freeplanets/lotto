@@ -1,8 +1,8 @@
 import { PoolConnection } from "mariadb";
-import JTable from "../../class/JTable";
-import { ErrCode } from "../../DataSchema/ENum";
-import { AskTable, IKeyVal, IMsg, Ledger, LedgerLever, LedgerTotal} from "../../DataSchema/if";
-import { getUserCredit } from "../../func/Credit";
+import JTable from "../../../class/JTable";
+import { ErrCode } from "../../../DataSchema/ENum";
+import { AskTable, IKeyVal, IMsg, Ledger, LedgerLever, LedgerTotal} from "../../../DataSchema/if";
+import { getUserCredit } from "../../../func/Credit";
 
 export default class UserInfoCrypto {
   constructor(private UserID, private conn: PoolConnection) {}

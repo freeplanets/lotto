@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import WebSocket, { ClientOptions } from "ws";
-import { ErrCode, FuncKey } from "../DataSchema/ENum";
+import { Channels, ErrCode, FuncKey } from "../DataSchema/ENum";
 import { WsMsg } from "../DataSchema/if";
 import ATAFactor from "./ATAFactor";
 
@@ -12,7 +12,8 @@ const wsSERVER =  process.env.WS_SERVER === "localhost:4001" ? `ws://${process.e
 const wsOptions: ClientOptions = {
   // localAddress: 'localhost',
 };
-const ChannelName = "AskCreator";
+const ChannelName = Channels.API_SERVER;
+
 class WsClient {
   get isConnected() {
     if (!this.ws) { return false; }

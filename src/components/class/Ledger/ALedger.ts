@@ -1,6 +1,6 @@
 import { PoolConnection } from "mariadb";
-import JTable from "../../class/JTable";
-import { AskTable, IHasID, IKeyVal, IMsg } from "../../DataSchema/if";
+import JTable from "../../../class/JTable";
+import { AskTable, IHasID, IKeyVal, IMsg } from "../../../DataSchema/if";
 
 export default abstract class ALedger<T extends IHasID> {
   protected jtable: JTable<T>;

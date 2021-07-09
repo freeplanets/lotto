@@ -1,4 +1,4 @@
-import { IKeyVal } from "../../DataSchema/if";
+import { IKeyVal } from "../../../DataSchema/if";
 import KeyValFilter from "./KeyValFilter";
 
 import AFilter from "./AFilter";

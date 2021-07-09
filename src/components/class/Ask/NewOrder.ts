@@ -1,5 +1,5 @@
-import { CreditType, ErrCode, MemoType } from "../../DataSchema/ENum";
-import { AskTable, CreditMemo, HasUID, IMsg, MemoCryptoCur } from "../../DataSchema/if";
+import { CreditType, ErrCode, MemoType } from "../../../DataSchema/ENum";
+import { AskTable, CreditMemo, HasUID, IMsg, MemoCryptoCur } from "../../../DataSchema/if";
 import AskTableAccess from "./AskTableAccess";
 
 export default class NewOrder extends AskTableAccess<HasUID> {

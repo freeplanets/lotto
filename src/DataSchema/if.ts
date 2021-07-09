@@ -532,3 +532,11 @@ export interface MemoCryptoCur {
     Fee?: number;
     Qty: number;
 }
+export interface ServiceMsg {
+    name: string; // 'name' from Sender 發話者名稱
+    text: string[]; // 訊息 for Chat Message 'text'
+    // sent: boolean; // for Chat Message 'sent'
+    receiveTime: number|string;
+    SenderID: number;
+    ReceiverID: number;
+}

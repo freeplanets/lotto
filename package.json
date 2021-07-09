@@ -32,7 +32,9 @@
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.2",
     "@types/node": "^12.12.12",
+    "@types/sha256": "^0.2.0",
     "@types/ws": "^7.4.4",
+    "sha256": "^0.2.0",
     "tslint": "^5.20.1",
     "typescript": "^3.7.2"
   }

@@ -1,8 +1,8 @@
 import { PoolConnection } from "mariadb";
-import JTable from "../../class/JTable";
-import { HasUID, IMsg } from "../../DataSchema/if";
-import { getUserCredit } from "../../func/Credit";
-import CreditAccess from "./CreditAccess";
+import JTable from "../../../class/JTable";
+import { HasUID, IMsg } from "../../../DataSchema/if";
+import { getUserCredit } from "../../../func/Credit";
+import CreditAccess from "../Credit/CreditAccess";
 
 export default abstract class AskTableAccess<T extends HasUID> {
   protected tb: JTable<T>;

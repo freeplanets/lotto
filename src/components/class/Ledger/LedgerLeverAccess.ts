@@ -1,7 +1,7 @@
 import { PoolConnection } from "mariadb";
-import JTable from "../../class/JTable";
-import { ErrCode } from "../../DataSchema/ENum";
-import { AskTable, IKeyVal, IMsg, LedgerLever } from "../../DataSchema/if";
+import JTable from "../../../class/JTable";
+import { ErrCode } from "../../../DataSchema/ENum";
+import { AskTable, IKeyVal, IMsg, LedgerLever } from "../../../DataSchema/if";
 import ALedger from "./ALedger";
 
 export default class LedgerLeverAccess extends ALedger<LedgerLever> {

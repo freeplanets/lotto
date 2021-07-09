@@ -33,6 +33,7 @@ export default class JTable<T extends IHasID> {
         this.extFilter = f;
     }
     public async getOne(id: number|IKeyVal): Promise<T|undefined> {
+        /*
         const param: any = [];
         const field: string[] = [];
         // console.log("getOne", typeof(id), id);
@@ -45,10 +46,12 @@ export default class JTable<T extends IHasID> {
             param.push(id);
             field.push("id=?");
         }
-        const sql = `select * from ${this.TableName} where ${field.join(" and ")}`;
+        */
+        const filter = new FilterFactory(id).getFilter();
+        const sql = `select * from ${this.TableName} where ${filter}`;
         let mb: T | undefined;
         // console.log("getone debug:", sql, param);
-        const ans = await this.query(sql, this.conn, param);
+        const ans = await this.query(sql, this.conn);
         /*
         await this.conn.query(sql).then((row) => {
             if (row.length > 0) {
@@ -189,7 +192,7 @@ export default class JTable<T extends IHasID> {
             // console.log("JTable Update ans:", row);
         }).catch((err) => {
             // ans = false;
-            console.log("JTable Upate err:", err);
+            console.log("JTable Upate err:", err, v);
             ans.ErrNo = ErrCode.DB_QUERY_ERROR;
             ans.Error = err;
             ans.debug = sql;

@@ -1,9 +1,9 @@
 import { PoolConnection } from "mariadb";
 import { HasUID, IMsg } from "../DataSchema/if";
-import AskTableAccess from "./class/AskTableAccess";
-import DealOrder from "./class/DealOrder";
-import DeleteOrder from "./class/DeleteOrder";
-import NewOrder from "./class/NewOrder";
+import AskTableAccess from "./class/Ask/AskTableAccess";
+import DealOrder from "./class/Ask/DealOrder";
+import DeleteOrder from "./class/Ask/DeleteOrder";
+import NewOrder from "./class/Ask/NewOrder";
 
 export default class ATACreator {
   private ATA: AskTableAccess<HasUID>;

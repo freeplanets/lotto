@@ -1,6 +1,6 @@
 import { PoolConnection } from "mariadb";
-import { ErrCode } from "../../DataSchema/ENum";
-import { CreditMemo, IDbAns, IMsg } from "../../DataSchema/if";
+import { ErrCode } from "../../../DataSchema/ENum";
+import { CreditMemo, IDbAns, IMsg } from "../../../DataSchema/if";
 
 export default class CreditAccess {
   constructor(private UserID: number, private conn: PoolConnection) {}

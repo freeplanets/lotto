@@ -1,8 +1,7 @@
-import { PoolConnection } from "mariadb";
 import { AskTable, HasUID } from "../DataSchema/if";
 import { getConnection } from "../func/db";
 import ATACreator from "./ATACreator";
-import AskTableAccess from "./class/AskTableAccess";
+import AskTableAccess from "./class/Ask/AskTableAccess";
 
 export default class ATAFactor {
   public async getATA(ask: AskTable): Promise<AskTableAccess<HasUID>> {

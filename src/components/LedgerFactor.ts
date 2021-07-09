@@ -1,9 +1,9 @@
 import { PoolConnection } from "mariadb";
 import { ErrCode } from "../DataSchema/ENum";
 import { AskTable, IHasID, IMsg } from "../DataSchema/if";
-import ALedger from "./class/ALedger";
-import LedgerAccess from "./class/LedgerAccess";
-import LedgerLeverAccess from "./class/LedgerLeverAccess";
+import ALedger from "./class/Ledger/ALedger";
+import LedgerAccess from "./class/Ledger/LedgerAccess";
+import LedgerLeverAccess from "./class/Ledger/LedgerLeverAccess";
 
 export default class LedgerFactor {
   private ledger: ALedger<IHasID>;

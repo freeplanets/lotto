@@ -1,7 +1,7 @@
 import { PoolConnection } from "mariadb";
-import { CreditType, ErrCode, MemoType } from "../../DataSchema/ENum";
-import { AskTable, CreditMemo, HasUID, IDbAns, IMsg, MemoCryptoCur } from "../../DataSchema/if";
-import LedgerFactor from "../LedgerFactor";
+import { CreditType, ErrCode, MemoType } from "../../../DataSchema/ENum";
+import { AskTable, CreditMemo, HasUID, IDbAns, IMsg, MemoCryptoCur } from "../../../DataSchema/if";
+import LedgerFactor from "../../LedgerFactor";
 import AskTableAccess from "./AskTableAccess";
 
 export default class DealOrder extends AskTableAccess<HasUID> {
@@ -18,6 +18,8 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     }
     await this.conn.beginTransaction();
     this.tb.ExtFilter = " ProcStatus < 2 ";
+    if (ask.CreateTime) { delete ask.CreateTime; }
+    if (ask.ModifyTime) { delete ask.ModifyTime; }
     const update = await this.tb.Update(ask);
     if ( update.ErrNo !== ErrCode.PASS ) {
       await this.conn.rollback();

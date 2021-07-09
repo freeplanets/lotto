@@ -1,19 +1,25 @@
 import {IKeyVal} from "../DataSchema/if";
-import AFilter from "./class/AFilter";
-import KeyValArrayFilter from "./class/KeyValArrayFilter";
-import KeyValFilter from "./class/KeyValFilter";
-import StringFilter from "./class/StringFilter";
+import AFilter from "./class/DataBase/AFilter";
+import KeyValArrayFilter from "./class/DataBase/KeyValArrayFilter";
+import KeyValFilter from "./class/DataBase/KeyValFilter";
+import StringFilter from "./class/DataBase/StringFilter";
 
 export default class FilterFactory {
   private filter: string;
-  constructor(filter: string|IKeyVal|IKeyVal[]) {
+  constructor(filter: number | string | IKeyVal | IKeyVal[]) {
     let af: AFilter;
-    if (typeof(filter) === "string") {
-      af = new StringFilter();
-    } else if (Array.isArray(filter)) {
-      af = new KeyValArrayFilter();
-    } else {
-      af = new KeyValFilter();
+    switch (typeof filter) {
+      case "number":
+        filter = `id = ${filter}`;
+      case "string":
+        af = new StringFilter();
+        break;
+      default:
+        if (Array.isArray(filter)) {
+          af = new KeyValArrayFilter();
+        } else {
+          af = new KeyValFilter();
+        }
     }
     this.filter = af.setFilter(filter);
   }
