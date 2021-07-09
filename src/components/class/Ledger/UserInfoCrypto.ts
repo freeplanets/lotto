@@ -3,9 +3,12 @@ import JTable from "../../../class/JTable";
 import { ErrCode } from "../../../DataSchema/ENum";
 import { AskTable, IKeyVal, IMsg, Ledger, LedgerLever, LedgerTotal} from "../../../DataSchema/if";
 import { getUserCredit } from "../../../func/Credit";
+import FuncDate from "../Functions/MyDate";
 
 export default class UserInfoCrypto {
-  constructor(private UserID, private conn: PoolConnection) {}
+  constructor(private UserID, private conn: PoolConnection) {
+    if (typeof UserID !== "number") { this.UserID = parseInt(UserID, 10); }
+  }
   public async getOrder(): Promise<IMsg> {
     const filter: IKeyVal[] = [];
     filter.push({ Key: "UserID", Val: this.UserID });
@@ -51,12 +54,21 @@ export default class UserInfoCrypto {
   }
   public async getLedgerLever(): Promise<IMsg> {
     const msg: IMsg = { ErrNo: ErrCode.PASS };
-    const filter: IKeyVal = {
+    const filter: IKeyVal[] = [];
+    const filter1: IKeyVal = {
       Key: "UserID",
       Val: this.UserID
     };
+    filter.push(filter1);
+    const filter2: IKeyVal = {
+      Key: "SellTime",
+      Val: FuncDate.dayDiffTS(14),
+      Val2: FuncDate.dayDiffTS(0),
+      Cond: "Between",
+    };
+    filter.push(filter2);
     const jt: JTable<LedgerLever> = new JTable(this.conn, "LedgerLever");
-    const ans = await jt.Lists(filter);
+    const ans = await jt.Lists(filter, "", "SellTime");
     if (ans) {
       msg.data = ans.data;
     } else {

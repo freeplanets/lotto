@@ -71,9 +71,9 @@ export default class JTable<T extends IHasID> {
         }
         return mb;
     }
-    public async Lists(keys?: string | IKeyVal | IKeyVal[], fields?: string|string[]): Promise<IMsg> {
+    public async Lists(keys?: string | IKeyVal | IKeyVal[], fields?: string|string[], orderField?: string): Promise<IMsg> {
         const msg: IMsg = {ErrNo: 0};
-        const ans = await this.List(keys, fields);
+        const ans = await this.List(keys, fields, orderField);
         if (ans) {
             msg.data = ans as T[];
         } else {
@@ -82,7 +82,7 @@ export default class JTable<T extends IHasID> {
         }
         return msg;
     }
-    public async List(keys?: string | IKeyVal | IKeyVal[], fields?: string|string[]): Promise<T[] | undefined> {
+    public async List(keys?: string | IKeyVal | IKeyVal[], fields?: string|string[], orderField?: string): Promise<T[] | undefined> {
         let filter = "";
         if (keys) {
             filter = new FilterFactory(keys).getFilter();
@@ -124,7 +124,10 @@ export default class JTable<T extends IHasID> {
                 fds = fields;
             }
         }
-        const sql = `select ${fds} from ${this.TableName} where ${filter}`;
+        let sql = `select ${fds} from ${this.TableName} where ${filter}`;
+        if (orderField) {
+            sql = `${sql} order by ${orderField}`;
+        }
         let mb: T[] | undefined;
         // console.log("JTable List sql", sql, keys);
         await this.conn.query(sql).then((row) => {
