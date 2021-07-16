@@ -50,7 +50,7 @@ export default class JTable<T extends IHasID> {
         const filter = new FilterFactory(id).getFilter();
         const sql = `select * from ${this.TableName} where ${filter}`;
         let mb: T | undefined;
-        // console.log("getone debug:", sql, param);
+        console.log("getone debug:", sql, id);
         const ans = await this.query(sql, this.conn);
         /*
         await this.conn.query(sql).then((row) => {

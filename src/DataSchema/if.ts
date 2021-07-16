@@ -2,11 +2,12 @@ import * as ENUM from "./ENum";
 
 export interface WsMsg {
     Func?: ENUM.FuncKey;
-    Asks?: AskTable | AskTable[];
+    Asks?: AskTable |AskTable[];
     Ask?: AskTable;
     Balance?: number;
     Message?: string;
     ChannelName?: string;
+    LedgerTotal?: LedgerTotal[];
     UserID?: number;
     [key: string]: any;
 }
@@ -532,11 +533,31 @@ export interface MemoCryptoCur {
     Fee?: number;
     Qty: number;
 }
-export interface ServiceMsg {
-    name: string; // 'name' from Sender 發話者名稱
+export interface ChatMsg {
+    name: string; // for Chat Message 'name' 發話者名稱
     text: string[]; // 訊息 for Chat Message 'text'
-    // sent: boolean; // for Chat Message 'sent'
+    sent: boolean; // for Chat Message 'sent'
+    stamp?: string; // 顯示訊息時間 例: '4 minutes ago' for Chat Message 'stemp'
+    // bgColor?:string; // 訊息底色 for Chat Message 'bg-color'
+    // txtColor?:string; // 訊息字顏色 for Chat Message 'text-color'
+    avatar?: string; // 發話者圖片（或圖片網址）for Chat Message 'avatar'
+    inMessage?: boolean; // 收訊方用，發話方是否正在輸入訊息 for Chat Message tag q-spinner-dots
     receiveTime: number|string;
     SenderID: number;
-    ReceiverID: number;
+    UpID: number;
+    ReceiverID?: number;
+    MKey?: string;
+}
+
+export interface MsgKey extends IHasID {
+    UserKey: string;
+    MKey: string;
+}
+export interface MsgCont extends IHasID {
+    MKey: string;
+    MsgCont: string;
+}
+export interface NameAndText {
+    name: string;
+    text: string[];
 }

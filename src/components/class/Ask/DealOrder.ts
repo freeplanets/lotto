@@ -24,6 +24,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     if ( update.ErrNo !== ErrCode.PASS ) {
       await this.conn.rollback();
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+      msg.Error = update.Error;
       return msg;
     }
     // console.log("DealOrder doit after update:", msg, ask.ProcStatus);
@@ -65,6 +66,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       if (csa.ErrNo !== ErrCode.PASS) {
         await this.conn.rollback();
         msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+        msg.Error = csa.Error;
         return msg;
       }
       if (csa.NewAsk) { NewAsk = csa.NewAsk as AskTable; }

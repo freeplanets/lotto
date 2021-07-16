@@ -15,13 +15,41 @@ export default class KeyValFilter extends AFilter {
   private hasKeyElement(f: IKeyVal): string {
     let str = this.addQuotationMarks(f.Val);
     if (f.Cond) {
+      /*
       if (f.Cond.toLowerCase() === "between") {
         str = `${str} and ${this.addQuotationMarks(f.Val2)}`;
+      }
+      */
+      switch (f.Cond.toLowerCase()) {
+        case "between":
+          str = `${str} and ${this.addQuotationMarks(f.Val2)}`;
+          break;
+        case "or":
+          return this.KeyEqualOR(f);
+          break;
       }
     } else {
       f.Cond = "=";
     }
     return ` ${f.Key} ${f.Cond} ${str} `;
+  }
+  private KeyEqualOR(f: IKeyVal) {
+    let fields: string[] = [];
+    let filter = "";
+    if (f.Key) {
+      if (f.Val2 !== undefined) {
+        filter = `(${f.Key} = ${this.addQuotationMarks(f.Val)} or ${f.Key} = ${this.addQuotationMarks(f.Val2)})`;
+      } else {
+        fields = f.Key.split(",");
+        const filters = fields.map((field) => {
+          return `${field} = ${this.addQuotationMarks(f.Val)}`;
+        });
+        filter = `(${filters.join(" or ")})`;
+      }
+    } else {
+      filter = `${f.Key} = ${this.addQuotationMarks(f.Val)}`;
+    }
+    return filter;
   }
   private addQuotationMarks(v: any): string {
     let tmp = v;
@@ -41,7 +69,7 @@ export default class KeyValFilter extends AFilter {
               ftr = `${key}`;
               break;
           default:
-              ftr = `${key} = ''`;
+              ftr = `${key} = '${filter[key]}'`;
       }
       return ftr;
     });

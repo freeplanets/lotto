@@ -81,7 +81,7 @@ export function getConnection(pool?: mariadb.Pool, doHash?: boolean): Promise<Po
         pool.getConnection().then((conn: PoolConnection) => {
             resolve(conn);
         }).catch((err) => {
-            console.log("getConnection error:", err);
+            console.log("getConnection error:", mdOptions.host, err);
             reject(false);
         });
     });

@@ -2,9 +2,10 @@ import { PoolConnection } from "mariadb";
 import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
 import UserInfoCrypto from "../components/class/Ledger/UserInfoCrypto";
+import Message from "../components/class/Message/Message";
 import wsclient from "../components/webSC";
 import { ErrCode, StopType } from "../DataSchema/ENum";
-import { AskTable, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
+import { AskTable, ChatMsg, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
 
 interface IMyFunction<T> extends GetPostFunction {
@@ -295,4 +296,31 @@ export const getLedgerDetail: IMyFunction<WebParams> = async (param: WebParams, 
 export const ModifyOrder = async (ask: HasUID, conn: PoolConnection) => {
   const ata: ATACreator = new ATACreator(ask, conn, "AskTable");
   return ata.doit();
+};
+export const sendMessage = async (param: WebParams, conn: PoolConnection) => {
+  const UserID = param.UserID;
+  if (param.WsMsg) {
+    try {
+      // console.log("sendMessage wsmsg", param.WsMsg);
+      const wsmsg: WsMsg = param.WsMsg;
+      console.log("sendMessage:", wsmsg);
+      if (wsmsg.Message) {
+        const chatMsg: ChatMsg = JSON.parse(wsmsg.Message) as ChatMsg;
+        console.log("sendMessage chatMsg", chatMsg);
+        const Msger: Message = new Message(chatMsg, conn);
+        const msg = await Msger.Add();
+        // console.log("sendMessage msg", msg);
+        if (msg.ErrNo === ErrCode.PASS) {
+          msg.MKey = Msger.MKey;
+          if (!chatMsg.MKey) { chatMsg.MKey = Msger.MKey; }
+          wsmsg.Message = JSON.stringify(chatMsg);
+          wsclient.Send(JSON.stringify(wsmsg));
+          return msg;
+        }
+      }
+    } catch (err) {
+      console.log("sendMessage error:", err);
+    }
+  }
+  return { ErrNo: ErrCode.MISS_PARAMETER };
 };

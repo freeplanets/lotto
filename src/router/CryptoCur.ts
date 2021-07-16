@@ -34,4 +34,7 @@ app.get("/GetLedgerDetail", (req: Request, res: Response) => {
 app.post("/DeleteOrder", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.DeleteOrder);
 });
+app.post("/PostMessage", (req: Request, res: Response) => {
+  EA.process(req, res, ccfunc.sendMessage);
+});
 export default app;

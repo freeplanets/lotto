@@ -38,7 +38,7 @@ class WsClient {
   public Send(msg: string) {
     // console.log("before Send Mesage:", msg);
     if (!this.isConnected) { return; }
-    // console.log("Send Mesage:");
+    console.log("Send Mesage:", msg);
     // this.ws.send(msg);
     try {
       this.ws.send(msg);
