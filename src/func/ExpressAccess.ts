@@ -25,11 +25,14 @@ export default class ExpressAccess {
   }
   private combineParams(old: IKeyVal, add: IKeyVal): IKeyVal {
     if (!old) { old = {}; }
+    /*
     if (add) {
       Object.keys(add).map((key) => {
         old[key] = add[key];
       });
     }
+    */
+    if (add) { Object.assign(old, add); }
     return old;
   }
 }

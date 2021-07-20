@@ -14,6 +14,7 @@ export default class LedgerAccess extends ALedger<Ledger> {
     const ledger: Ledger = {
       id: 0,
       UserID: ask.UserID,
+      UpId: ask.UpId,
       ItemID: ask.ItemID,
       AskID: ask.id,
       Qty: ask.Qty * key,

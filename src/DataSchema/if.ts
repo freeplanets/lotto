@@ -400,6 +400,7 @@ export interface Order extends IHasID {
     ProcStatus?: number;
 }
 export interface Lever extends IHasID {
+    UpId: number;
     Multiples: number;
     LongT: number;
     ShortT: number;
@@ -434,6 +435,7 @@ export interface AskTable extends HasUID {
     isUserSettle?: number; // 會員平倉
 }
 export interface LedgerLever extends HasUID {
+    UpId: number;
     ItemID: number;
     ItemType: number;
     BuyID: number;  // 買進時 AskTable id
@@ -506,6 +508,7 @@ export interface CryptoOrder {
 }
 
 export interface LedgerTotal extends HasUID {
+    UpId: number;
     ItemID: number;
     Qty: number;
 }

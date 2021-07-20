@@ -34,7 +34,7 @@ const mdOptions: mariadb.PoolConfig = {
     password: process.env.MDPASSWORD,
     database: process.env.MDDATABASE,
     port: process.env.MDPORT ? parseInt(process.env.MDPORT, 10) : 3306,
-    timezone: "Asia/Taipei",
+    // timezone: "Asia/Taipei",
     charset: "UTF8"
 };
 const ccOptions: mariadb.PoolConfig = {
@@ -43,7 +43,7 @@ const ccOptions: mariadb.PoolConfig = {
     password: process.env.CCPASSWORD,
     database: process.env.CCDATABASE,
     port: process.env.CCPORT ? parseInt(process.env.CCPORT, 10) : 3306,
-    timezone: "Asia/Taipei",
+    // timezone: "Asia/Taipei",
     charset: "UTF8"
 };
 /**
@@ -77,7 +77,7 @@ export function getConnection(pool?: mariadb.Pool, doHash?: boolean): Promise<Po
         // if (doHash) { reject({error: "No hash test now"}); }
         if (!pool) { pool = dbPool; }
         // console.log("idleConnection:" + pool.idleConnections());
-        // console.log("pool info:", pool.totalConnections(), pool.activeConnections());
+        // console.log("pool info:", pool.totalConnections(), pool.activeConnections(), pool.idleConnections());
         pool.getConnection().then((conn: PoolConnection) => {
             resolve(conn);
         }).catch((err) => {

@@ -51,6 +51,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
           ldgOne = {
             id: 0,
             UserID: ans.UserID,
+            UpId: ans.UpId,
             ItemID: ans.ItemID,
             ItemType: ans.ItemType,
             BuyID: ans.id,
@@ -84,6 +85,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
     const ledger: LedgerLever = {
       id: 0,
       UserID: ask.UserID,
+      UpId: ask.UpId,
       ItemID: ask.ItemID,
       ItemType: ask.ItemType,
       BuyID: ask.id,
