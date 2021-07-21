@@ -36,7 +36,7 @@ const mdOptions: mariadb.PoolConfig = {
     port: process.env.MDPORT ? parseInt(process.env.MDPORT, 10) : 3306,
     // timezone: "Asia/Taipei",
     charset: "UTF8",
-    connectionLimit: 20,
+    connectionLimit: 30,
 };
 const ccOptions: mariadb.PoolConfig = {
     host: process.env.CCHOST,
