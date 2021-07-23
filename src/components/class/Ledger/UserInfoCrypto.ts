@@ -50,7 +50,7 @@ export default class UserInfoCrypto {
       }
     ] ;
     const jt: JTable<Ledger> = new JTable(this.conn, "Ledger");
-    const ans = await jt.Lists(filter);
+    const ans = await jt.Lists(filter, "", "CreateTime desc");
     if (ans) {
       msg.data = ans.data;
     } else {
@@ -74,7 +74,7 @@ export default class UserInfoCrypto {
     };
     filter.push(filter2);
     const jt: JTable<LedgerLever> = new JTable(this.conn, "LedgerLever");
-    const ans = await jt.Lists(filter, "", "SellTime");
+    const ans = await jt.Lists(filter, "", "SellTime desc");
     if (ans) {
       msg.data = ans.data;
     } else {
