@@ -143,6 +143,15 @@ agentApi.get("/3", async (req: Request, res: Response) => {
 agentApi.get("/4", async (req: Request, res: Response) => {
     await CreditAC(req.query, res, 4);
 });
+// CryptoCur 槓桿損益
+agentApi.get("/9", async (req: Request, res: Response) => {
+    await getLedgerLever(req, res);
+});
+// CryptoCur 下注明細
+agentApi.get("/10", async (req: Request, res: Response) => {
+    await getAskTable(req, res);
+});
+
 agentApi.get("/GCaption", async (req: Request, res: Response) => {
     await getGameDataCaption(req, res);
 });
@@ -510,4 +519,87 @@ async function ModifyUserCredit(uid: number, balance: number, conn: Connection) 
     return false;
 }
 */
+async function getLedgerLever(req, res) {
+    const params = req.query;
+    // console.log("getTicketDetail:", params);
+    const data: IAnsData = {code: 0};
+    // const conn = await dbPool.getConnection();
+    const conn = await getConnection();
+    if (!conn) {
+        data.code = 9;
+        data.ErrCon = "system busy!!";
+        res.send(JSON.stringify(data));
+        return;
+    }
+    if (!params.agentId || !params.param) {
+        data.code = 9;
+        data.ErrCon = "parameter is missing!!";
+        conn.release();
+        res.send(JSON.stringify(data));
+        return;
+    }
+    const Agent: IUser = await getAgent(params.agentId, conn);
+    const eds = new EDS(Agent.DfKey);
+    const param = decParam(eds.Decrypted(params.param));
+    console.log("getLedgerLever param:", JSON.stringify(param));
+    const sql = `select LedgerLever.id,Member.Account userCode,ItemID,ItemType,BuyID,SellID,Qty,BuyPrice,SellPrice,BuyFee Fee,Qty*BuyPrice*Lever Amt,
+        GainLose,(GainLose - BuyFee) WinLose,BuyTime,SellTime
+        from LedgerLever left join Member on LedgerLever.UserID = Member.id where LedgerLever.UpId=${params.agentId} and BuyTime > 0 and
+        SellTime between ${param.startTime} and ${param.endTime} order by SellTime limit 0,1000`;
+    // console.log("getLedgerLever", sql);
+    await conn.query(sql).then((rows) => {
+        data.list = rows;
+        // console.log("getTicketDetail", sql);
+    }).catch((err) => {
+        data.code = 9;
+        data.error = err;
+        console.log("getLedgerLever error", data);
+        // res.send(JSON.stringify(data));
+    });
+    conn.release();
+    res.send(JSON.stringify(data));
+}
+async function getAskTable(req, res) {
+    const params = req.query;
+    // console.log("getTicketDetail:", params);
+    const data: IAnsData = {code: 0};
+    // const conn = await dbPool.getConnection();
+    const conn = await getConnection();
+    if (!conn) {
+        data.code = 9;
+        data.ErrCon = "system busy!!";
+        res.send(JSON.stringify(data));
+        return;
+    }
+    if (!params.agentId || !params.param) {
+        data.code = 9;
+        data.ErrCon = "parameter is missing!!";
+        conn.release();
+        res.send(JSON.stringify(data));
+        return;
+    }
+    const Agent: IUser = await getAgent(params.agentId, conn);
+    const eds = new EDS(Agent.DfKey);
+    const param = decParam(eds.Decrypted(params.param));
+    const startTime = param.startTime ? param.startTime : 0;
+    const endTime = param.endTime ? param.endTime : 0;
+    console.log("getAskTable param:", JSON.stringify(param));
+    const sql = `select AskTable.id,Member.Account userCode,ItemID,ItemType,AskType,BuyType,Qty,Price,
+        Amount,Fee,UNIX_TIMESTAMP(AskTable.CreateTime) CreateTime,UNIX_TIMESTAMP(AskTable.ModifyTime) ModifyTime
+        from AskTable left join Member on AskTable.UserID = Member.id where AskTable.UpId=${params.agentId} and
+        AskTable.ModifyTime between from_unixtime(${Math.round(startTime / 1000)}) and from_unixtime(${Math.round(endTime / 1000)})
+        order by AskTable.ModifyTime limit 0,1000`;
+    // console.log("getAskTable", sql);
+    await conn.query(sql).then((rows) => {
+        data.list = rows;
+        // console.log("getTicketDetail", sql);
+    }).catch((err) => {
+        data.code = 9;
+        data.error = err;
+        console.log("getAskTable error", data);
+        // res.send(JSON.stringify(data));
+    });
+    conn.release();
+    res.send(JSON.stringify(data));
+}
 export default agentApi;
