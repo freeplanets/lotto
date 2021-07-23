@@ -41,6 +41,12 @@ export default class UserInfoCrypto {
       {
         Key: "ItemID",
         Val: itemid
+      },
+      {
+        Key: "CreateTime",
+        Val: FuncDate.dayDiff(7),
+        Val2: `${FuncDate.dayDiff(0)} 23:59:59`,
+        Cond: "Between",
       }
     ] ;
     const jt: JTable<Ledger> = new JTable(this.conn, "Ledger");
@@ -62,7 +68,7 @@ export default class UserInfoCrypto {
     filter.push(filter1);
     const filter2: IKeyVal = {
       Key: "SellTime",
-      Val: FuncDate.dayDiffTS(14),
+      Val: FuncDate.dayDiffTS(7),
       Val2: FuncDate.dayDiffTS(0),
       Cond: "Between",
     };
