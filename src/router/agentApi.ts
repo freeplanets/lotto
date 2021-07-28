@@ -217,7 +217,7 @@ async function CreditAC(params, res: Response, ac: number) {
 }
 async function getAgent(id: string, conn: Connection) {
     const sql: string = "select * from User where id=?";
-    console.log("getAgent:", sql, id);
+    // console.log("getAgent:", sql, id);
     const row = await conn.query(sql, [id]);
     return row[0];
 }
@@ -542,12 +542,12 @@ async function getLedgerLever(req, res) {
     const Agent: IUser = await getAgent(params.agentId, conn);
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
-    console.log("getLedgerLever param:", JSON.stringify(param));
+    // console.log("getLedgerLever param:", JSON.stringify(param));
     const sql = `select LedgerLever.id,Member.Account userCode,ItemID,ItemType,BuyID,SellID,Qty,BuyPrice,SellPrice,BuyFee Fee,Lever,Qty*BuyPrice*Lever Amt,
         GainLose,(GainLose - BuyFee) WinLose,Round(BuyTime/1000, 0) BuyTime,Round(SellTime/1000, 0) SellTime
         from LedgerLever left join Member on LedgerLever.UserID = Member.id where LedgerLever.UpId=${params.agentId} and BuyTime > 0 and
         SellTime between ${param.startTime} and ${param.endTime} order by SellTime limit 0,1000`;
-    // console.log("getLedgerLever", sql);
+    console.log("getLedgerLever", sql);
     await conn.query(sql).then((rows) => {
         data.list = rows;
         // console.log("getTicketDetail", sql);
@@ -584,13 +584,13 @@ async function getAskTable(req, res) {
     const param = decParam(eds.Decrypted(params.param));
     const startTime = param.startTime ? param.startTime : 0;
     const endTime = param.endTime ? param.endTime : 0;
-    console.log("getAskTable param:", JSON.stringify(param));
+    // console.log("getAskTable param:", JSON.stringify(param));
     const sql = `select AskTable.id,Member.Account userCode,ItemID,ItemType,AskType,BuyType,Qty,Price,
         Amount,Fee,UNIX_TIMESTAMP(AskTable.CreateTime) CreateTime,UNIX_TIMESTAMP(AskTable.ModifyTime) ModifyTime
         from AskTable left join Member on AskTable.UserID = Member.id where AskTable.UpId=${params.agentId} and
         AskTable.ModifyTime between from_unixtime(${Math.round(startTime / 1000)}) and from_unixtime(${Math.round(endTime / 1000)})
         order by AskTable.ModifyTime limit 0,1000`;
-    // console.log("getAskTable", sql);
+    console.log("getAskTable", sql);
     await conn.query(sql).then((rows) => {
         data.list = rows;
         // console.log("getTicketDetail", sql);
