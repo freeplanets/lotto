@@ -544,7 +544,7 @@ async function getLedgerLever(req, res) {
     const param = decParam(eds.Decrypted(params.param));
     console.log("getLedgerLever param:", JSON.stringify(param));
     const sql = `select LedgerLever.id,Member.Account userCode,ItemID,ItemType,BuyID,SellID,Qty,BuyPrice,SellPrice,BuyFee Fee,Lever,Qty*BuyPrice*Lever Amt,
-        GainLose,(GainLose - BuyFee) WinLose,Round(BuyTime, 0) BuyTime,Round(SellTime, 0) SellTime
+        GainLose,(GainLose - BuyFee) WinLose,Round(BuyTime/1000, 0) BuyTime,Round(SellTime/1000, 0) SellTime
         from LedgerLever left join Member on LedgerLever.UserID = Member.id where LedgerLever.UpId=${params.agentId} and BuyTime > 0 and
         SellTime between ${param.startTime} and ${param.endTime} order by SellTime limit 0,1000`;
     // console.log("getLedgerLever", sql);
