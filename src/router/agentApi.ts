@@ -588,7 +588,7 @@ async function getAskTable(req, res) {
     const sql = `select AskTable.id,Member.Account userCode,ItemID,ItemType,AskType,BuyType,Qty,Price,
         Amount,Fee,UNIX_TIMESTAMP(AskTable.CreateTime) CreateTime,UNIX_TIMESTAMP(AskTable.ModifyTime) ModifyTime
         from AskTable left join Member on AskTable.UserID = Member.id where AskTable.UpId=${params.agentId} and
-        AskTable.ModifyTime between from_unixtime(${Math.round(startTime / 1000)}) and from_unixtime(${Math.round(endTime / 1000)})
+        AskTable.ModifyTime between from_unixtime(${startTime}) and from_unixtime(${endTime})
         order by AskTable.ModifyTime limit 0,1000`;
     console.log("getAskTable", sql);
     await conn.query(sql).then((rows) => {
