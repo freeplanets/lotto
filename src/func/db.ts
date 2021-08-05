@@ -76,7 +76,7 @@ export function getConnection(pool?: mariadb.Pool, doHash?: boolean): Promise<Po
     // const pool: mariadb.Pool = dbPool;
     return new Promise((resolve, reject) => {
         // if (doHash) { pool = HHPool; }
-        if (doHash) { reject(false); }
+        if (doHash) { reject({ error: "no more doHash" }); }
         // if (doHash) { reject({error: "No hash test now"}); }
         if (!pool) { pool = dbPool; }
         // console.log("idleConnection:" + pool.idleConnections());
@@ -85,7 +85,7 @@ export function getConnection(pool?: mariadb.Pool, doHash?: boolean): Promise<Po
             resolve(conn);
         }).catch((err) => {
             console.log("getConnection error:", mdOptions.host, err);
-            reject(false);
+            reject(err);
         });
     });
 }

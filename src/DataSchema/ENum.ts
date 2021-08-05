@@ -21,6 +21,10 @@ export enum FuncKey {
 	CLIENT_INFO = "ClientInfo",
   MESSAGE = "sendMessage",
   SAVE_MESSAGE = "saveMessage",
+  GET_CRYPTOITEM_LEVER = "getCryptoItemLever",
+  GET_CRYPTOITEM_ALL = "getCryptoItemAll",
+  GET_CRYPTOITEM_CODE_DISTINCT = "getCryptoItemCodeDistinct",
+  GET_UNFINISHED_ASKS = "getUnFinishedAsks",
 }
 export enum PriceCheckType {
   CurPrice = 0,

@@ -1,7 +1,10 @@
 import * as ENUM from "./ENum";
-
-export interface WsMsg {
+export interface AnyObject {
+    [key: string]: any;
+}
+export interface WsMsg extends AnyObject {
     Func?: ENUM.FuncKey;
+    data?: any;
     Asks?: AskTable |AskTable[];
     Ask?: AskTable;
     Balance?: number;
@@ -9,7 +12,6 @@ export interface WsMsg {
     ChannelName?: string;
     LedgerTotal?: LedgerTotal[];
     UserID?: number;
-    [key: string]: any;
 }
 export interface IHasID {
     id: number;
@@ -556,11 +558,25 @@ export interface MsgKey extends IHasID {
     UserKey: string;
     MKey: string;
 }
-export interface MsgCont extends IHasID {
+export interface MsgCont extends AnyObject {
+    id: number;
     MKey: string;
     MsgCont: string;
 }
 export interface NameAndText {
     name: string;
     text: string[];
+}
+export interface CryptoOpRules {
+    OneHand?: number;    // 單手上限
+    Full?: number;   // 滿倉
+}
+export interface CryptoOpParams extends IHasID {
+    OpType: number;
+    ItemID: number;
+    isActive: number;
+    Rules: string;
+    ModifyID?: number;
+    CreateTime?: string;
+    ModifyTime?: string;
 }

@@ -3,6 +3,7 @@ import WebSocket, { ClientOptions } from "ws";
 import { Channels, ErrCode, FuncKey } from "../DataSchema/ENum";
 import { WsMsg } from "../DataSchema/if";
 import ATAFactor from "./ATAFactor";
+import FuncKeyManager from "./FuncKeyManager";
 
 dotenv.config();
 
@@ -74,6 +75,10 @@ class WsClient {
       // console.log("message from WS:", data);
       try {
         const wsmsg: WsMsg = JSON.parse(data as string);
+        if (wsmsg.Func) {
+          new FuncKeyManager(wsmsg.Func, this.ws).doit();
+          console.log("after FuncKeyManager doit");
+        }
         if (wsmsg.Ask) {
           // const ask: AskTable = JSON.parse(data as string);
           const ask = wsmsg.Ask;
