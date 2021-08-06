@@ -6,6 +6,7 @@ export default class NewOrder extends AskTableAccess<HasUID> {
   public async doit(): Promise<IMsg> {
     let msg: IMsg = { ErrNo: ErrCode.PASS };
     const ask: AskTable = this.ask as AskTable;
+    msg.UserID = ask.UserID;
     await this.conn.beginTransaction();
     // console.log("NewOrder doit:", JSON.stringify(ask));
     if (ask.BuyType === 0) {

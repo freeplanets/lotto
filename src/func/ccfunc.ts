@@ -298,12 +298,12 @@ export const ModifyOrder = async (ask: HasUID, conn: PoolConnection) => {
   return ata.doit();
 };
 export const sendMessage = async (param: WebParams, conn: PoolConnection) => {
-  const UserID = param.UserID;
+  // const UserID = param.UserID;
   if (param.WsMsg) {
     try {
       // console.log("sendMessage wsmsg", param.WsMsg);
       const wsmsg: WsMsg = param.WsMsg;
-      console.log("sendMessage:", wsmsg);
+      // console.log("sendMessage:", wsmsg);
       if (wsmsg.Message) {
         const chatMsg: ChatMsg = JSON.parse(wsmsg.Message) as ChatMsg;
         console.log("sendMessage chatMsg", chatMsg);

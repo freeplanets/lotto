@@ -60,7 +60,7 @@ class WsClient {
     console.log("create connection!!", wsSERVER);
     this.ws = new WebSocket(this.url, this.opts);
     this.ws.on("error", (data) => {
-      console.log("error:", data);
+      console.log("createConnection error:", data.message);
     });
     this.ws.on("disconnect", (data) => {
       console.log("disconnect:", data);
@@ -77,7 +77,7 @@ class WsClient {
         const wsmsg: WsMsg = JSON.parse(data as string);
         if (wsmsg.Func) {
           new FuncKeyManager(wsmsg.Func, this.ws).doit();
-          console.log("after FuncKeyManager doit");
+          // console.log("after FuncKeyManager doit");
         }
         if (wsmsg.Ask) {
           // const ask: AskTable = JSON.parse(data as string);
@@ -114,7 +114,7 @@ class WsClient {
       setTimeout(() => {
         console.log("do reconnect");
         me.createConnection();
-      }, 15000);
+      }, 5000);
     });
   }
   private heartbeat() {

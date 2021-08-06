@@ -14,10 +14,10 @@ export default class GetUnFinishedAsks extends AGet {
 					Val: 2,
 					Cond: "<",
 				};
-				console.log("before list");
+				// console.log("before list");
 				const ans = await jt.List(filter);
 				if (ans) {
-					console.log("before resolve");
+					// console.log("before resolve");
 					resolve(ans);
 				} else {
 					resolve(false);

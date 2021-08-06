@@ -719,7 +719,7 @@ app.get("/getPayRate", async (req, res) => {
         where p.PayClassID=? and p.GameID = ?`;
    */
   const params = [param.GameID as string, param.GameID as string, param.PayClassID as string];
-  const sql = `select k.*,p.SubType,p.Rate from
+  const sql = `select k.*,p.Rate from
     (select b.GameID,b.SubType,a.BetType,b.DfRate,a.Probability,b.PerStep,b.MinHand,b.MaxHand
         from ProbabilityTable a LEFT join BasePayRate b
         on a.GType=b.GType and a.BetType=b.BetType and a.SubType=b.SubType where b.GameID=?) as k

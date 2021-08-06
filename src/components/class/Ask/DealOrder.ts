@@ -11,6 +11,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
   public async doit(): Promise<IMsg> {
     const msg: IMsg = { ErrNo: ErrCode.PASS };
     const ask: AskTable = this.ask as AskTable;
+    msg.UserID = ask.UserID;
     if (ask.Amount === 0 && ask.BuyType === 0 ) {
       msg.ErrNo = ErrCode.MISS_PARAMETER;
       msg.ErrCon = "Amount=0";

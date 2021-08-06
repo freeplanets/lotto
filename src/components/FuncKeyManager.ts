@@ -12,7 +12,7 @@ export default class FuncKeyManager {
 	private returnfunc: FuncKey;
 	constructor(funcKey: FuncKey, ws: WebSocket) {
 		this.ws = ws;
-		console.log("funcKey:", funcKey);
+		// console.log("funcKey:", funcKey);
 		this.returnfunc = funcKey;
 		switch (funcKey) {
 			case FuncKey.GET_CRYPTOITEM_CODE_DISTINCT:
@@ -33,7 +33,7 @@ export default class FuncKeyManager {
 						Func: this.returnfunc,
 						data: res,
 					};
-					console.log("FuncKeyManager doit", JSON.stringify(wsg));
+					// console.log("FuncKeyManager doit", JSON.stringify(wsg));
 					this.ws.send(JSON.stringify(wsg));
 				}
 			});
