@@ -178,6 +178,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       id: order.id,
       UserID,
       UpId,
+      CLevel: param.CLevel,
       ItemID: Item.id,
       ItemType: order.ItemType,
       Code: Item.Code,

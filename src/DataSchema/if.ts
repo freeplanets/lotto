@@ -410,6 +410,7 @@ export interface Lever extends IHasID {
 }
 export interface AskTable extends HasUID {
     UpId: number;
+    CLevel: string;
     ItemID: number;
     ItemType: number;
     Code: string;
