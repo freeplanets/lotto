@@ -1,10 +1,10 @@
-import { ErrCode } from '../../../DataSchema/ENum';
-import { IMsg, Order } from '../../../DataSchema/if';
+import { ErrCode } from "../../../DataSchema/ENum";
+import { IMsg, Order } from "../../../DataSchema/if";
 export default abstract class AReceiver {
-	abstract process(UserID:number, order:Order):IMsg;
-	protected preCheck(order:Order):IMsg {
-		const msg:IMsg = { ErrNo: ErrCode.PASS }
-    if ( !order.BuyType ) {   // 買
+	public abstract process(UserID: number, order: Order): IMsg;
+	protected preCheck(order: Order): IMsg {
+		const msg: IMsg = { ErrNo: ErrCode.PASS };
+  if ( !order.BuyType ) {   // 買
       if ( !order.Amount || !order.AskPrice) {
         msg.ErrNo = ErrCode.MISS_PARAMETER;
         msg.ErrCon = "No Price found";
@@ -19,6 +19,6 @@ export default abstract class AReceiver {
         }
       }
     }
-		return msg
+		return msg;
 	}
 }

@@ -15,6 +15,9 @@ export enum ErrCode {
   DB_QUERY_ERROR = 13,
   TRY_CATCH_ERROR = 14,
   NO_DATA_FOUND = 15,
+  OVER_ONE_HAND = 16,
+  OVER_FULL_STORAGE = 17,
+  IN_SHORT_TERM = 18,
 }
 export enum FuncKey {
 	SET_CHANNEL = "SetChannel",

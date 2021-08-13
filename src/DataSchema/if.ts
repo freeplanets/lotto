@@ -390,12 +390,15 @@ export interface IHashAna extends IHasID {
 // 下單資料
 export interface Order extends IHasID {
     ItemID: number;
+    ItemType: number;
     Price: number;
     AskType: number; // 0 市價, 1 限價
     BuyType: number; // 0 買, 1 賣
     Qty: number;
     Amount: number;
+    TermFee?: number;
     Lever?: number;
+    CLevel: string;
     USetID?: number; // 平倉對象ID -> 會員下單
     GainPrice?: number;
     LosePrice?: number;
@@ -421,6 +424,7 @@ export interface AskTable extends HasUID {
     Qty: number;
     Fee?: number; // 手續費
     AskFee: number; // 手續費率
+    TermFee?: number; // 短線費用
     AskPrice: number; // 下單價格
     LeverCredit?: number; // 下單時暫扣的信用額度
     ExtCredit?: number; // 下單後變動的信用額度,只能增加
@@ -521,6 +525,10 @@ export interface Ledger extends LedgerTotal {
     Amount: number;
     Fee: number;
 }
+export interface AskTotal {
+    ItemID: number;
+    Total: number;
+}
 /**
  * CreditMemo
  * database type varchar 256
@@ -573,11 +581,17 @@ export interface CryptoOpRules {
     Full?: number;   // 滿倉
 }
 export interface CryptoOpParams extends IHasID {
-    OpType: number;
-    ItemID: number;
-    isActive: number;
-    Rules: string;
-    ModifyID?: number;
-    CreateTime?: string;
-    ModifyTime?: string;
+    ItemID: number; // 項目代號
+    OpType: string; // 控盤類型 None, A, B, C, D
+    isActive: number; // 是否啟用
+    OneHand: number; // 單注上限
+    FullStorage: number; // 滿倉
+    LeverLimit: number; // 最大槓桿倍數
+    ShortTerm1: number; // 短線1 不可平倉時間
+    ShortTerm2: number; // 短線2 可平倉但加收手續費
+    ShortTermFee: number; // 短線手續費則
+}
+export interface UserInfo extends IHasID {
+    UpId: number;
+    CLevel: string;
 }

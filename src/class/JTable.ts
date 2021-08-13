@@ -32,37 +32,14 @@ export default class JTable<T extends IHasID> {
     set ExtFilter(f: string) {
         this.extFilter = f;
     }
-    public async getOne(id: number|IKeyVal): Promise<T|undefined> {
-        /*
-        const param: any = [];
-        const field: string[] = [];
-        // console.log("getOne", typeof(id), id);
-        if (typeof(id) === "object") {
-            Object.keys(id).map((key) => {
-                param.push(id[key]);
-                field.push(`${key}=?`);
-            });
-        } else {
-            param.push(id);
-            field.push("id=?");
-        }
-        */
+    public async getOne(id: number | IKeyVal, fields?: string | string[]): Promise<T|undefined> {
         const filter = new FilterFactory(id).getFilter();
-        const sql = `select * from ${this.TableName} where ${filter}`;
+        let field = "*";
+        if (fields) { field = Array.isArray(fields) ? fields.join(",") : fields; }
+        const sql = `select ${field} from ${this.TableName} where ${filter}`;
         let mb: T | undefined;
         console.log("getone debug:", sql, id);
         const ans = await this.query(sql, this.conn);
-        /*
-        await this.conn.query(sql).then((row) => {
-            if (row.length > 0) {
-                mb = row[0];
-                return mb;
-            }
-        }).catch((err) => {
-            // mb = err;
-            console.log("JTable getOne", err);
-        });
-        */
         // console.log("JTable List mb", mb);
         if (ans) {
             if (ans.length > 0) {
