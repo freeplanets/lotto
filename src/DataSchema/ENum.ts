@@ -18,6 +18,7 @@ export enum ErrCode {
   OVER_ONE_HAND = 16,
   OVER_FULL_STORAGE = 17,
   IN_SHORT_TERM = 18,
+  HAS_ASK_IN_PROCESS = 19,
 }
 export enum FuncKey {
 	SET_CHANNEL = "SetChannel",

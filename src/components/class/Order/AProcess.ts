@@ -19,7 +19,7 @@ export default abstract class AProcess {
 				newOrder.isUserSettle = 1;
 				newOrder.ProcStatus = 1;
 			}
-			console.log("createOrder has order id", newOrder);
+			// console.log("createOrder has order id", newOrder);
 		} else {
 			msg = await this.da.getItemByID(order.ItemID);
 			if (msg.ErrNo !== ErrCode.PASS) { return msg; }

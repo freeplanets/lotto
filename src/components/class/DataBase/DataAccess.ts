@@ -14,10 +14,10 @@ export default class DataAccess {
 		const fields = ["id", "DealTime"];
 		return this.getData("AskTable", filter, fields);
 	}
-	public getAskTotal(itemid: number): Promise<IMsg> {
-		const filter: IKeyVal = { ItemID: itemid };
-		const fields = ["ItemID", "Total"];
-		return this.getData("AskTotal", filter, fields);
+	public getItemTotal(itemid: number): Promise<IMsg> {
+		const filter: IKeyVal = { id: itemid };
+		const fields = ["id", "Total"];
+		return this.getData("ItemTotal", filter, fields);
 	}
 	public getOpParam(clevel: string, ItemID?: number): Promise<IMsg> {
 		const filter: IKeyVal = {OpType: clevel};
@@ -34,7 +34,15 @@ export default class DataAccess {
 		const fields = ["id", "UpId", "CLevel"];
 		return this.getData("Member", filter, fields);
 	}
-	private getData(tablename: string, filter: IKeyVal, fields?: string|string[]): Promise<IMsg> {
+	public AskInProcess(UserID: number): Promise<IMsg> {
+		const filter: IKeyVal[] = [
+			{ Key: "UserID", Val: UserID },
+			{ Key: "ProcStatus", Val: 2 , Cond: "<" }
+		];
+		const fields = ["id", "UserID"];
+		return this.getData("AskTable", filter, fields);
+	}
+	private getData(tablename: string, filter: IKeyVal | IKeyVal[], fields?: string|string[]): Promise<IMsg> {
 		return new Promise((resolve, reject) => {
 			const jt = new JTable<IHasID>(this.conn, tablename);
 			const msg: IMsg = { ErrNo: ErrCode.PASS };

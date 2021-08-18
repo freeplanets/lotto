@@ -46,6 +46,15 @@ export default class NewOrder extends AskTableAccess<HasUID> {
       await this.conn.rollback();
       return msg;
     }
+    /*
+    if (ask.Lever && ask.AskType) {
+      msg = await this.ItemTotal.addAsk(ask.ItemID, ask.Amount * ask.Lever * ask.ItemType);
+      if (msg.ErrNo !== ErrCode.PASS) {
+        await this.conn.rollback();
+        return msg;
+      }
+    }
+    */
     this.conn.commit();
     const hasOne = await this.tb.getOne(AskID);
     if (hasOne) { msg.Ask = hasOne as AskTable; }

@@ -1111,7 +1111,7 @@ app.get("/getDfOddsItem", async (req, res) => {
     if (ans) {
         msg.data = ans;
     } else {
-        console.log(ans);
+        console.log("getDfoddsItem", ans);
     }
     conn.release();
     res.send(JSON.stringify(msg));

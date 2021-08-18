@@ -528,10 +528,7 @@ export interface Ledger extends LedgerTotal {
     Amount: number;
     Fee: number;
 }
-export interface AskTotal {
-    ItemID: number;
-    Total: number;
-}
+
 /**
  * CreditMemo
  * database type varchar 256
@@ -598,4 +595,9 @@ export interface CryptoOpParams extends IHasID {
 export interface UserInfo extends IHasID {
     UpId: number;
     CLevel: string;
+}
+export interface ItemTotal {
+    id: number;
+    Total?: number;
+    InProc?: number;
 }

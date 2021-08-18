@@ -38,6 +38,15 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
         await this.conn.rollback();
         return msg;
       }
+      /*
+      if (ask.Lever && ask.AskType) {
+        msg = await this.ItemTotal.reduceAsk(ask.ItemID, ask.Amount * ask.Lever * ask.ItemType);
+        if (msg.ErrNo !== ErrCode.PASS ) {
+          await this.conn.rollback();
+          return msg;
+        }
+      }
+      */
       await this.conn.commit();
     } else {
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;

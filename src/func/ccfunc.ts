@@ -239,7 +239,7 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       Odr.ProcStatus = order.ProcStatus;
     }
   }
-  console.log("before ModifyOrder:", JSON.stringify(Odr));
+  // console.log("before ModifyOrder:", JSON.stringify(Odr));
   msg = await ModifyOrder(Odr, conn);
   if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);
@@ -253,7 +253,7 @@ export const SendOrderNew: IMyFunction<WebParams> = async (param: WebParams, con
   let msg: IMsg = {};
   const Receiver: ReceiverManager = new ReceiverManager(conn);
   msg = await Receiver.Process(param);
-  console.log("before ModifyOrder:", JSON.stringify(msg));
+  // console.log("before ModifyOrder:", JSON.stringify(msg));
 
   if (msg.ErrNo === ErrCode.PASS) {
     const Odr = msg.data as HasUID;

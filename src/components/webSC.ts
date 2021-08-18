@@ -96,7 +96,7 @@ class WsClient {
               console.log(`WS Server error, code:${this.ws.readyState}, try build store mesage function later!`);
             }
           } else {
-            console.log(JSON.stringify(msg));
+            console.log("webSC on message:", JSON.stringify(msg));
           }
         }
         if (wsmsg.Message) {

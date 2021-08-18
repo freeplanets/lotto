@@ -1,6 +1,6 @@
 import { PoolConnection } from "mariadb";
 import { ErrCode } from "../../../DataSchema/ENum";
-import { IMsg, Items, Order, UserInfo, WebParams } from "../../../DataSchema/if";
+import { IHasID, IMsg, Items, Order, UserInfo, WebParams } from "../../../DataSchema/if";
 import DataAccess from "../DataBase/DataAccess";
 import AProcess from "./AProcess";
 import LoanProcess from "./LoanProcess";
@@ -13,21 +13,32 @@ export default class ReceiverManager {
 			let msg = this.ParamPreCheck(param);
 			if (msg.ErrNo === ErrCode.PASS) {
 				const order = msg.data as Order;
+				const UserID = param.UserID;
 				const da = new DataAccess(this.conn);
-				msg = await da.getItemByID(order.ItemID);
-				if (msg.ErrNo === ErrCode.PASS) {
-					const item = msg.data as Items;
-					let proc: AProcess;
-					const UserID = param.UserID;
-					msg = await da.getUser(UserID);
-					const user = msg.data as UserInfo;
+				// console.log("ReceiverManager", JSON.stringify(order));
+				if (!order.id && order.AskType) {
+					msg = await da.AskInProcess(UserID);
+					// console.log("ReceiverManager after AskInProcess", JSON.stringify(msg));
 					if (msg.ErrNo === ErrCode.PASS) {
-						if (item.isLoan) {
-							proc = new LoanProcess(da);
-						} else {
-							proc = new NotLoanProcess(da);
+						const datas = msg.data as IHasID;
+						if (datas.id) { msg.ErrNo = ErrCode.HAS_ASK_IN_PROCESS; }
+					}
+				}
+				if (msg.ErrNo === ErrCode.PASS) {
+					msg = await da.getItemByID(order.ItemID);
+					if (msg.ErrNo === ErrCode.PASS) {
+						const item = msg.data as Items;
+						let proc: AProcess;
+						msg = await da.getUser(UserID);
+						const user = msg.data as UserInfo;
+						if (msg.ErrNo === ErrCode.PASS) {
+							if (item.isLoan) {
+								proc = new LoanProcess(da);
+							} else {
+								proc = new NotLoanProcess(da);
+							}
+							msg = await proc.doOrder(user, order, item);
 						}
-						msg = await proc.doOrder(user, order, item);
 					}
 				}
 			}

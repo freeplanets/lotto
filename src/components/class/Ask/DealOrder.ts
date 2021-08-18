@@ -24,6 +24,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     if (ask.ModifyTime) { delete ask.ModifyTime; }
     if (ask.AskFee) { ask.Fee = ask.AskFee * ask.Amount; }
     if (ask.TermFee) { ask.TFee =  parseFloat((ask.TermFee * ask.Amount).toFixed(this.DecimalPlaces)); }
+    // console.log("DealOrder before", JSON.stringify(ask));
     const update = await this.tb.Update(ask);
     if ( update.ErrNo !== ErrCode.PASS ) {
       await this.conn.rollback();
@@ -67,15 +68,28 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     // console.log("AddToLedger", JSON.stringify(lgmsg));
 
     let NewAsk: AskTable|undefined;
-    if (ask.Lever && !ask.SetID && !ask.USetID ) {
-      const csa = await this.CreateSettleAsk(ask);
-      if (csa.ErrNo !== ErrCode.PASS) {
-        await this.conn.rollback();
-        msg.ErrNo = ErrCode.DB_QUERY_ERROR;
-        msg.Error = csa.Error;
-        return msg;
+    if (ask.Lever) {
+      let tmsg: IMsg = { ErrNo: ErrCode.PASS };
+      if (ask.BuyType) {
+        const bAskID = ask.SetID ? ask.SetID : ask.USetID;
+        if (bAskID) {
+          tmsg = await this.ItemTotal.reduceDeal(ask.ItemID, bAskID);
+        }
+      } else {
+        tmsg = await this.ItemTotal.addDeal(ask.ItemID, ask.Amount * ask.Lever * ask.ItemType);
       }
-      if (csa.NewAsk) { NewAsk = csa.NewAsk as AskTable; }
+      if (tmsg.ErrNo !== ErrCode.PASS) {
+        msg.ErrNo = tmsg.ErrNo;
+      } else if (!ask.SetID && !ask.USetID ) {
+        const csa = await this.CreateSettleAsk(ask);
+        if (csa.ErrNo !== ErrCode.PASS) {
+          await this.conn.rollback();
+          msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+          msg.Error = csa.Error;
+          return msg;
+        }
+        if (csa.NewAsk) { NewAsk = csa.NewAsk as AskTable; }
+      }
     }
     // console.log("DealOrder doit before commit", msg);
     await this.conn.commit();

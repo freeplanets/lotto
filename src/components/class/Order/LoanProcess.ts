@@ -14,7 +14,7 @@ export default class LoanProcess extends AProcess {
 				const op = { ...msg.data } as CryptoOpParams;
 				const copp = new CryptoOpParamProcess(this.da, op, newOrder);
 				const ans = await copp.check();
-				console.log("LoanProcess after opcheck", JSON.stringify(newOrder));
+				// console.log("LoanProcess after opcheck", JSON.stringify(newOrder));
 				if (ans.ErrNo === ErrCode.PASS) {
 					msg.data = newOrder;
 				} else {

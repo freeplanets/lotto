@@ -1,7 +1,7 @@
 import mariadb from "mariadb";
 import FilterFactory from "../components/FilterFactory";
 import { ErrCode } from "../DataSchema/ENum";
-import {IDbAns, IHasID, IKeyVal, IMsg} from "../DataSchema/if";
+import { IDbAns, IHasID, IKeyVal, IMsg } from "../DataSchema/if";
 import {doQuery} from "../func/db";
 import eds from "./EncDecString";
 
@@ -28,11 +28,20 @@ const ED = new eds();
 export default class JTable<T extends IHasID> {
     private query = doQuery;
     private extFilter = "";
-    constructor(private conn: mariadb.PoolConnection, private TableName: string) {}
+    private defaultTableName = "";
+    constructor(private conn: mariadb.PoolConnection, private TableName: string) {
+        this.defaultTableName = TableName;
+    }
     set ExtFilter(f: string) {
         this.extFilter = f;
     }
-    public async getOne(id: number | IKeyVal, fields?: string | string[]): Promise<T|undefined> {
+    public resetTableName() {
+        this.TableName = this.defaultTableName;
+    }
+    public setTableName(tname: string) {
+        this.TableName = tname;
+    }
+    public async getOne(id: number | IKeyVal | IKeyVal[], fields?: string | string[]): Promise<T|undefined> {
         const filter = new FilterFactory(id).getFilter();
         let field = "*";
         if (fields) { field = Array.isArray(fields) ? fields.join(",") : fields; }
@@ -279,9 +288,9 @@ export default class JTable<T extends IHasID> {
             idx = ans as string[];
         }
         Object.keys(data[0]).map((key) => {
+            keys.push(key);
+            ff.push("?");
             if (key !== "id") {
-                keys.push(key);
-                ff.push("?");
                 const f = idx.find((itm) => itm === key);
                 if (!f) {
                     if (isAdd) {

@@ -1,6 +1,10 @@
 import { ErrCode } from "../../../DataSchema/ENum";
-import { AskTable, AskTotal, CryptoOpParams, IMsg, Order } from "../../../DataSchema/if";
+import { AskTable, CryptoOpParams, IMsg, ItemTotal, Order } from "../../../DataSchema/if";
 import DataAccess from "../DataBase/DataAccess";
+
+interface ItemTotalT extends ItemTotal {
+	Total: number;
+}
 
 export default class CryptoOpParamProcess {
 	private op: CryptoOpParams;
@@ -19,7 +23,7 @@ export default class CryptoOpParamProcess {
 		} else {
 			await this.checkShortTerm();
 		}
-		console.log("op check done", this.msg);
+		// console.log("op check done", this.msg);
 		return this.msg;
 	}
 	private checkOneHand() {
@@ -33,7 +37,7 @@ export default class CryptoOpParamProcess {
 	private async checkFullStorage() {
 		const fullStorage = this.op.FullStorage;
 		if (this.order.Lever) {
-			const total = await this.getAskTotal(this.order.ItemID);
+			const total = await this.getItemTotal(this.order.ItemID);
 			if ((total + this.order.Lever * this.order.Amount) * this.order.ItemType > fullStorage) {
 				this.msg.ErrNo = ErrCode.OVER_FULL_STORAGE;
 			}
@@ -49,25 +53,25 @@ export default class CryptoOpParamProcess {
 			const st1 = this.op.ShortTerm1;
 			const st2 = this.op.ShortTerm2;
 			const termfee = this.op.ShortTermFee;
-			console.log("checkShortTerm op", st1, st2, termfee);
+			// console.log("checkShortTerm op", st1, st2, termfee);
 			if (st1 || st2) {
 				const checktime = new Date().getTime();
 				const dealtime = await this.getDealTime(this.order.id);
 				const diff = (checktime - dealtime) / 1000;
-				console.log("checkshortTerm check", checktime, dealtime, diff);
+				// console.log("checkshortTerm check", checktime, dealtime, diff);
 				if (st1 && diff < st1) {
 					this.msg.ErrNo = ErrCode.IN_SHORT_TERM;
 				} else if (st2 && diff < st2) {
 					this.order.TermFee = termfee;
-					console.log("op checkShertTerm Add TermFee", this.order.TermFee, termfee);
+					// console.log("op checkShertTerm Add TermFee", this.order.TermFee, termfee);
 				}
 			}
 	}
-	private async getAskTotal(itemid: number): Promise<number> {
+	private async getItemTotal(itemid: number): Promise<number> {
 		let total = 0;
-		const msg = await this.da.getAskTotal(itemid);
+		const msg = await this.da.getItemTotal(itemid);
 		if (msg.ErrNo === ErrCode.PASS) {
-			const ans = msg.data as AskTotal;
+			const ans = msg.data as ItemTotalT;
 			total = ans.Total;
 		}
 		return total;
