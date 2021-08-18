@@ -293,6 +293,10 @@ function getUser(Account: string, AgentId: string, conn: Connection ): Promise<I
                 resolve(user);
             }
             const r = rows[0] as IUser;
+            if (!r.id) {
+                console.log("getUser No id:", r);
+                resolve(user);
+            }
             user = {
                 id: r.id,
                 Account: r.Account,

@@ -38,7 +38,7 @@ export default class JTable<T extends IHasID> {
         if (fields) { field = Array.isArray(fields) ? fields.join(",") : fields; }
         const sql = `select ${field} from ${this.TableName} where ${filter}`;
         let mb: T | undefined;
-        console.log("getone debug:", sql, id);
+        // console.log("getone debug:", sql, id);
         const ans = await this.query(sql, this.conn);
         // console.log("JTable List mb", mb);
         if (ans) {
