@@ -3,6 +3,7 @@ import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
 import UserInfoCrypto from "../components/class/Ledger/UserInfoCrypto";
 import Message from "../components/class/Message/Message";
+import ReceiverManager from "../components/class/Order/ReceiverManager";
 import wsclient from "../components/webSC";
 import { ErrCode, StopType } from "../DataSchema/ENum";
 import { AskTable, ChatMsg, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
@@ -250,128 +251,19 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
 };
 export const SendOrderNew: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {};
-  const UserID = param.UserID;
-  const UpId = param.UpId as number;
-  // const Account = param.Account as string;
-  // const sid = param.sid;
-  if (!param.order) {
-    msg.ErrNo = ErrCode.MISS_PARAMETER;
-    msg.ErrCon = "No order found!!";
-    return msg;
-  }
-  const order = param.order;
-  // console.log("SendOrder order:", order);
-  let Odr: HasUID = {
-    id: order.id,
-    UserID
-  };
-  if ( !order.ProcStatus || order.ProcStatus < 2) {
-    if ( !order.BuyType ) {   // 買
-      if ( !order.Amount || !order.AskPrice) {
-        msg.ErrNo = ErrCode.MISS_PARAMETER;
-        msg.ErrCon = "No Price found";
-        return msg;
-      }
-    } else { // 賣
-      if (!order.USetID) { // 非會員平倉單
-        if ( !((order.Qty && !order.Amount) || (!order.Qty && order.Amount)) ) {
-          msg.ErrNo = ErrCode.MISS_PARAMETER;
-          msg.ErrCon = " Qty XOR Amount false!!";
-          return msg;
-        }
-      }
-    }
-    const jt = new JTable<Items>(conn, "Items");
-    const Item = await jt.getOne(order.ItemID);
-    if (!Item) {
-      msg.ErrNo = ErrCode.NO_DATA_FOUND;
-      msg.ErrCon = "Item not found!!";
-      return msg;
-    }
-    if (Item.isLoan) {
-      let ST = StopType.LONG_STOP;
-      if ( order.ItemType === -1 ) { ST = StopType.SHORT_STOP; }
-      const isClosed: boolean = !!(Item.Closed & ST);
-      if (isClosed) {
-        let str = "short";
-        if (ST === StopType.LONG_STOP ) { str = "long"; }
-        msg.ErrNo = ErrCode.NUM_STOPED;
-        msg.ErrCon = `Not accpet new ${str} order now!!`;
-        return msg;
-      }
-    }
-    const newOrder: AskTable = {
-      id: order.id,
-      UserID,
-      UpId,
-      CLevel: param.CLevel,
-      ItemID: Item.id,
-      ItemType: order.ItemType,
-      Code: Item.Code,
-      AskType: order.AskType,
-      BuyType: order.BuyType,
-      AskPrice: order.AskPrice,
-      Amount: order.Amount,
-      AskFee: 0,
-      Price: 0,
-      Qty: order.Qty ? order.Qty : 0,
-      ProcStatus: 0,
-    };
-    if (order.USetID) {
-      newOrder.USetID = order.USetID;
-      newOrder.SetID = 0;
-    }
-    /*
-    if (order.BuyType === 0) {
-      newOrder.AskFee = Item.Type === 1 ? Item.OpenFee : Item.CloseFee;
-    }
-    */
-    newOrder.AskFee = order.BuyType ? Item.CloseFee : Item.OpenFee;
-    if (order.Lever) {
-      if (Item.OneHand) {
-        const onehand = (newOrder.Amount / newOrder.AskPrice) * order.Lever;
-        if (onehand > Item.OneHand) {
-          msg.ErrNo = ErrCode.OVER_MAX_HAND;
-          msg.ErrCon = "Over onehand!";
-          return msg;
-        }
-      }
-      newOrder.Lever = order.Lever;
-      if (order.GainPrice) { newOrder.GainPrice = order.GainPrice; }
-      if (order.LosePrice) { newOrder.LosePrice = order.LosePrice; }
-      const lvr = new JTable<Lever>(conn, "Lever");
-      const leverParam: IKeyVal = {
-        Multiples: order.Lever,
-      };
-      const lvAns = await lvr.getOne(leverParam);
-      if (lvAns) {
-        if (newOrder.BuyType === 0) {
-          newOrder.AskFee = newOrder.ItemType === 1 ? lvAns.LongT : lvAns.ShortT;
-        }
-        newOrder.StopGain = Item.StopGain;
-        newOrder.StopLose = Item.StopLose;
-      } else {
-        msg.ErrNo = ErrCode.NO_DATA_FOUND;
-        msg.ErrCon = "No Lever data found";
-        return msg;
-      }
-    }
-    Odr = newOrder;
-  } else {
-    if (order.ProcStatus === 2 ) {
-      Odr.isUserSettle = 1;
-    } else {
-      Odr.ProcStatus = order.ProcStatus;
-    }
-  }
-  console.log("before ModifyOrder:", JSON.stringify(Odr));
-  msg = await ModifyOrder(Odr, conn);
+  const Receiver: ReceiverManager = new ReceiverManager(conn);
+  msg = await Receiver.Process(param);
+  console.log("before ModifyOrder:", JSON.stringify(msg));
+
   if (msg.ErrNo === ErrCode.PASS) {
+    const Odr = msg.data as HasUID;
+    msg = await ModifyOrder(Odr, conn);
+    if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);
       delete wsmsg.ErrNo;
       wsclient.Send(JSON.stringify(wsmsg));
     }
-
+  }
   return msg;
 };
 export const getOrder: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {

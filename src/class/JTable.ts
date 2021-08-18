@@ -215,9 +215,10 @@ export default class JTable<T extends IHasID> {
             ans.ErrNo = ErrCode.PASS;
         }).catch((err) => {
             // ans = err;
-            console.log(err);
+            // console.log(err);
             ans.ErrNo = ErrCode.DB_QUERY_ERROR;
             ans.Error = err;
+            ans.Params = params;
             // ans = false;
         });
         return ans;

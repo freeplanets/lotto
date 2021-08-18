@@ -1428,7 +1428,7 @@ app.post("/SaveUser", async (req, res) => {
   const param: IUser = qstring as IUser;
   const TableName: string = param.TableName ? param.TableName : "Member";
   const jt: JTable<IUser> = new JTable(conn, TableName);
-  console.log("SaveUser", param);
+  // console.log("SaveUser", param);
   let ans;
   if (param.id) {
       ans = await jt.Update(param);

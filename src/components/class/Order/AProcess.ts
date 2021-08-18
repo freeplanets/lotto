@@ -1,46 +1,44 @@
-import { PoolConnection } from "mariadb";
 import { ErrCode } from "../../../DataSchema/ENum";
-import { AskTable, IMsg, Items, Order, UserInfo } from "../../../DataSchema/if";
-import DataAccess from "./DataAccess";
 import { StopType } from "../../../DataSchema/ENum";
+import { AskTable, IMsg, Items, Lever, Order, UserInfo } from "../../../DataSchema/if";
+import DataAccess from "../DataBase/DataAccess";
 
 export default abstract class AProcess {
-	private da:DataAccess;
-	constructor(protected conn: PoolConnection) {
-		this.da = new DataAccess(this.conn);
+	// private da: DataAccess;
+	constructor(protected da: DataAccess) {
 	}
-	public abstract doOrder(UserID: number, order: Order): IMsg;
-	public async createOrder(UserID: number, order: Order): Promise<IMsg> {
+	public abstract doOrder(user: UserInfo, order: Order, item: Items): Promise<IMsg>;
+	public async createOrder(user: UserInfo, order: Order, item: Items): Promise<IMsg> {
 		let msg: IMsg = { ErrNo: ErrCode.PASS };
-		msg = await this.da.getUser(UserID);
-		const user = msg.data as UserInfo;
-		if (msg.ErrNo !== ErrCode.PASS) { return msg; }
-		let newOrder:Order | undefined;
+		let newOrder: Order | undefined;
+		const UserID = user.id;
 		if (order.id) {
 			newOrder = this.copyOrder(order);
+			if (!newOrder.UserID) { newOrder.UserID = UserID; }
+			if (newOrder.ProcStatus === 2) {
+				newOrder.isUserSettle = 1;
+				newOrder.ProcStatus = 1;
+			}
+			console.log("createOrder has order id", newOrder);
 		} else {
 			msg = await this.da.getItemByID(order.ItemID);
 			if (msg.ErrNo !== ErrCode.PASS) { return msg; }
-			const item = msg.data as Items;
+			// const item = msg.data as Items;
 			if (item.isLoan) {
-
-			} else {
-				newOrder = this.newOrder(user, item, order);
-				newOrder.AskFee = order.BuyType ? item.CloseFee : item.OpenFee;
+				msg = await this.da.getLeverParam(order.Lever);
+				if (msg.ErrNo !== ErrCode.PASS) { return msg; }
+				const lever = msg.data as Lever;
+				item.OpenFee = lever.LongT;
+				item.CloseFee = lever.ShortT;
 			}
+			newOrder = this.newOrder(user, item, order);
 		}
-		if(newOrder) {
-			if(newOrder.ItemID){
-				msg = await this.da.getOpParam(newOrder.CLevel, newOrder.ItemID);
-				msg.OpParams = { ...msg.data };
-			}
-			msg.data = newOrder;			
-		}
+		msg.data = newOrder;
 		return msg;
 	}
-	private itemCheck(Item:Items, order:Order) {
-		const msg:IMsg = { ErrNo:ErrCode.PASS };
-    if (Item.isLoan) {
+	private itemCheck(Item: Items, order: Order) {
+		const msg: IMsg = { ErrNo: ErrCode.PASS };
+  if (Item.isLoan) {
       let ST = StopType.LONG_STOP;
       if ( order.ItemType === -1 ) { ST = StopType.SHORT_STOP; }
       const isClosed: boolean = !!(Item.Closed & ST);
@@ -53,7 +51,7 @@ export default abstract class AProcess {
     }
 		return msg;
 	}
-	private copyOrder(order:Order) {
+	private copyOrder(order: Order) {
 		if (order.USetID) {
 			order.SetID = 0;
 		}
@@ -72,12 +70,16 @@ export default abstract class AProcess {
       BuyType: order.BuyType,
       AskPrice: order.AskPrice,
       Amount: order.Amount,
-      AskFee: 0,
+      AskFee: order.BuyType ? item.CloseFee : item.OpenFee,
       Price: 0,
       Qty: order.Qty ? order.Qty : 0,
-      ProcStatus: order.ProcStatus ? order.ProcStatus: 0,
+      ProcStatus: order.ProcStatus ? order.ProcStatus : 0,
     };
-		if(order.Lever) newOrder.Lever = order.Lever;
+		if (order.Lever) {
+			newOrder.Lever = order.Lever;
+			newOrder.StopGain = item.StopGain;
+			newOrder.StopLose = item.StopLose;
+		}
 		return newOrder;
 	}
 }

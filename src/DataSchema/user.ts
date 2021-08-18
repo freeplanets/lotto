@@ -1,6 +1,14 @@
+export interface CryptoOp {
+    ItemID: number;
+    LeverLimit: number;
+    ShortTerm1: number;
+    ShortTerm2: number;
+    ShortFee: number;
+}
 export interface IUser {
     TableName?: "User";
     id: number;
+    CLevel: string;
     Account: string;
     Password?: string;
     Nickname: string;
@@ -19,6 +27,7 @@ export interface IUser {
     CreateTime: string;
     ModifyTime: string;
     CDate?: Date;
+    Params?: CryptoOp[];
 }
 export interface IUserPartial {
     id: number;

@@ -403,6 +403,7 @@ export interface Order extends IHasID {
     GainPrice?: number;
     LosePrice?: number;
     ProcStatus?: number;
+    isUserSettle?: number; // 會員平倉
 }
 export interface Lever extends IHasID {
     UpId: number;
@@ -423,8 +424,9 @@ export interface AskTable extends HasUID {
     Price: number;
     Qty: number;
     Fee?: number; // 手續費
+    TFee?: number;  // 短線線
     AskFee: number; // 手續費率
-    TermFee?: number; // 短線費用
+    TermFee?: number; // 短線費率
     AskPrice: number; // 下單價格
     LeverCredit?: number; // 下單時暫扣的信用額度
     ExtCredit?: number; // 下單後變動的信用額度,只能增加
@@ -453,6 +455,7 @@ export interface LedgerLever extends HasUID {
     BuyFee: number;
     SellFee?: number;
     GainLose?: number; // 輸贏
+    TFee?: number; // 短線費
     Lever: number;  // 槓桿
     BuyTime: number; // 買進時間
     SellTime?: number; // 賣出時間
@@ -545,6 +548,7 @@ export interface MemoCryptoCur {
     ItemType: number;
     Amount: number;
     Fee?: number;
+    TFee?: number;
     Qty: number;
 }
 export interface ChatMsg {

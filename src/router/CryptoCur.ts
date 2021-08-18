@@ -17,7 +17,7 @@ app.get("/GetData", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.getdata);
 });
 app.post("/SendOrder", (req: Request, res: Response) => {
-  EA.process(req, res, ccfunc.SendOrder);
+  EA.process(req, res, ccfunc.SendOrderNew);
 });
 app.get("/GetOrder", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.getOrder);

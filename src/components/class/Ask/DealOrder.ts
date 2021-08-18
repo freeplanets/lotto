@@ -5,6 +5,7 @@ import LedgerFactor from "../../LedgerFactor";
 import AskTableAccess from "./AskTableAccess";
 
 export default class DealOrder extends AskTableAccess<HasUID> {
+  private DecimalPlaces = 2;
   constructor(ask: HasUID, conn: PoolConnection, tableName: string) {
     super(ask, conn, tableName);
   }
@@ -21,6 +22,8 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     this.tb.ExtFilter = " ProcStatus < 2 ";
     if (ask.CreateTime) { delete ask.CreateTime; }
     if (ask.ModifyTime) { delete ask.ModifyTime; }
+    if (ask.AskFee) { ask.Fee = ask.AskFee * ask.Amount; }
+    if (ask.TermFee) { ask.TFee =  parseFloat((ask.TermFee * ask.Amount).toFixed(this.DecimalPlaces)); }
     const update = await this.tb.Update(ask);
     if ( update.ErrNo !== ErrCode.PASS ) {
       await this.conn.rollback();
@@ -29,9 +32,10 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       return msg;
     }
     // console.log("DealOrder doit after update:", msg, ask.ProcStatus);
-    ask.Fee = ask.AskFee * ask.Amount;
     if (ask.BuyType === 1) {
-      const Credit = ask.Amount - ask.Fee;
+      const Fee = ask.Fee ? ask.Fee : 0;
+      const TFee = ask.TFee ? ask.TFee : 0;
+      const Credit = ask.Amount - Fee - TFee;
       const memoMsg: MemoCryptoCur = {
         Type: ask.BuyType ? MemoType.SETTLE : MemoType.NEW,
         AskID: ask.id,
@@ -39,6 +43,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
         ItemType: ask.ItemType,
         Amount: ask.Amount,
         Fee: ask.Fee,
+        TFee: ask.TFee,
         Qty: ask.Qty
       };
       const memo: CreditMemo = {

@@ -1,9 +1,8 @@
-import { ErrCode } from "../../../DataSchema/ENum";
 import { IMsg, Items, Order, UserInfo } from "../../../DataSchema/if";
 import AProcess from "./AProcess";
 
 export default class NotLoanProcess extends AProcess {
-	public async doOrder(UserID: number, order: Order): Promise<IMsg> {
-		return this.createOrder(UserID, order);
+	public async doOrder(user: UserInfo, order: Order, item: Items): Promise<IMsg> {
+		return this.createOrder(user, order, item);
 	}
 }

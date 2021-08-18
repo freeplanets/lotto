@@ -40,6 +40,8 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
         ldgOne.SellID = ask.id;
         ldgOne.SellPrice = ask.Price;
         ldgOne.GainLose = ( ldgOne.SellPrice - ldgOne.BuyPrice ) * ldgOne.ItemType * ldgOne.Lever * ldgOne.Qty;
+        ldgOne.TFee = ask.TFee,
+        ldgOne.SellFee = ask.Fee,
         ldgOne.SellTime = ask.DealTime;
         return await this.jtable.Update(ldgOne);
       } else {
@@ -61,6 +63,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
             SellPrice: ask.Price,
             BuyFee: ans.Fee ? ans.Fee : 0,
             SellFee: ask.Fee,
+            TFee: ask.TFee,
             Lever,
             GainLose: ( ask.Price - ans.Price ) * ans.ItemType * Lever * ans.Qty,
             BuyTime: ans.DealTime ? ans.DealTime : 0,

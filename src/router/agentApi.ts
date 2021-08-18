@@ -1,11 +1,12 @@
 import express, { Request, Response, Router } from "express";
-import {Connection} from "mariadb";
+import { Connection } from "mariadb";
 import EDS from "../class/EncDecString";
+import DataAccess from "../components/class/DataBase/DataAccess";
 import { ErrCode } from "../DataSchema/ENum";
-import {IDbAns, IGameAccessParams, IMsg} from "../DataSchema/if";
-import {IUser} from "../DataSchema/user";
-import {ModifyCredit} from "../func/Credit";
-import {getConnection} from "../func/db";
+import { IDbAns, IGameAccessParams, IMsg } from "../DataSchema/if";
+import { CryptoOp, IUser } from "../DataSchema/user";
+import { ModifyCredit } from "../func/Credit";
+import { getConnection } from "../func/db";
 
 interface IAnsData {
     code: number;
@@ -102,7 +103,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     const param = req.query;
     // console.log("memberlogin", param);
     // const conn = await dbPool.getConnection();
-    const msg: IMsg = {ErrNo: 0};
+    let msg: IMsg = {ErrNo: 0};
     const conn = await getConnection();
     if (!conn) {
         msg.ErrNo = 9;
@@ -121,13 +122,19 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     }
     const login = await getUserLogin(Account, token, conn);
     if (login) {
-        const User: IUser | boolean = await getUser(Account, login.AgentID, conn);
+        const User: IUser | null = await getUser(Account, login.AgentID, conn);
         if (User) {
-            msg.data = User as IUser;
-            msg.wsServer = process.env.WS_SERVER;
+            const user: IUser = User;
+            const da = new DataAccess(conn, true);
+            msg = await da.getOpParam(user.CLevel);
+            if (msg.ErrNo === ErrCode.PASS) {
+                user.Params = msg.data as CryptoOp[];
+                msg.data = user;
+                msg.wsServer = process.env.WS_SERVER;
+            }
         }
     } else {
-        msg.ErrNo = 9;
+        msg.ErrNo = ErrCode.NO_DATA_FOUND;
         msg.ErrCon = "Error: Member not found!!";
     }
     conn.release();
@@ -242,7 +249,7 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
     if (!param.nickName) {
         param.nickName = param.userCode;
     }
-    const usr: IUser | boolean = await getUser(param.userCode, AgentId, conn);
+    const usr: IUser | null = await getUser(param.userCode, AgentId, conn);
     // console.log("addUser getUser:", usr);
     if (usr) { return true; }
     const sql = `Insert into Member(Account,Password,Nickname,Types,UpId,PayClassID) values(
@@ -275,23 +282,25 @@ export async function addLoginInfo(uid: number, Account: string, AgentId: string
     }
     return false;
 }
-function getUser(Account: string, AgentId: string, conn: Connection ): Promise<IUser|boolean> {
+function getUser(Account: string, AgentId: string, conn: Connection ): Promise<IUser|null> {
     return new Promise(async (resolve, reject) => {
+        let user: IUser | null = null;
         const param: {[key: number]: any} = [Account, AgentId];
         const sql = "select m.*,u.PayClass from Member m,User u where m.UpId=u.id and m.Account=? and m.UpId=?";
         conn.query(sql, param).then((rows) => {
             // console.log("getUser:", rows.length, sql, param);
             if (rows.length === 0) {
-                resolve(false);
+                resolve(user);
             }
             const r = rows[0] as IUser;
-            const user: IUser = {
+            user = {
                 id: r.id,
                 Account: r.Account,
                 Nickname: r.Nickname,
                 Types: r.Types,
                 forcePWChange: r.forcePWChange,
                 Levels: r.Levels,
+                CLevel: r.CLevel,
                 PayClassID: r.PayClassID,
                 DfKey: r.DfKey,
                 UpId: r.UpId,
