@@ -36,21 +36,6 @@ export default abstract class AProcess {
 		msg.data = newOrder;
 		return msg;
 	}
-	private itemCheck(Item: Items, order: Order) {
-		const msg: IMsg = { ErrNo: ErrCode.PASS };
-  if (Item.isLoan) {
-      let ST = StopType.LONG_STOP;
-      if ( order.ItemType === -1 ) { ST = StopType.SHORT_STOP; }
-      const isClosed: boolean = !!(Item.Closed & ST);
-      if (isClosed) {
-        let str = "short";
-        if (ST === StopType.LONG_STOP ) { str = "long"; }
-        msg.ErrNo = ErrCode.NUM_STOPED;
-        msg.ErrCon = `Not accpet new ${str} order now!!`;
-      }
-    }
-		return msg;
-	}
 	private copyOrder(order: Order) {
 		if (order.USetID) {
 			order.SetID = 0;

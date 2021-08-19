@@ -107,7 +107,7 @@ export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): 
             Object.keys(err).map((key) => {
                 console.log(key, ">", err[key]);
             });
-            resolve(false);
+            reject(false);
         });
     });
 }

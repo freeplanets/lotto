@@ -4,9 +4,10 @@ import ATACreator from "../components/ATACreator";
 import UserInfoCrypto from "../components/class/Ledger/UserInfoCrypto";
 import Message from "../components/class/Message/Message";
 import ReceiverManager from "../components/class/Order/ReceiverManager";
+import MemberReport from "../components/class/Report/Member";
 import wsclient from "../components/webSC";
 import { ErrCode, StopType } from "../DataSchema/ENum";
-import { AskTable, ChatMsg, HasUID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
+import { AskTable, ChatMsg, HasUID, IHasID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
 
 interface IMyFunction<T> extends GetPostFunction {
@@ -89,7 +90,7 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
   let msg: IMsg = {};
   if (param.TableName) {
     // console.log("getdata:", param);
-    const jt = new JTable(conn, param.TableName);
+
     let filters: string | IKeyVal | IKeyVal[] | undefined;
     if (Array.isArray(param.Filter)) {
       filters = param.Filter.map((itm) => {
@@ -102,20 +103,26 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
       if (typeof(param.Filter) === "string") {
         const filter = `${param.Filter}`.replace(/\\/g, "");
         try {
-          // console.log("getdata", param.Filter, filter);
           filters = JSON.parse(filter);
         } catch (err) {
-          // msg.ErrNo = ErrCode.MISS_PARAMETER;
-          // msg.ErrCon = "Filter parse error";
-          // msg.error = err;
-          // msg.Filter = param.Filter;
-          // return msg;
           filters = filter;
         }
       }
-      // filters = param.Filter;
     }
-    msg = await jt.Lists(filters, param.Fields);
+    let jt: JTable<IHasID> | MemberReport;
+    switch (param.TableName) {
+      case "MemberReport":
+        if (filters) {
+          jt = new MemberReport();
+          msg = jt.getGainLose(filters, conn);
+        } else {
+          msg.ErrNo = ErrCode.MISS_PARAMETER;
+        }
+        break;
+      default:
+        jt = new JTable(conn, param.TableName);
+        msg = await jt.Lists(filters, param.Fields);
+    }
   } else {
     msg.ErrNo = ErrCode.MISS_PARAMETER;
     msg.ErrCon = "Missing Table Name!!";
