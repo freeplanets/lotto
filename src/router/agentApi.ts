@@ -466,8 +466,8 @@ async function register(params, res: Response) {
             }
         } else {
             param = decParam(eds.Decrypted(params.param));
+            console.log("agentApi/1 param:", param);
         }
-        // console.log("agentApi/1 param:", param);
         const ans: boolean = await addUser(params.agentId, Agent.PayClassID, param, conn);
         // console.log("after addUser:", ans);
         if (ans) {
