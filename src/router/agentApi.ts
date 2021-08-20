@@ -253,7 +253,7 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
     const usr: IUser | null = await getUser(param.userCode, AgentId, conn);
     // console.log("addUser getUser:", usr);
     if (usr) {
-        if (param.nickName !== param.userCode) {
+        if (param.nickName !== usr.Nickname) {
             const tmsg = await ModifyNickName(usr.id, param.nickName, conn);
             console.log("ChangeNickName", param.nickName, JSON.stringify(tmsg));
         }
