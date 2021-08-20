@@ -8,9 +8,9 @@ export default class Member {
 	public async getGainLose(filter: string | IKeyVal | IKeyVal[], conn: PoolConnection) {
 		const msg: IMsg = { ErrNo: ErrCode.PASS };
 		const fltr = new FilterFactory(filter).getFilter();
-		const sql = `Select UserID, m.Account, sum(Qty*BuyPrice) Total, sum(Qty*BuyPrice*Lever) LeverTotal,
+		const sql = `Select UserID, m.Nickname, m.CLevel, sum(Qty*BuyPrice) Total, sum(Qty*BuyPrice*Lever) LeverTotal,
 		sum(GainLose) GainLose from LedgerLever l left join Member m on l.UserID = m.id where ${fltr} Group by UserID`;
-		console.log("Report Member sql", sql);
+		// console.log("Report Member sql", sql);
 		const ans = await doQuery(sql, conn);
 		if (ans) {
 			msg.data = ans;

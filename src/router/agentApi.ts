@@ -1,9 +1,10 @@
 import express, { Request, Response, Router } from "express";
-import { Connection } from "mariadb";
+import { PoolConnection } from "mariadb";
 import EDS from "../class/EncDecString";
+import JTable from "../class/JTable";
 import DataAccess from "../components/class/DataBase/DataAccess";
 import { ErrCode } from "../DataSchema/ENum";
-import { IDbAns, IGameAccessParams, IMsg } from "../DataSchema/if";
+import { IDbAns, IGameAccessParams, IHasID, IMsg } from "../DataSchema/if";
 import { CryptoOp, IUser } from "../DataSchema/user";
 import { ModifyCredit } from "../func/Credit";
 import { getConnection } from "../func/db";
@@ -222,7 +223,7 @@ async function CreditAC(params, res: Response, ac: number) {
     // console.log("CreditAC ModifyCredit:", msg);
     res.send(JSON.stringify(msg));
 }
-async function getAgent(id: string, conn: Connection) {
+async function getAgent(id: string, conn: PoolConnection) {
     const sql: string = "select * from User where id=?";
     // console.log("getAgent:", sql, id);
     const row = await conn.query(sql, [id]);
@@ -241,7 +242,7 @@ function decParam(param: string): IGameAccessParams {
     });
     return gap;
 }
-async function addUser(AgentId: string, PayClassID: number, param: IGameAccessParams, conn: Connection): Promise<boolean> {
+async function addUser(AgentId: string, PayClassID: number, param: IGameAccessParams, conn: PoolConnection): Promise<boolean> {
     if (!param.userCode) {
         console.log("addUser userCode", param, AgentId);
         return false;
@@ -251,7 +252,13 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
     }
     const usr: IUser | null = await getUser(param.userCode, AgentId, conn);
     // console.log("addUser getUser:", usr);
-    if (usr) { return true; }
+    if (usr) {
+        if (param.nickName !== param.userCode) {
+            const tmsg = await ModifyNickName(usr.id, param.nickName, conn);
+            console.log("ChangeNickName", param.nickName, JSON.stringify(tmsg));
+        }
+        return true;
+    }
     const sql = `Insert into Member(Account,Password,Nickname,Types,UpId,PayClassID) values(
         '${param.userCode}',Password('${new Date().getTime()}'),'${param.nickName}',0,${AgentId},${PayClassID}
     )`;
@@ -263,7 +270,7 @@ async function addUser(AgentId: string, PayClassID: number, param: IGameAccessPa
         return false;
     }
 }
-export async function addLoginInfo(uid: number, Account: string, AgentId: string, skey: string, conn: Connection, isAdmin?: boolean) {
+export async function addLoginInfo(uid: number, Account: string, AgentId: string, skey: string, conn: PoolConnection, isAdmin?: boolean) {
     const act1 = await chkLoginAction(uid, conn, isAdmin);
     // console.log("after chkLoginAction", act1);
     if (act1) {
@@ -282,7 +289,7 @@ export async function addLoginInfo(uid: number, Account: string, AgentId: string
     }
     return false;
 }
-function getUser(Account: string, AgentId: string, conn: Connection ): Promise<IUser|null> {
+function getUser(Account: string, AgentId: string, conn: PoolConnection ): Promise<IUser|null> {
     return new Promise(async (resolve, reject) => {
         let user: IUser | null = null;
         const param: {[key: number]: any} = [Account, AgentId];
@@ -319,7 +326,7 @@ function getUser(Account: string, AgentId: string, conn: Connection ): Promise<I
         });
     });
 }
-async function getUserLogin( Account: string, skey: string, conn: Connection, isAdmin?: boolean) {
+async function getUserLogin( Account: string, skey: string, conn: PoolConnection, isAdmin?: boolean) {
     const sql = `select * from LoginInfo where Account=?  and logkey=? and isActive=1 and AgentID${isAdmin ? "=" : "<>"}0`;
     const rows = await conn.query(sql, [Account, skey]);
     // console.log("getUserLogin", rows, sql);
@@ -329,14 +336,14 @@ async function getUserLogin( Account: string, skey: string, conn: Connection, is
         return false;
     }
 }
-async function chkLogin(uid: number, conn: Connection, isAdmin?: boolean) {
+async function chkLogin(uid: number, conn: PoolConnection, isAdmin?: boolean) {
     const sql = `select * from LoginInfo where uid=? and isActive=1 and AgentID${isAdmin ? "=" : "<>"}0`;
     const ans = await conn.query(sql, [uid]);
     // console.log("chkLogin", sql);
     if (ans.length > 0) { return ans[0]; }
     return false;
 }
-async function chkLoginAction(uid: number, conn: Connection, isAdmin?: boolean) {
+async function chkLoginAction(uid: number, conn: PoolConnection, isAdmin?: boolean) {
     /*
     const ts = new Date().getTime();
     let sql: string = `select * from LoginInfo where uid=${uid} order by id desc limit 0,1`;
@@ -466,7 +473,7 @@ async function register(params, res: Response) {
             }
         } else {
             param = decParam(eds.Decrypted(params.param));
-            console.log("agentApi/1 param:", param);
+            // console.log("agentApi/1 param:", param);
         }
         const ans: boolean = await addUser(params.agentId, Agent.PayClassID, param, conn);
         // console.log("after addUser:", ans);
@@ -615,5 +622,9 @@ async function getAskTable(req, res) {
     });
     conn.release();
     res.send(JSON.stringify(data));
+}
+function ModifyNickName(id: number, Nickname: string, conn: PoolConnection) {
+    const jt: JTable<IHasID> = new JTable(conn, "Member");
+    return jt.Update({id, Nickname});
 }
 export default agentApi;
