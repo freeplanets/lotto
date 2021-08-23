@@ -1,5 +1,4 @@
 import { ErrCode } from "../../../DataSchema/ENum";
-import { StopType } from "../../../DataSchema/ENum";
 import { AskTable, IMsg, Items, Lever, Order, UserInfo } from "../../../DataSchema/if";
 import DataAccess from "../DataBase/DataAccess";
 

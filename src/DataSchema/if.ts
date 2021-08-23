@@ -528,7 +528,17 @@ export interface Ledger extends LedgerTotal {
     Amount: number;
     Fee: number;
 }
-
+export interface MemberGainLose extends IHasID {
+    UserID: number;
+    UpId: number;
+    SDate: string;
+    Total: number;
+    LeverTotal: number;
+    BuyFee: number;
+    SellFee: number;
+    TFee: number;   // TermFee 短線手續費
+    GainLose: number;
+}
 /**
  * CreditMemo
  * database type varchar 256

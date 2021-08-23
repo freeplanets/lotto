@@ -19,10 +19,6 @@ export default class ReceiverManager {
 				if (!order.id && order.AskType) {
 					msg = await da.AskInProcess(UserID);
 					// console.log("ReceiverManager after AskInProcess", JSON.stringify(msg));
-					if (msg.ErrNo === ErrCode.PASS) {
-						const datas = msg.data as IHasID;
-						if (datas.id) { msg.ErrNo = ErrCode.HAS_ASK_IN_PROCESS; }
-					}
 				}
 				if (msg.ErrNo === ErrCode.PASS) {
 					msg = await da.getItemByID(order.ItemID);

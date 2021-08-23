@@ -34,13 +34,20 @@ export default class DataAccess {
 		const fields = ["id", "UpId", "CLevel"];
 		return this.getData("Member", filter, fields);
 	}
-	public AskInProcess(UserID: number): Promise<IMsg> {
+	public async AskInProcess(UserID: number): Promise<IMsg> {
 		const filter: IKeyVal[] = [
 			{ Key: "UserID", Val: UserID },
 			{ Key: "ProcStatus", Val: 2 , Cond: "<" }
 		];
 		const fields = ["id", "UserID"];
-		return this.getData("AskTable", filter, fields);
+		const msg = await this.getData("AskTable", filter, fields);
+		if (msg.ErrNo === ErrCode.PASS) {
+			const datas = msg.data as IHasID;
+			if (datas.id) { msg.ErrNo = ErrCode.HAS_ASK_IN_PROCESS; }
+		} else if (msg.ErrNo === ErrCode.NO_DATA_FOUND) {
+			msg.ErrNo = ErrCode.PASS;
+		}
+		return msg;
 	}
 	private getData(tablename: string, filter: IKeyVal | IKeyVal[], fields?: string|string[]): Promise<IMsg> {
 		return new Promise((resolve, reject) => {

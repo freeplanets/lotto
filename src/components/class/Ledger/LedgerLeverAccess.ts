@@ -2,11 +2,14 @@ import { PoolConnection } from "mariadb";
 import JTable from "../../../class/JTable";
 import { ErrCode } from "../../../DataSchema/ENum";
 import { AskTable, IKeyVal, IMsg, LedgerLever } from "../../../DataSchema/if";
+import Member from "../GainLose/Member";
 import ALedger from "./ALedger";
 
 export default class LedgerLeverAccess extends ALedger<LedgerLever> {
+  private MGL: Member;
   constructor(conn: PoolConnection, tablename: string) {
     super(conn, tablename);
+    this.MGL = new Member(conn);
   }
   public async add(ask: AskTable): Promise<IMsg> {
     console.log("LedgerLeverAccess add:", ask.id, ask.SetID, ask.USetID);
@@ -23,7 +26,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
   }
   private async SettleOne(ask: AskTable): Promise<IMsg> {
     // console.log("LedgerLeverAccess SettleOne", ask.SetID, ask.USetID);
-    const msg: IMsg = { ErrNo: ErrCode.PASS };
+    let msg: IMsg = { ErrNo: ErrCode.PASS };
     let SearchID = ask.SetID ? ask.SetID : 0;
     if (ask.USetID) { SearchID = ask.USetID; }
     const kv: IKeyVal = {
@@ -69,19 +72,18 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
             BuyTime: ans.DealTime ? ans.DealTime : 0,
             SellTime: ask.DealTime ? ask.DealTime : 0,
           };
-          return await this.jtable.Insert(ldgOne);
+          msg = await this.MGL.add(ldgOne);
+          if (msg.ErrNo === ErrCode.PASS) { return await this.jtable.Insert(ldgOne); }
         } else {
           msg.ErrNo = ErrCode.DB_QUERY_ERROR;
           msg.ErrCon = "LedgerLever and Ask record not found!";
-          return msg;
         }
       }
     } else {
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;
       msg.ErrCon = "LedgerLever record not found!";
-      return msg;
     }
-
+    return msg;
   }
   private async CreateNew(ask: AskTable): Promise<IMsg> {
     console.log("LedgerLeverAccess CreateNew", ask.SetID, ask.USetID);

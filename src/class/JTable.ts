@@ -276,7 +276,7 @@ export default class JTable<T extends IHasID> {
         }
         return ans;
     }
-    public async MultiUpdate(data: T[], isAdd: boolean= false) {
+    public async MultiUpdate(data: T[], isAdd: boolean= false, onIdkey: boolean = false) {
         if (data.length === 0) { return false; }
         const keys: string[] = [];
         const updates: string[] = [];
@@ -288,6 +288,9 @@ export default class JTable<T extends IHasID> {
             idx = ans as string[];
         }
         Object.keys(data[0]).map((key) => {
+            if (onIdkey) {
+                if (key === "id") { return; }
+            }
             keys.push(key);
             ff.push("?");
             if (key !== "id") {
