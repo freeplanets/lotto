@@ -70,8 +70,8 @@ class MyDate {
 		}
 		return new Date(time);
 	}
-	private addZeroUnderTen(v:number) {
+	private addZeroUnderTen(v: number) {
 		return v < 10 ? `0${v}` : `${v}`;
-	}	
+	}
 }
 export default new MyDate();

@@ -277,10 +277,10 @@ export default class JTable<T extends IHasID> {
             }
         });
         const values = data.map((dta: T) => keys.map((fn) => dta[fn]));
-        console.log("JTable MultiUpdate values", values);
+        // console.log("JTable MultiUpdate values", values);
         const sql = `insert into ${this.TableName}(${keys.join(",")}) values(${ff.join(",")})
             on duplicate key update ${updates.join(",")}`;
-        console.log(`MultiUpdate ${this.TableName}:`, sql);
+        // console.log(`MultiUpdate ${this.TableName}:`, sql);
         let ans1;
         await this.conn.batch(sql, values).then((res) => {
             // console.log("batch update:", res);

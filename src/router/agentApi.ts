@@ -313,6 +313,7 @@ function getUser(Account: string, AgentId: string, conn: PoolConnection ): Promi
                 Levels: r.Levels,
                 CLevel: r.CLevel,
                 PayClassID: r.PayClassID,
+                PayClass: r.PayClass,
                 DfKey: r.DfKey,
                 UpId: r.UpId,
                 Balance: r.Balance,
