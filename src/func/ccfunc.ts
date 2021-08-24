@@ -121,7 +121,7 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
         break;
       default:
         jt = new JTable(conn, param.TableName);
-        msg = await jt.Lists(filters, param.Fields);
+        msg = await jt.Lists(filters, param.Fields, param.orderField);
     }
   } else {
     msg.ErrNo = ErrCode.MISS_PARAMETER;

@@ -472,6 +472,7 @@ export interface WebParams {
     Filter?: IKeyVal | IKeyVal[];
     Fields?: string | string[];
     order?: Order;
+    orderField?: string;
     [key: string]: any;
 }
 export interface Items {

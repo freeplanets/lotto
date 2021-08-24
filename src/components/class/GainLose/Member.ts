@@ -28,6 +28,7 @@ export default class Member extends AGainLose {
 		const SellFee = NumFunc.defaultZero(ldgLever.SellFee) * key;
 		const TFee = NumFunc.defaultZero(ldgLever.TFee) * key;
 		const GainLose = NumFunc.defaultZero(ldgLever.GainLose) * key;
+		const SellTime = NumFunc.defaultZero(ldgLever.SellTime);
 		const mgl: MemberGainLose = {
 			id: 0,
 			UserID: ldgLever.UserID,

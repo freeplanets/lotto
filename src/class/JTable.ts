@@ -72,34 +72,6 @@ export default class JTable<T extends IHasID> {
         let filter = "";
         if (keys) {
             filter = new FilterFactory(keys).getFilter();
-            /*
-            if (Array.isArray(keys)) {
-                const tmp = keys.map((itm) => {
-                    return ` ${itm.Key} ${itm.Cond ? itm.Cond : "=" } ${typeof(itm.Val) === "number" ? itm.Val : "'" + itm.Val + "'" } `;
-
-                });
-                if (tmp.length > 0) { filter = tmp.join("and"); }
-            } else {
-                if(keys.Key){
-                    filter = ` ${keys.Key} ${keys.Cond ? keys.Cond : "=" } ${typeof(keys.Val) === "number" ? keys.Val : "'" + keys.Val + "'"} `;
-                } else {
-                    const tmp = Object.keys(keys).map((key)=>{
-                        let ftr = '';
-                        switch(typeof keys[key]) {
-                            case 'number':
-                                ftr = `${key} = ${keys[key]}`;
-                                break;
-                            case 'boolean':
-                                ftr = `${key}`;
-                                break;
-                            default:
-                                ftr = `${key} = ''`
-                        }
-                        return ftr;
-                    });
-                }
-            }
-            */
         }
         if ( !filter ) { filter = "1"; }
         let fds = "*";
@@ -281,7 +253,7 @@ export default class JTable<T extends IHasID> {
         const keys: string[] = [];
         const updates: string[] = [];
         const ff: string[] = [];
-        const values: any[][] = [];
+        // const values: any[][] = [];
         const ans = await this.getIndexes();
         let idx: string[] = [];
         if (ans) {
@@ -304,16 +276,11 @@ export default class JTable<T extends IHasID> {
                 }
             }
         });
-        data.map((dta: T) => {
-            const tmp: any[] = [];
-            keys.map((fn) => {
-                tmp.push(dta[fn]);
-            });
-            values.push(tmp);
-        });
+        const values = data.map((dta: T) => keys.map((fn) => dta[fn]));
+        console.log("JTable MultiUpdate values", values);
         const sql = `insert into ${this.TableName}(${keys.join(",")}) values(${ff.join(",")})
             on duplicate key update ${updates.join(",")}`;
-        // console.log(`MultiUpdate ${this.TableName}:`, sql, values);
+        console.log(`MultiUpdate ${this.TableName}:`, sql);
         let ans1;
         await this.conn.batch(sql, values).then((res) => {
             // console.log("batch update:", res);
