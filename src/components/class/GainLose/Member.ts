@@ -33,7 +33,7 @@ export default class Member extends AGainLose {
 			id: 0,
 			UserID: ldgLever.UserID,
 			UpId: ldgLever.UpId,
-			SDate: this.date.toDbDateString(ldgLever.SellTime),
+			SDate: this.date.toDbDateString(SellTime),
 			Total,
 			LeverTotal,
 			BuyFee,
