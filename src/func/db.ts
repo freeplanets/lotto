@@ -76,29 +76,9 @@ const HHOptions: mariadb.PoolConfig = {
 const HHPool: mariadb.Pool =  mariadb.createPool(HHOptions);
 */
 
-export function getConnection(pool?: mariadb.Pool, doHash?: boolean): Promise<PoolConnection|undefined> {
+export function getConnection(): Promise<PoolConnection|undefined> {
     // const pool: mariadb.Pool = dbPool;
-    return dbPool.getConnection(pool, doHash);
-    /*
-    return new Promise((resolve, reject) => {
-        // if (doHash) { pool = HHPool; }
-        if (doHash) { reject({ error: "no more doHash" }); }
-        // if (doHash) { reject({error: "No hash test now"}); }
-        if (!pool) { pool = dbPool; }
-        // console.log("idleConnection:" + pool.idleConnections());
-        // console.log("pool info:", pool.totalConnections(), pool.activeConnections(), pool.idleConnections());
-        pool.getConnection().then((conn: PoolConnection) => {
-            resolve(conn);
-        }).catch((err) => {
-            if (pool) {
-                console.log("Pool Info:", pool.activeConnections(), pool.idleConnections());
-                pool.end();
-            }
-            console.log("getConnection error:", mdOptions.host, err);
-            reject(err);
-        });
-    });
-    */
+    return dbPool.getConnection();
 }
 export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): Promise<any> {
     let query: Promise<any>;
@@ -108,7 +88,7 @@ export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): 
         query = conn.query(sql);
     }
     // console.log("doQuery:", sql, params);
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         query.then((res) => {
             // console.log("doQuery", res);
             resolve(res);
@@ -118,7 +98,7 @@ export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): 
             Object.keys(err).map((key) => {
                 console.log(key, ">", err[key]);
             });
-            reject(false);
+            resolve(null);
         });
     });
 }

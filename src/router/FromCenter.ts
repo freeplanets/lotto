@@ -67,7 +67,7 @@ async function sendMsg(msg: string) {
     headers: {"x-api-key": "7tFUAxk6tIayqq89vMTjK3NRX4qACEk39AniZJd5"}
   };
   const url: string = `https://nacauhh4p9.execute-api.ap-southeast-1.amazonaws.com/default/slackpush?${querystring.encode(Inputs)}`;
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     https.get(url, Optons, (res) => {
       // console.log("sendMsg statusCode:", res.statusCode);
       // console.log("sendMsg headers:", res.headers);
@@ -76,7 +76,7 @@ async function sendMsg(msg: string) {
         resolve(d);
       }).on("error", (err) => {
         console.log("Error is raised by SendMsg:", err);
-        reject(err);
+        resolve(undefined);
       });
     });
   });

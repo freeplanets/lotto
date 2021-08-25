@@ -5,7 +5,7 @@ import AGet from "./AGet";
 
 export default class GetUnFinishedAsks extends AGet {
 	public getItem() {
-		return new Promise<any>(async (resolve, reject) => {
+		return new Promise<any>(async (resolve) => {
 			const conn = await getConnection();
 			if (conn) {
 				const jt = new JTable(conn, "AskTable");

@@ -875,14 +875,14 @@ export class Bet implements IBet {
         } else {
             sql = sql + ` and BetType in (${BetTypes.join(",")})`;
         }
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async (resolve) => {
             // console.log("getOpParams", sql);
             this.conn.query(sql).then((res) => {
                 // console.log("getOpParams", res);
                 resolve(res);
             }).catch((err) => {
                 console.log("getOpParams error:", err);
-                reject(err);
+                resolve(undefined);
             });
         });
     }

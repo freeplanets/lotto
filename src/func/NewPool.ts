@@ -1,26 +1,20 @@
 import mariadb from "mariadb";
 export default class NewPool {
 	private pool: mariadb.Pool;
-	private redo = false;
 	constructor(private opt: mariadb.PoolConfig) {
 		this.pool = this.createPool();
 	}
-	public getConnection(pool?: mariadb.Pool, doHash: boolean = false): Promise<mariadb.PoolConnection | undefined> {
-		if (pool) { this.pool = pool; }
-		return new Promise((resolve, rejects) => {
-			if (doHash) { rejects({ error: "no more doHash" }); }
+	public getConnection(redo: boolean = false): Promise<mariadb.PoolConnection | undefined> {
+		return new Promise((resolve) => {
 			this.pool.getConnection().then((conn) => {
-				this.redo = false;
 				resolve(conn);
 			}).catch((err) => {
 				console.log("getConnection Error:", err);
-				if (!pool && !this.redo) {
-					this.redo = true;
+				if (!redo) {
 					this.resetPool();
-					resolve(this.getConnection());
+					resolve(this.getConnection(true));
 				}
-				this.redo = false;
-				rejects(err);
+				resolve(undefined);
 			});
 		});
 	}

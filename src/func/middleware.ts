@@ -68,7 +68,7 @@ const addslashes = (str) => {
 };
 
 const LoginChk = async (UserID: number, sid: string, UpId?: number): Promise<IMsg> => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     const msg: IMsg = {ErrNo: 0};
     await db.getConnection().then(async (conn) => {
       if (conn) {
@@ -111,7 +111,7 @@ const LoginChk = async (UserID: number, sid: string, UpId?: number): Promise<IMs
   */
 };
 const chkLogin = (uid: number, sid: string, conn: mariadb.PoolConnection) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     await setLoginStatus(uid, sid, conn).then(async (res) => {
       if (res) {
         const dbas: IDbAns = res as IDbAns;
@@ -125,32 +125,14 @@ const chkLogin = (uid: number, sid: string, conn: mariadb.PoolConnection) => {
           } else {
             resolve(false);
           }
-        }).catch((err) => {
-          // console.log("chkLogin", err);
-          reject(err);
         });
       }
       resolve(false);
-    }).catch((err) => {
-      reject(err);
     });
   });
-  /*
-  let ans = await setLoginStatus(uid, sid, conn, UpId);
-  if (ans) {
-      console.log("setLoginStatus ans", ans);
-      const sql = `select * from LoginInfo where uid=${uid} and isActive=1 and AgentID=${UpId ? UpId : 0} and logkey='${sid}'`;
-      ans = await db.doQuery(sql, conn);
-      if (ans) {
-          // console.log("chkLogin", sql, ans);
-          return true;
-      }
-  }
-  return false;
-  */
 };
 const setLoginStatus = (uid: number, sid: string, conn: mariadb.PoolConnection, key?: number) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
       const cond: string = key ? "timeproc=CURRENT_TIMESTAMP" : "isActive=0";
       const sql = `update LoginInfo set ${cond} where uid=${uid} and isActive=1
       and logkey='${sid}'
@@ -164,8 +146,8 @@ const setLoginStatus = (uid: number, sid: string, conn: mariadb.PoolConnection, 
           resolve(res);
         }
       }).catch((err) => {
-        // console.log("setLoginStatus", err);
-        reject(err);
+        console.log("setLoginStatus", err);
+        resolve(undefined);
       });
   });
 };

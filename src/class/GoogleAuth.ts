@@ -38,26 +38,18 @@ export default class GoogleAuth {
   };
   private curData: IParamForGoogleAuth|undefined;
   public async getIMG(pfga: IParamForGoogleAuth): Promise<string|undefined> {
-    /*
-    const param: string[] = [];
-    Object.keys(pfga).map((key) => {
-      param.push(`${key}=${pfga[key]}`);
-    });
-    */
     const sparam = this.rgParam(pfga);
     // const url: string = `${this.pair_url}?${param.join("&")}`;
     const url: string = `${this.PAIR_URL}?${sparam}`;
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       https.get(url, this.Optons, (res) => {
         res.setEncoding("binary");
         // const data: any[] = [];
         res.on("data", (d) => {
-          // console.log("Receive from SendMsg:", d);
-          // data.push(Buffer.from(d, "binary"));
           resolve(d);
         }).on("error", (err) => {
           console.log("Error is raised by SendMsg:", err);
-          reject(err);
+          resolve(undefined);
         });
       });
     });
@@ -67,7 +59,7 @@ export default class GoogleAuth {
     // const url: string = `${this.pair_url}?${param.join("&")}`;
     const url: string = `${this.VALID_URL}?${sparam}`;
     // console.log("Validate", url);
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       https.get(url, this.Optons, (res) => {
         res.setEncoding("binary");
         // const data: any[] = [];
@@ -77,7 +69,7 @@ export default class GoogleAuth {
           resolve(d);
         }).on("error", (err) => {
           console.log("Error is raised by SendMsg:", err);
-          reject(err);
+          resolve(undefined);
         });
       });
     });

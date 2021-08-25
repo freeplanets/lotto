@@ -34,9 +34,13 @@ export default class DataAccess {
 		const fields = ["id", "UpId", "CLevel"];
 		return this.getData("Member", filter, fields);
 	}
-	public async AskInProcess(UserID: number): Promise<IMsg> {
+	public async AskInProcess(UserID: number, ItemID: number, ItemType: number): Promise<IMsg> {
 		const filter: IKeyVal[] = [
 			{ Key: "UserID", Val: UserID },
+			{ Key: "AskType", Val: 1 },
+			{ Key: "BuyType", Val: 0 },
+			{ Key: "ItemID", Val: ItemID },
+			{ Key: "ItemType", Val: ItemType },
 			{ Key: "ProcStatus", Val: 2 , Cond: "<" }
 		];
 		const fields = ["id", "UserID"];
@@ -50,7 +54,7 @@ export default class DataAccess {
 		return msg;
 	}
 	private getData(tablename: string, filter: IKeyVal | IKeyVal[], fields?: string|string[]): Promise<IMsg> {
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve) => {
 			const jt = new JTable<IHasID>(this.conn, tablename);
 			const msg: IMsg = { ErrNo: ErrCode.PASS };
 			let func: Promise<any>;
@@ -71,7 +75,7 @@ export default class DataAccess {
 			}).catch((err) => {
 				msg.ErrNo = ErrCode.DB_QUERY_ERROR;
 				msg.error = err;
-				reject(msg);
+				resolve(msg);
 			});
 		});
 	}

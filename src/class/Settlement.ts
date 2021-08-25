@@ -211,34 +211,6 @@ export async function CancelTerm(tid: number, conn: mariadb.PoolConnection) {
     }
     return msg;
 }
-/*
-async function doSql(sql: string, conn: mariadb.PoolConnection): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-        conn.query(sql).then((res) => {
-            // if (res) { ans = true; }
-            console.log("doSql:", sql, res);
-            resolve(true);
-        }).catch((err) => {
-            console.log("doSql error:", sql, err);
-            reject(err);
-        });
-    });
-}
-*/
-/*
-async function doSql(sql: string, conn: mariadb.PoolConnection) {
-    let ans: boolean = false;
-    let rows;
-    await conn.query(sql).then((res) => {
-        rows = res;
-        if (res) { ans = true; }
-    }).catch((err) => {
-        console.log("doSql error:", sql, err);
-    });
-    console.log("doSql:", sql, rows);
-    return ans;
-}
-*/
 function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.PoolConnection, GType?: string): ISqlProc {
     let ans: ISqlProc|undefined;
     switch (GType) {

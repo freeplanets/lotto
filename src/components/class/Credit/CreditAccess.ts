@@ -17,7 +17,6 @@ export default class CreditAccess {
             resolve(msg);
         }).catch((err) => {
             console.log("getUserCredit error", err);
-            // reject(err);
             msg.ErrNo = ErrCode.DB_QUERY_ERROR;
             msg.ErrCon = "getUserCredit error";
             msg.error = err;

@@ -1976,7 +1976,7 @@ app.get("/CancelTerm", async (req, res) => {
 });
 app.get("/getBTCHashTable", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
-    const conn = await getConnection(undefined, true);
+    const conn = await getConnection();
     if (conn) {
         const p = req.query;
         const sql = `select height,hashvalue from btcBlocks limit ${p.idx},${p.steps}`;

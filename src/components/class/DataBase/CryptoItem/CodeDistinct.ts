@@ -7,7 +7,7 @@ export default class CodeDistinct extends AGet {
 		super();
 	}
 	public getItem() {
-		return new Promise<any>(async (resolve, reject) => {
+		return new Promise<any>(async (resolve) => {
 			const conn = await getConnection();
 			let tmp = [];
 			if (conn) {

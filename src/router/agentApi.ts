@@ -292,7 +292,7 @@ export async function addLoginInfo(uid: number, Account: string, AgentId: string
     return false;
 }
 function getUser(Account: string, AgentId: string, conn: PoolConnection ): Promise<IUser|null> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
         let user: IUser | null = null;
         const param: {[key: number]: any} = [Account, AgentId];
         const sql = "select m.*,u.PayClass from Member m,User u where m.UpId=u.id and m.Account=? and m.UpId=?";
@@ -325,7 +325,7 @@ function getUser(Account: string, AgentId: string, conn: PoolConnection ): Promi
             resolve(user);
         }).catch((err) => {
             console.log("getUser error", sql, `>Account:${Account},AgentId:${AgentId}`, "\n", err);
-            reject(err);
+            resolve(user);
         });
     });
 }

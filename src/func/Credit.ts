@@ -1,8 +1,14 @@
-import { Connection } from "mariadb";
+import { PoolConnection } from "mariadb";
 import { IDbAns } from "../DataSchema/if";
+import { doQuery } from "./db";
+
+interface CreditMemo {
+    Deposit?: number;
+    Withdraw?: number;
+}
 
 export async function ModifyCredit(uid: number, Account: string,
-                                   AgentId: number, money: number, idenkey: string, conn: Connection, justquery?: boolean) {
+                                   AgentId: number, money: number, idenkey: string, conn: PoolConnection, justquery?: boolean) {
     let  balance: number = await getUserCredit(uid, conn);
     if (justquery) {
         return { balance, orderId: 0};
@@ -12,9 +18,16 @@ export async function ModifyCredit(uid: number, Account: string,
         // console.log("ModifyCredit chk balanace:", balance, "Money:", money);
         return false;
     }
-    const sql = `insert into UserCredit(uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;
-    const param = [uid, Account, AgentId, idenkey, money, balance];
-    const dbans: IDbAns = await conn.query(sql, param);
+    const sql = `insert into UserCredit(uid,Account,AgentID,idenkey,DepWD,Balance,memo) values(?,?,?,?,?,?,?)`;
+    const memo: CreditMemo = {};
+    if (money > 0) {
+        memo.Deposit = money;
+    } else {
+        memo.Withdraw = money;
+    }
+    const param = [uid, Account, AgentId, idenkey, money, balance, JSON.stringify(memo)];
+    // const dbans: IDbAns = await conn.query(sql, param);
+    const dbans: IDbAns = await doQuery(sql, conn, param);
     // console.log("ModifyCredit:", sql, dbans);
     if (dbans.affectedRows > 0) {
     // return true;
@@ -25,17 +38,17 @@ export async function ModifyCredit(uid: number, Account: string,
     }
     return false;
 }
-async function ModifyUserCredit(uid: number, balance: number, conn: Connection) {
+async function ModifyUserCredit(uid: number, balance: number, conn: PoolConnection) {
     const sql = `update Member set Balance=${balance} where id=${uid}`;
-    const ans: IDbAns = await conn.query(sql);
+    const ans: IDbAns = await doQuery(sql, conn);
     if (ans.affectedRows > 0) { return true; }
     return false;
 }
 
-export function getUserCredit(uid: number, conn: Connection) {
-    return new Promise<number>(async (resolve, reject) => {
+export function getUserCredit(uid: number, conn: PoolConnection) {
+    return new Promise<number>(async (resolve) => {
         const sql = `select sum(DepWD) balance from UserCredit where uid=?`;
-        conn.query(sql, [uid]).then((res) => {
+        doQuery(sql, conn, [uid]).then((res) => {
             let balance: number = 0;
             if (res[0]) {
                 balance = balance + res[0].balance;
@@ -43,7 +56,7 @@ export function getUserCredit(uid: number, conn: Connection) {
             resolve(balance);
         }).catch((err) => {
             console.log("getUserCredit error", err);
-            reject(err);
+            resolve(0);
         });
     });
 }

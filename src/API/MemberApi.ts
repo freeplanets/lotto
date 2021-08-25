@@ -88,7 +88,7 @@ function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConne
         nn: "",
         ns: ""
     };
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         conn.query(sql, [GameID, tid]).then((rows) => {
             if (rows.length > 0) {
                 lg.sno = rows[0].TermID;
@@ -98,7 +98,7 @@ function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConne
             resolve(lg);
         }).catch((err) => {
             console.log("getLastGame:", err);
-            reject(err);
+            resolve(null);
         });
     });
 }
@@ -115,11 +115,6 @@ async function getOddsItem(GameID: number|string, tid: string, isSettled: number
     // console.log("getOddsItem", sql, param, isSettled);
     await conn.query(sql, param).then((rows) => {
         rows.map((itm) => {
-            /*
-            if (itm.BetType === 1 && itm.Num === 1) {
-                console.log("chk", itm);
-            }
-            */
             const tmp: IOdds = {
                 id: itm.OID,
                 o: itm.Odds,
@@ -128,11 +123,6 @@ async function getOddsItem(GameID: number|string, tid: string, isSettled: number
             if (typeof(gameOdds[itm.BetType]) === "undefined") {
                 gameOdds[itm.BetType] = {};
             }
-            /*
-            if(typeof(gameOdds[itm.BetType][itm.Num])==='undefined'){
-
-            }
-            */
             gameOdds[itm.BetType][itm.Num] = tmp;
             if (itm.OID > MaxID) { MaxID = itm.OID; }
         });
