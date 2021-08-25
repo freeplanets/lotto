@@ -169,7 +169,7 @@ agentApi.get("/logHandle", async (req: Request, res: Response) => {
 async function CreditAC(params, res: Response, ac: number) {
     // const params = req.query;
     // const conn = await dbPool.getConnection();
-    console.log(`agentApi/${ac} param:`, params);
+    // console.log(`agentApi/${ac} param:`, params);
     const msg: IMsg = {ErrNo: 0};
     const conn = await getConnection();
     if (!conn) {
@@ -197,6 +197,8 @@ async function CreditAC(params, res: Response, ac: number) {
     } else {
         param = decParam(eds.Decrypted(params.param));
     }
+    params.param = param;
+    console.log(`agentApi/${ac} param:`, params);
     // console.log("agentApi/1 param:", param);
     const hasUser: IUser | boolean = await getUser(param.userCode, params.agentId, conn) as IUser;
     if (!hasUser) {
