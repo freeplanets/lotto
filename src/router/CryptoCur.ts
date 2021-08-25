@@ -1,8 +1,8 @@
 import express, { Request, Response, Router } from "express";
 import * as ccfunc from "../func/ccfunc";
-import {dbPool} from "../func/db";
+// import {dbPool} from "../func/db";
 import ExpressAccess from "../func/ExpressAccess";
-const EA = new ExpressAccess(dbPool);
+const EA = new ExpressAccess();
 const app: Router = express.Router();
 app.get("/test", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.f);

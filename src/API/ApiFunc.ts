@@ -491,6 +491,7 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
     } else {
         ans = await jt.Insert(term);
         if (ans) {
+            console.log("CreateTerm:", ans);
             const dbans = ans as IDbAns;
             const tid = dbans.insertId;
             msg = await CreateOddsData(term.GameID, GType, tid, conn);

@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import mariadb, { PoolConnection } from "mariadb";
 import { ErrCode } from "../DataSchema/ENum";
 import { IDbAns, IMsg } from "../DataSchema/if";
+import myPool from "./NewPool";
 
 dotenv.config();
 // console.log("dotenv:", process.env);
@@ -39,6 +40,7 @@ const mdOptions: mariadb.PoolConfig = {
     charset: "UTF8",
     connectionLimit: 30,
 };
+/*
 const ccOptions: mariadb.PoolConfig = {
     host: process.env.CCHOST,
     user: process.env.CCUSER,
@@ -49,10 +51,12 @@ const ccOptions: mariadb.PoolConfig = {
     timezone: "+08:00",
     charset: "UTF8"
 };
+*/
 /**
  * 每個Pool預設會建立10個Connection，可依需要修改Config參數connectionLimit
  */
-export const dbPool: mariadb.Pool = mariadb.createPool(mdOptions);
+// const dbPool: mariadb.Pool = mariadb.createPool(mdOptions);
+const dbPool: myPool = new myPool(mdOptions);
 // export const ccPool: mariadb.Pool = mariadb.createPool(ccOptions);
 /*
 if (dbPool) {
@@ -74,6 +78,8 @@ const HHPool: mariadb.Pool =  mariadb.createPool(HHOptions);
 
 export function getConnection(pool?: mariadb.Pool, doHash?: boolean): Promise<PoolConnection|undefined> {
     // const pool: mariadb.Pool = dbPool;
+    return dbPool.getConnection(pool, doHash);
+    /*
     return new Promise((resolve, reject) => {
         // if (doHash) { pool = HHPool; }
         if (doHash) { reject({ error: "no more doHash" }); }
@@ -85,13 +91,14 @@ export function getConnection(pool?: mariadb.Pool, doHash?: boolean): Promise<Po
             resolve(conn);
         }).catch((err) => {
             if (pool) {
-                console.log('Pool Info:', pool.activeConnections(), pool.idleConnections());
+                console.log("Pool Info:", pool.activeConnections(), pool.idleConnections());
                 pool.end();
             }
             console.log("getConnection error:", mdOptions.host, err);
             reject(err);
         });
     });
+    */
 }
 export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): Promise<any> {
     let query: Promise<any>;
