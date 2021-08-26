@@ -8,6 +8,7 @@ export default class NewPool {
 	public getConnection(redo: boolean = false): Promise<mariadb.PoolConnection | undefined> {
 		return new Promise((resolve) => {
 			this.pool?.getConnection().then((conn) => {
+				console.log("NewPool Info:", this.info());
 				resolve(conn);
 			}).catch(async(err) => {
 				console.log("getConnection Error:", err);
