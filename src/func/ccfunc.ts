@@ -16,7 +16,7 @@ interface IMyFunction<T> extends GetPostFunction {
 export const f: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   const msg: IMsg = {ErrNo: 0};
   msg.ErrCon = `id:${param.id} > ${conn.info?.status}`;
-  conn.release();
+  await conn.release();
   return msg;
 };
 export const save: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {

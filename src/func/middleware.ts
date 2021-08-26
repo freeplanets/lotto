@@ -72,17 +72,17 @@ const LoginChk = async (UserID: number, sid: string, UpId?: number): Promise<IMs
     const msg: IMsg = {ErrNo: 0};
     await db.getConnection().then(async (conn) => {
       if (conn) {
-        await chkLogin(UserID, sid, conn).then((res) => {
+        await chkLogin(UserID, sid, conn).then(async (res) => {
           if (res) { resolve(msg); } else {
             msg.ErrNo = ErrCode.NO_LOGIN;
-            conn.release();
+            await conn.release();
             resolve(msg);
           }
         }).catch((err) => {
           msg.ErrNo = 9;
           msg.ErrCon = "Connect Fail!!";
         });
-        conn.release();
+        await conn.release();
         resolve(msg);
       } else {
         msg.ErrNo = 9;

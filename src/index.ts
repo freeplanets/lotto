@@ -52,7 +52,7 @@ app.get("/login", async (req, res) => {
                 msg.ErrNo = 9;
                 msg.ErrCon = "Member not found";
             }
-            conn.release();
+            await conn.release();
         } else {
             msg.ErrNo = 9;
             msg.ErrCon = "Get connection error!!";
@@ -70,8 +70,8 @@ app.get("/saveGames", async (req, res) => {
         const sql = `insert into Games(id,name) values(?,?)`;
         console.log(sql, params);
         if (conn) {
-            conn.query(sql, params).then((v) => {
-                conn.release();
+            conn.query(sql, params).then(async (v) => {
+                await conn.release();
                 res.send(JSON.stringify(v));
             }).catch((err) => {
                 console.log("saveGames", err);

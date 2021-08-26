@@ -90,7 +90,7 @@ async function doDayTotal(d: string) {
     })).catch((err) => {
       console.log("doDayTotal", err);
     });
-    conn.release();
+    await conn.release();
   }
 }
 

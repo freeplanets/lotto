@@ -14,7 +14,7 @@ export default class ExpressAccess {
     const conn: PoolConnection | undefined = await this.getConnection();
     if (conn) {
       this.msg = await f(params, conn);
-      conn.release();
+      await conn.release();
     } else {
       this.msg.ErrNo = ErrCode.GET_CONNECTION_ERR;
       this.msg.ErrCon = "Get connection error!!";

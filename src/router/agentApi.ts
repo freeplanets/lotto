@@ -96,7 +96,7 @@ agentApi.get("/1", async (req: Request, res: Response) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Agent not found!!";
     }
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(msg));
     */
 });
@@ -117,7 +117,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     if (!Account || !token) {
         msg.ErrNo = ErrCode.MISS_PARAMETER;
         msg.ErrCon = "Miss Parameters!!";
-        conn.release();
+        await conn.release();
         res.send(JSON.stringify(msg));
         return;
     }
@@ -138,7 +138,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
         msg.ErrNo = ErrCode.NO_DATA_FOUND;
         msg.ErrCon = "Error: Member not found!!";
     }
-    conn.release();
+    await conn.release();
     // console.log("memberlogin getUser:", msg, process.env.WS_SERVER);
     res.send(JSON.stringify(msg));
 });
@@ -221,7 +221,7 @@ async function CreditAC(params, res: Response, ac: number) {
         }
         msg.data = data;
     }
-    conn.release();
+    await conn.release();
     // console.log("CreditAC ModifyCredit:", msg);
     res.send(JSON.stringify(msg));
 }
@@ -378,7 +378,7 @@ async function getTicketDetail(req, res) {
     if (!params.agentId || !params.param) {
         data.code = 9;
         data.ErrCon = "parameter is missing!!";
-        conn.release();
+        await conn.release();
         res.send(JSON.stringify(data));
         return;
     }
@@ -400,7 +400,7 @@ async function getTicketDetail(req, res) {
         console.log("getTicketDetail error", data);
         // res.send(JSON.stringify(data));
     });
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(data));
 }
 async function getGameDataCaption(req, res) {
@@ -418,7 +418,7 @@ async function getGameDataCaption(req, res) {
     if (!params.agentId || !params.param) {
         data.code = 9;
         data.ErrCon = "parameter is missing!!";
-        conn.release();
+        await conn.release();
         res.send(JSON.stringify(data));
         return;
     }
@@ -442,7 +442,7 @@ async function getGameDataCaption(req, res) {
         data.code = 9;
         data.error = "param error!!";
     }
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(data));
 }
 async function register(params, res: Response) {
@@ -511,7 +511,7 @@ async function register(params, res: Response) {
         msg.ErrNo = 9;
         msg.ErrCon = "Agent not found!!";
     }
-    conn.release();
+    await conn.release();
     console.log("doRegister:", msg);
     res.send(JSON.stringify(msg));
 }
@@ -558,7 +558,7 @@ async function getLedgerLever(req, res) {
     if (!params.agentId || !params.param) {
         data.code = 9;
         data.ErrCon = "parameter is missing!!";
-        conn.release();
+        await conn.release();
         res.send(JSON.stringify(data));
         return;
     }
@@ -580,7 +580,7 @@ async function getLedgerLever(req, res) {
         console.log("getLedgerLever error", data);
         // res.send(JSON.stringify(data));
     });
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(data));
 }
 async function getAskTable(req, res) {
@@ -598,7 +598,7 @@ async function getAskTable(req, res) {
     if (!params.agentId || !params.param) {
         data.code = 9;
         data.ErrCon = "parameter is missing!!";
-        conn.release();
+        await conn.release();
         res.send(JSON.stringify(data));
         return;
     }
@@ -623,7 +623,7 @@ async function getAskTable(req, res) {
         console.log("getAskTable error", data);
         // res.send(JSON.stringify(data));
     });
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(data));
 }
 function ModifyNickName(id: number, Nickname: string, conn: PoolConnection) {

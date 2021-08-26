@@ -5,34 +5,34 @@ export default class NewPool {
 		this.pool = mariadb.createPool(opt);
 		console.log("NewPool Info:", this.info(opt.connectionLimit));
 	}
-	public getConnection(redo: boolean = false): Promise<mariadb.PoolConnection | undefined> {
+	public getConnection(caller: string= ""): Promise<mariadb.PoolConnection | undefined> {
 		return new Promise((resolve) => {
 			this.pool?.getConnection().then((conn) => {
-				console.log("NewPool Info:", this.info());
+				console.log("NewPool Info:", this.info(caller));
+				conn.release();
 				resolve(conn);
 			}).catch(async (err) => {
 				console.log("getConnection Error:", err);
-				if (!redo) {
-					await this.resetPool();
-					resolve(this.getConnection(true));
-				} else {
-					resolve(undefined);
-				}
+				resolve(undefined);
 			});
 		});
 	}
-	public async resetPool() {
-		console.log("PoolInfo:", this.info());
+	public async resetPool(func: string) {
+		console.log("PoolInfo:", this.info(func));
 		await this.pool.end();
 	}
-	private info(max?: number) {
+	private info(max?: number | string) {
 		const info: any = {
 			total: this.pool.totalConnections(),
 			active: this.pool.activeConnections(),
 			idle: this.pool.idleConnections(),
 		};
 		if (max) {
-			info.max = max;
+			if (typeof max === "number") {
+				info.max = max;
+			}	else {
+				info.func = max;
+			}
 		}
 		return info;
 	}

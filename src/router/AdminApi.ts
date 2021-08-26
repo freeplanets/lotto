@@ -94,7 +94,7 @@ app.get("/login", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "user not found";
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -114,7 +114,7 @@ app.get("/logout", async (req, res) => {
         if (ans) {
             msg.data = ans;
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -171,7 +171,7 @@ app.get("/getGAImg", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Find  user error!!";
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -215,7 +215,7 @@ app.get("/GAValidate", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Find  user error!!";
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -233,7 +233,7 @@ app.get("/getPrograms", async (req, res) => {
         } else {
             msg.data = ans;
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -260,7 +260,7 @@ app.get("/getProbTable", async (req, res) => {
            msg.ErrNo = 9;
            msg.ErrCon = "Data not found!!!";
        }
-       conn.release();
+       await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -288,7 +288,7 @@ app.get("/SetUser", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Upate user error!!!";
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -318,7 +318,7 @@ app.post("/ResetPassword", async (req, res) => {
         //    msg.ErrNo = ErrCode.NO_LOGIN;
         //    msg.ErrCon = "NO LOGIN INFO";
         // }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -348,7 +348,7 @@ app.post("/ChangePassword", async (req, res) => {
         //    msg.ErrNo = ErrCode.NO_LOGIN;
         //    msg.ErrCon = "NO LOGIN INFO";
         // }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -367,7 +367,7 @@ app.get("/getSysInfo", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "SysInfo not found!!";
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "get connection error!!";
@@ -389,7 +389,7 @@ app.get("/getGames", async (req, res) => {
           msg.ErrNo = 9;
           msg.ErrCon = "Games not found!!";
       }
-      conn.release();
+      await conn.release();
   } else {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
@@ -421,7 +421,7 @@ app.get("/member/GameResult", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Games not found!!";
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "get connection error!!";
@@ -441,7 +441,7 @@ app.post("/saveBtClass", async (req, res) => {
       } else {
           msg.ErrCon = "Save BetType class error!!";
       }
-      conn.release();
+      await conn.release();
   } else {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
@@ -461,7 +461,7 @@ app.get("/getBtClass", async (req, res) => {
       } else {
           msg.ErrCon = "BetClass Not found!!";
       }
-      conn.release();
+      await conn.release();
   } else {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
@@ -481,7 +481,7 @@ app.get("/delBtClass", async (req, res) => {
       } else {
           msg.ErrCon = "BetClass delete fail!!";
       }
-      conn.release();
+      await conn.release();
   } else {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
@@ -500,7 +500,7 @@ app.get("/getPayClass", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = ans;
     }
-    conn.release();
+    await conn.release();
   } else {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
@@ -529,9 +529,9 @@ app.post("/savePayClass", async (req, res) => {
       // console.log("savePayClass", v);
       // res.send(JSON.stringify(v));
       rlt = v;
-  }).catch((err) => {
+  }).catch(async (err) => {
       console.log("savePayClass error", err);
-      conn.release();
+      await conn.release();
       msg.ErrNo = 9;
       msg.debug = err;
       res.send(JSON.stringify(msg));
@@ -560,7 +560,7 @@ app.post("/savePayClass", async (req, res) => {
   }
   msg.debug = ans;
   // console.log("savePayClass", msg);
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 
 });
@@ -592,7 +592,7 @@ app.get("/editPayClass", async (req, res) => {
       msg.ErrNo = 9;
       msg.debug = err;
   });
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.get("/delPayClass", async (req, res) => {
@@ -612,7 +612,7 @@ app.get("/delPayClass", async (req, res) => {
   if (chk) {
       msg.ErrNo = 9;
       msg.ErrCon = "PayClass in used!!";
-      conn.release();
+      await conn.release();
       res.send(JSON.stringify(msg));
   }
   await conn.beginTransaction();
@@ -659,7 +659,7 @@ app.get("/delPayClass", async (req, res) => {
   } else {
       conn.rollback();
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.get("/getBasePayRate", async (req, res) => {
@@ -696,7 +696,7 @@ app.get("/getBasePayRate", async (req, res) => {
     msg.ErrNo = 9;
     msg.ErrCon = "getBasePayRate error";
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.get("/getPayRate", async (req, res) => {
@@ -733,7 +733,7 @@ app.get("/getPayRate", async (req, res) => {
       msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
       msg.ErrCon = "getPayRate error";
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.get("/getGameType", async (req, res) => {
@@ -753,7 +753,7 @@ app.get("/getGameType", async (req, res) => {
         msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
         msg.ErrCon = "getGameType error";
     }
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(msg));
 });
 app.post("/batch/saveBasePayRate", async (req, res) => {
@@ -782,7 +782,7 @@ app.post("/batch/saveBasePayRate", async (req, res) => {
     } else {
         msg.ErrNo = 9;
     }
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(msg));
 });
 app.post("/batch/saveBasePayRate1", async (req, res) => {
@@ -811,13 +811,13 @@ app.post("/batch/saveBasePayRate1", async (req, res) => {
   let sql = "insert into BasePayRate(GameID,BetType,Title,SubTitle,SubType,NoAdjust,Profit,DfRate,TopRate,Steps,TopPay,OneHand,ModifyID) values";
   sql += valstr.join(",");
   sql += " ON DUPLICATE KEY UPDATE NoAdjust=values(NoAdjust),Profit=values(Profit),DfRate=values(DfRate),TopRate=values(TopRate),Steps=values(Steps),TopPay=values(TopPay),OneHand=values(OneHand),ModifyID=values(ModifyID)";
-  await conn.query(sql).then((v) => {
+  await conn.query(sql).then(async (v) => {
       console.log("getPayRate", sql, v);
-      conn.release();
+      await conn.release();
       res.send(JSON.stringify(v));
-  }).catch((err) => {
+  }).catch(async (err) => {
       console.log("getPayRate error", err);
-      conn.release();
+      await conn.release();
       res.send(JSON.stringify(err));
   });
 });
@@ -841,12 +841,12 @@ app.post("/batch/savePayRate", async (req, res) => {
   let sql: string = "insert into PayRate(PayClassID,GameID,BetType,SubType,Rate) values";
   sql += valstr.join(",");
   sql += " ON DUPLICATE KEY UPDATE Rate=values(Rate)";
-  await conn.query(sql).then((v) => {
-      conn.release();
+  await conn.query(sql).then(async (v) => {
+      await conn.release();
       res.send(JSON.stringify(v));
-  }).catch((err) => {
+  }).catch(async (err) => {
       console.log("savePayRate error", err);
-      conn.release();
+      await conn.release();
       res.send(JSON.stringify(err));
   });
 });
@@ -874,7 +874,7 @@ app.post("/batch/saveProbTable", async (req, res) => {
     } else {
         msg.ErrNo = 9;
     }
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(msg));
 });
 app.post("/saveTerms", async (req, res) => {
@@ -923,7 +923,7 @@ app.post("/saveTerms", async (req, res) => {
       if (!GType) {
         msg.ErrNo = 9;
         msg.ErrCon = "find GType error!!";
-        conn.release();
+        await conn.release();
         res.send(JSON.stringify(msg));
         return;
       }
@@ -938,7 +938,7 @@ app.post("/saveTerms", async (req, res) => {
             ModifyID: param.ModifyID ? param.ModifyID : 0
         };
       msg = await afunc.createTerms(GType, term, conn, param.PLog as IParamLog[]);
-      conn.release();
+      await conn.release();
       res.send(JSON.stringify(msg));
         /*
       const params = [
@@ -982,7 +982,7 @@ app.post("/saveTerms", async (req, res) => {
               const codAns = await afunc.CreateOddsData(GameID, GType, tid, conn);
               if (codAns.ErrNo !== 0) {
                       await conn.rollback();
-                      conn.release();
+                      await conn.release();
                       res.send(JSON.stringify(codAns));
               }
           }
@@ -992,7 +992,7 @@ app.post("/saveTerms", async (req, res) => {
           msg.ErrNo = 9;
           msg.ErrCon = "Error!!";
       }
-      conn.release();
+      await conn.release();
       res.send(JSON.stringify(msg));
       */
   }
@@ -1041,7 +1041,7 @@ app.get("/getTerms", async (req, res) => {
       msg.ErrCon = err;
   });
   */
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.post("/createBetItems", async (req, res) => {
@@ -1079,20 +1079,20 @@ app.post("/createBetItems", async (req, res) => {
   if (data.length <= 0) {
       msg.ErrNo = 9;
       msg.ErrCon = "No Data !!!";
-      conn.release();
+      await conn.release();
       res.send(JSON.stringify(msg));
   }
   let sql = "insert into dfOddsItems(GType,BetType,Num,ModifyID) values";
   sql = sql + val.join(",");
   console.log("sql:", sql);
-  await conn.query(sql).then((row) => {
+  await conn.query(sql).then(async (row) => {
       msg.data = row;
-      conn.release();
+      await conn.release();
       res.send(JSON.stringify(msg));
-  }).catch((err) => {
+  }).catch(async (err) => {
       msg.error = err;
       msg.ErrNo = 9;
-      conn.release();
+      await conn.release();
       res.send(JSON.stringify(msg));
   });
 
@@ -1113,7 +1113,7 @@ app.get("/getDfOddsItem", async (req, res) => {
     } else {
         console.log("getDfoddsItem", ans);
     }
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(msg));
 });
 app.post("/saveGameCaption", async (req, res) => {
@@ -1143,7 +1143,7 @@ app.post("/saveGameCaption", async (req, res) => {
        msg.ErrCon = "GameDataCaption update error!!";
     }
     // console.log("UpdateGame", ans);
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(msg));
 });
 app.get("/GameList", async (req, res) => {
@@ -1161,7 +1161,7 @@ app.get("/GameList", async (req, res) => {
   if (games) {
       msg.data = games;
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.post("/UpdateGame", async (req, res) => {
@@ -1188,7 +1188,7 @@ app.post("/UpdateGame", async (req, res) => {
      msg.ErrCon = "Game data update error!!";
   }
   // console.log("UpdateGame", ans);
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.post("/Save/:TableName", async (req, res) => {
@@ -1212,7 +1212,7 @@ app.post("/Save/:TableName", async (req, res) => {
       msg.ErrNo = 9;
       msg.error = ans;
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.post("/SaveDfOddsItem", async (req, res) => {
@@ -1248,7 +1248,7 @@ app.post("/SaveDfOddsItem", async (req, res) => {
         msg.ErrNo = 9;
         msg.error = ans;
     }
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(msg));
 });
 app.get("/member/getAnimals", (req, res) => {
@@ -1272,7 +1272,7 @@ app.get("/member/wagerLotto", async (req, res) => {
   if (btlist) {
       msg.btLists = btlist;
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.get("/member/getOddsItems", async (req, res) => {
@@ -1287,7 +1287,7 @@ app.get("/member/getOddsItems", async (req, res) => {
   const param = req.query;
   // console.log("/api/member/getOddsItems", param);
   const ans = await getOddsData(param.GameID as string, parseInt(param.PayClassID as string, 10), parseInt(param.maxOID as string, 10), conn);
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(ans));
 });
 app.post("/member/mwagermulti", async (req, res) => {
@@ -1321,7 +1321,7 @@ app.post("/member/mwagermulti", async (req, res) => {
       console.log("Rollback:", rback);
   }
   */
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(ans));
 });
 app.post("/member/mwagerone", async (req, res) => {
@@ -1355,7 +1355,7 @@ app.post("/member/mwagerone", async (req, res) => {
         console.log("Rollback:", rback);
     }
     */
-    conn.release();
+    await conn.release();
     res.send(JSON.stringify(ans));
   });
 app.post("/member/mwagerjn", async (req, res) => {
@@ -1389,7 +1389,7 @@ app.post("/member/mwagerjn", async (req, res) => {
       console.log("Rollback:", rback);
   }
   */
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(ans));
 });
 app.get("/member/getWagerItems", async (req, res) => {
@@ -1408,7 +1408,7 @@ app.get("/member/getWagerItems", async (req, res) => {
       param.date = JDate.DateStr;
   }
   msg = await gets.getBetLists(parseInt(param.UserID as string, 10), param.date as string);
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.post("/SaveUser", async (req, res) => {
@@ -1435,7 +1435,7 @@ app.post("/SaveUser", async (req, res) => {
   } else {
       ans = await jt.Insert(param);
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(ans));
 });
 app.get("/getUsers", async (req, res) => {
@@ -1468,7 +1468,7 @@ app.get("/getUsers", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "Get Users Error!!";
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.get("/member/getPayClass", async (req, res) => {
@@ -1493,7 +1493,7 @@ app.get("/member/getPayClass", async (req, res) => {
           msg.ErrCon = "Get Pay Class Error!!";
       }
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 /*
@@ -1519,7 +1519,7 @@ app.get("/getOpParams", async (req, res) => {
           msg.ErrCon = "Get Open Params Error!!";
       }
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 */
@@ -1556,7 +1556,7 @@ app.post("/SaveNums", async (req, res) => {
       }
       */
   }
-  conn.release();
+  await conn.release();
   res.send(JSON.stringify(msg));
 });
 app.get("/CurOddsInfo", async (req, res) => {
@@ -1574,7 +1574,7 @@ app.get("/CurOddsInfo", async (req, res) => {
       if (!param.GameID) {
           msg.ErrNo = 9;
           msg.ErrCon = "GameID is missing!!";
-          conn.release();
+          await conn.release();
           res.send(JSON.stringify(msg));
       }
       if (!param.tid) {
@@ -1582,7 +1582,7 @@ app.get("/CurOddsInfo", async (req, res) => {
           if (!tid) {
               msg.ErrNo = 9;
               msg.ErrCon = "Get data error!!";
-              conn.release();
+              await conn.release();
               res.send(JSON.stringify(msg));
           }
       } else {
@@ -1609,7 +1609,7 @@ app.get("/CurOddsInfo", async (req, res) => {
           msg.ErrNo = 9;
           msg.ErrCon = "Get Odds error!";
       }
-      conn.release();
+      await conn.release();
   }
   // console.log("CurOddsInfo", JSON.stringify(msg));
   try {
@@ -1693,7 +1693,7 @@ app.get("/setOdds", async (req, res) => {
           msg.ErrNo = 9;
           msg.ErrCon = "Odds error!!";
       }
-      conn.release();
+      await conn.release();
   }
   res.send(JSON.stringify(msg));
 });
@@ -1719,7 +1719,7 @@ app.get("/setStop", async (req, res) => {
           msg.ErrNo = 9;
           msg.ErrCon = "Set stop error!!";
       }
-      conn.release();
+      await conn.release();
   }
   res.send(JSON.stringify(msg));
 });
@@ -1740,7 +1740,7 @@ app.post("/saveComments", async (req, res) => {
           msg.ErrNo = 9;
           msg.ErrCon = "Save comments error!";
       }
-      conn.release();
+      await conn.release();
   } else {
       msg.ErrNo = 9;
       msg.ErrCon = "Get Connection error!";
@@ -1764,7 +1764,7 @@ app.post("/getComments", async (req, res) => {
           msg.ErrNo = 9;
           msg.ErrCon = "Get comments error!";
       }
-      conn.release();
+      await conn.release();
   } else {
       msg.ErrNo = 9;
       msg.ErrCon = "Get Connection error!";
@@ -1793,7 +1793,7 @@ app.get("/getBetHeaders", async (req, res) => {
             if (!upid || upid.length === 0) {
                 msg.ErrNo = 9;
                 msg.ErrCon = "Get BetLists error!";
-                conn.release();
+                await conn.release();
                 res.send(JSON.stringify(msg));
             }
             msg.UpUser = upid;
@@ -1821,7 +1821,7 @@ app.get("/getBetHeaders", async (req, res) => {
           msg.ErrNo = 9;
           msg.ErrCon = "Get BetLists error!";
         }
-        conn.release();
+        await conn.release();
   } else {
       msg.ErrNo = 9;
       msg.ErrCon = "Get Connection error!";
@@ -1883,7 +1883,7 @@ app.get("/getBetTotal", async (req, res) => {
                 msg.User = usr;
             }
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Connection error!!";
@@ -1924,7 +1924,7 @@ app.get("/getEditRecord", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Data not found";
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.debug = "db connection error!!";
@@ -1953,7 +1953,7 @@ app.get("/DelTerm", async (req, res) => {
             msg.ErrNo = ErrCode.DELETE_TERM_ERR;
             msg.ErrCon = "Not Empty!!";
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.debug = "db connection error!!";
@@ -1967,7 +1967,7 @@ app.get("/CancelTerm", async (req, res) => {
     const conn = await getConnection();
     if (conn) {
         msg = await CancelTerm(tid, conn);
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.debug = "db connection error!!";
@@ -1993,7 +1993,7 @@ app.get("/getBTCHashTable", async (req, res) => {
         } catch (error) {
             console.log(error);
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -2016,7 +2016,7 @@ app.get("/getHashAna", async (req, res) => {
         } catch (error) {
             console.log(error);
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -2045,7 +2045,7 @@ app.post("/saveHashAna", async (req, res) => {
         } catch (error) {
             console.log(error);
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
@@ -2069,7 +2069,7 @@ app.get("/delHashAna", async (req, res) => {
         } catch (error) {
             console.log(error);
         }
-        conn.release();
+        await conn.release();
     } else {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";

@@ -42,7 +42,7 @@ async function webFunc(req: Request, res: Response) {
         msg.error = `op:${param.op} has no funcion ,${JSON.stringify(param)}`;
       }
     }
-    conn.release();
+    await conn.release();
   } else {
     msg.ErrNo = 9;
     msg.error = "Get connection error!!";

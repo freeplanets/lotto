@@ -75,7 +75,6 @@ const HHOptions: mariadb.PoolConfig = {
 };
 const HHPool: mariadb.Pool =  mariadb.createPool(HHOptions);
 */
-
 export function getConnection(): Promise<PoolConnection|undefined> {
     // const pool: mariadb.Pool = dbPool;
     return dbPool.getConnection();

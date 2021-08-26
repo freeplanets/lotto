@@ -120,7 +120,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: ID3Result, con
             });
         } else if (itm.PType === "EACH") {
             if (itm.Position) {
-                const pos: number[] = itm.Position;
+                const pos: number[] = itm.Position as number[];
                 pos.map((p) => {
                 const num: number = nn[p];
                 sql = `update BetTableEx set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num=${num}`;
