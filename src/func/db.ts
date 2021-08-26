@@ -38,7 +38,7 @@ const mdOptions: mariadb.PoolConfig = {
     // timezone: "Asia/Taipei",
     timezone: "+08:00",
     charset: "UTF8",
-    connectionLimit: 30,
+    connectionLimit: 50,
 };
 /*
 const ccOptions: mariadb.PoolConfig = {
