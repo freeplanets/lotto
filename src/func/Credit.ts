@@ -3,8 +3,8 @@ import { IDbAns } from "../DataSchema/if";
 import { doQuery } from "./db";
 
 interface CreditMemo {
-    Deposit?: number;
-    Withdraw?: number;
+    Type?: number;
+    Amount?: number;
 }
 
 export async function ModifyCredit(uid: number, Account: string,
@@ -21,9 +21,11 @@ export async function ModifyCredit(uid: number, Account: string,
     const sql = `insert into UserCredit(uid,Account,AgentID,idenkey,DepWD,Balance,memo) values(?,?,?,?,?,?,?)`;
     const memo: CreditMemo = {};
     if (money > 0) {
-        memo.Deposit = money;
+        memo.Type = 0;
+        memo.Amount = money;
     } else {
-        memo.Withdraw = money;
+        memo.Type = 1;
+        memo.Amount = money;
     }
     const param = [uid, Account, AgentId, idenkey, money, balance, JSON.stringify(memo)];
     // const dbans: IDbAns = await conn.query(sql, param);

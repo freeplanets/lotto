@@ -10,7 +10,7 @@ export default class NewPool {
 			this.pool?.getConnection().then((conn) => {
 				console.log("NewPool Info:", this.info());
 				resolve(conn);
-			}).catch(async(err) => {
+			}).catch(async (err) => {
 				console.log("getConnection Error:", err);
 				if (!redo) {
 					await this.resetPool();
