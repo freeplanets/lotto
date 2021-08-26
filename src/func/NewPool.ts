@@ -1,12 +1,12 @@
 import mariadb from "mariadb";
 export default class NewPool {
-	private pool: mariadb.Pool;
+	private pool: mariadb.Pool | null;
 	constructor(private opt: mariadb.PoolConfig) {
 		this.pool = this.createPool();
 	}
 	public getConnection(redo: boolean = false): Promise<mariadb.PoolConnection | undefined> {
 		return new Promise((resolve) => {
-			this.pool.getConnection().then((conn) => {
+			this.pool?.getConnection().then((conn) => {
 				resolve(conn);
 			}).catch((err) => {
 				console.log("getConnection Error:", err);
@@ -20,17 +20,24 @@ export default class NewPool {
 	}
 	public resetPool() {
 		console.log("PoolInfo:", this.info());
-		this.pool.end();
-		this.pool = this.createPool();
+		if(this.pool){
+			this.pool.end();
+			this.pool = null;
+			this.pool = this.createPool();
+		}
 	}
 	public createPool() {
 		return mariadb.createPool(this.opt);
 	}
 	private info() {
-		return {
-			total: this.pool.totalConnections(),
-			active: this.pool.activeConnections(),
-			idle: this.pool.idleConnections(),
-		};
+		if(this.pool) {
+			return {
+				total: this.pool.totalConnections(),
+				active: this.pool.activeConnections(),
+				idle: this.pool.idleConnections(),
+			};	
+		} else {
+			return '';
+		}
 	}
 }
