@@ -15,7 +15,7 @@ const wsOptions: ClientOptions = {
 };
 const ChannelName = Channels.API_SERVER;
 
-class WsClient {
+export class WsClient {
   get isConnected() {
     if (!this.ws) { return false; }
     return this.ws.readyState === this.ws.OPEN;

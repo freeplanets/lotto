@@ -3,6 +3,7 @@ import AFilter from "./AFilter";
 
 /**
  * Cond 不同於 '=' 的條件， 如果是 'between' 必需有 Val2 值
+ * 如果有 CondOr 則 Key Val 要有 Key1 Val1
  */
 export default class KeyValFilter extends AFilter {
   public setFilter(filter: IKeyVal): string {
@@ -13,20 +14,18 @@ export default class KeyValFilter extends AFilter {
     }
   }
   private hasKeyElement(f: IKeyVal): string {
+    if (f.CondOr) { return this.doCondOrFilterHasKey(f); }
+    return this.hasKeyElementNoCondOr(f);
+  }
+  private hasKeyElementNoCondOr(f: IKeyVal): string {
     let str = this.addQuotationMarks(f.Val);
     if (f.Cond) {
-      /*
-      if (f.Cond.toLowerCase() === "between") {
-        str = `${str} and ${this.addQuotationMarks(f.Val2)}`;
-      }
-      */
       switch (f.Cond.toLowerCase()) {
         case "between":
           str = `${str} and ${this.addQuotationMarks(f.Val2)}`;
           break;
         case "or":
           return this.KeyEqualOR(f);
-          break;
       }
     } else {
       f.Cond = "=";
@@ -59,6 +58,10 @@ export default class KeyValFilter extends AFilter {
     return tmp;
   }
   private noKeyElement(filter: IKeyVal): string {
+    if (filter.CondOr || filter.Cond) { return this.doCondOrFilter(filter); }
+    return this.noKeyElementNoCondOr(filter);
+  }
+  private noKeyElementNoCondOr(filter: IKeyVal): string {
     const tmp = Object.keys(filter).map((key) => {
       let ftr = "";
       switch (typeof filter[key]) {
@@ -74,5 +77,39 @@ export default class KeyValFilter extends AFilter {
       return ftr;
     });
     return tmp.join(" and ");
+  }
+  private doCondOrFilter(filter: IKeyVal) {
+    const newfilter: IKeyVal[] = [];
+    let ans = "";
+    Object.keys(filter).map((key) => {
+      if (key !== "CondOr" && key !== "Cond") {
+        const tmp: IKeyVal = {};
+        tmp.Key = key;
+        tmp.Val = filter[key];
+        if (filter.Cond) {
+          tmp.Cond = filter.Cond;
+        }
+        newfilter.push(tmp);
+      }
+    });
+    if (newfilter.length) {
+      const filters = newfilter.map((kv) => {
+        return this.hasKeyElementNoCondOr(kv);
+      });
+      ans = `(${filters.join(" or ")})`;
+    }
+    return ans;
+  }
+  private doCondOrFilterHasKey(filter: IKeyVal) {
+    let ans = "";
+    if (filter.Key && filter.Val && filter.Key2 && filter.Val2) {
+      let Cond = "=";
+      if (filter.Cond) { Cond = filter.Cond; }
+      const filters: string[] = [];
+      filters.push(this.hasKeyElementNoCondOr({Key: filter.Key, Val: filter.Key, Cond}));
+      filters.push(this.hasKeyElementNoCondOr({Key: filter.Key2, Val: filter.Key2, Cond}));
+      ans = `(${filters.join(" or ")})`;
+    }
+    return ans;
   }
 }

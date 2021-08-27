@@ -38,6 +38,7 @@ const mdOptions: mariadb.PoolConfig = {
     // timezone: "Asia/Taipei",
     timezone: "+08:00",
     charset: "UTF8",
+    // idleTimeout: 300,
     connectionLimit: process.env.MAX_CONNECTIONS ? parseInt(process.env.MAX_CONNECTIONS, 10) : 50,
 };
 /*
@@ -79,6 +80,13 @@ export function getConnection(): Promise<PoolConnection|undefined> {
     // const pool: mariadb.Pool = dbPool;
     return dbPool.getConnection();
 }
+/**
+ *
+ * @param sql
+ * @param conn
+ * @param params
+ * @returns connection query response or null when error occured
+ */
 export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): Promise<any> {
     let query: Promise<any>;
     if (params) {

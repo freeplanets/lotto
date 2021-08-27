@@ -208,7 +208,7 @@ export class OpChk {
     }
     private async saveTotal<T extends IHasID>(tableName: string, data: T[], conn: mariadb.PoolConnection) {
         const jt: JTable<T> = new JTable<T>(conn, tableName);
-        return await jt.MultiUpdate(data, true);
+        return await jt.MultiUpdate(data, true, true);
     }
     private addCurOddT(itm: IBetTable): void {
         if (this.isParlay) {
@@ -246,11 +246,13 @@ export class OpChk {
                 tolS: itm.Amt,
                 tolP: itm.Payouts
             };
+            // console.log("addCurOddT", tmpC);
             this.CurOT.push(tmpC);
             const tmpM: ICurOddsT = Object.assign({}, tmpC);
             tmpM.UpId = itm.UpId;
             this.MCurOT.push(tmpM);
         }
+        // console.log("addCurOddT", this.CurOT);
     }
     private calAvg(itm: IBetTable): void {
         if (this.isParlay) { return; }

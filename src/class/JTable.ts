@@ -1,8 +1,9 @@
 import mariadb from "mariadb";
+import UpdateFieldString from "../components/class/DataBase/UpdateFieldString";
 import FilterFactory from "../components/FilterFactory";
 import { ErrCode } from "../DataSchema/ENum";
 import { IDbAns, IHasID, IKeyVal, IMsg } from "../DataSchema/if";
-import {doQuery} from "../func/db";
+import { doQuery, Query } from "../func/db";
 import eds from "./EncDecString";
 
 interface ITableIndex {
@@ -42,14 +43,18 @@ export default class JTable<T extends IHasID> {
         this.TableName = tname;
     }
     public async getOne(id: number | IKeyVal | IKeyVal[], fields?: string | string[]): Promise<T|undefined> {
+        if (typeof(id) === "string") {
+            console.log("id is string");
+            id = parseInt(id, 10);
+        }
         const filter = new FilterFactory(id).getFilter();
         let field = "*";
         if (fields) { field = Array.isArray(fields) ? fields.join(",") : fields; }
         const sql = `select ${field} from ${this.TableName} where ${filter}`;
         let mb: T | undefined;
-        // console.log("getone debug:", sql, id);
+        if (this.TableName === "Terms") { console.log("getone debug:", sql, id); }
         const ans = await this.query(sql, this.conn);
-        // console.log("JTable List mb", mb);
+        // if (this.TableName === "Terms") { console.log("JTable List mb", ans); }
         if (ans) {
             if (ans.length > 0) {
                 mb = ans[0] as T;
@@ -204,6 +209,21 @@ export default class JTable<T extends IHasID> {
         });
         return ans;
     }
+    public async Updates(updates: IKeyVal|IKeyVal[], extfilter?: IKeyVal|IKeyVal[]) {
+        let msg: IMsg = {};
+        const fields = new UpdateFieldString().generate(updates);
+        let filters = "";
+        if (extfilter) {
+           filters =  `where ${new FilterFactory(extfilter).getFilter()}`;
+        }
+        if (fields) {
+            const sql = `update ${this.TableName} set ${fields} ${filters}`;
+            msg = await Query(sql, this.conn);
+        } else {
+            msg.ErrNo = ErrCode.MISS_PARAMETER;
+        }
+        return msg;
+    }
     public async MultiInsert(v: T[]): Promise<IMsg> {
         const fields: string[] = [];
         const vals: string[] = [];
@@ -250,6 +270,7 @@ export default class JTable<T extends IHasID> {
     }
     public async MultiUpdate(data: T[], isAdd: boolean= false, onIdkey: boolean = false) {
         if (data.length === 0) { return false; }
+        // console.log("JTable MultiUpdate", data);
         const keys: string[] = [];
         const updates: string[] = [];
         const ff: string[] = [];
@@ -277,7 +298,7 @@ export default class JTable<T extends IHasID> {
             }
         });
         const values = data.map((dta: T) => keys.map((fn) => dta[fn]));
-        // console.log("JTable MultiUpdate values", values);
+        // console.log("JTable MultiUpdate values", values, keys);
         const sql = `insert into ${this.TableName}(${keys.join(",")}) values(${ff.join(",")})
             on duplicate key update ${updates.join(",")}`;
         // console.log(`MultiUpdate ${this.TableName}:`, sql);

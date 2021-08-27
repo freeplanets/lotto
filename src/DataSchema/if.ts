@@ -348,8 +348,10 @@ export interface IKeyVal {
     Key?: string;
     Val?: string | number;
     Cond?: string;
+    Key2?: string;
     Val2?: string | number;
-    [key: string]: string|number|undefined;
+    CondOr?: string;
+    [key: string]: string | number | undefined;
 }
 
 export interface IChaseNum {

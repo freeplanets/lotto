@@ -3,13 +3,15 @@ export default class NewPool {
 	private pool: mariadb.Pool;
 	constructor(opt: mariadb.PoolConfig) {
 		this.pool = mariadb.createPool(opt);
+		this.pool.on("release", (conn) => {
+			 console.log("conn release:", this.info(), "conn info:", conn.info?.threadId);
+		});
 		console.log("NewPool Info:", this.info(opt.connectionLimit));
 	}
 	public getConnection(caller: string= ""): Promise<mariadb.PoolConnection | undefined> {
 		return new Promise((resolve) => {
-			this.pool?.getConnection().then((conn) => {
-				console.log("NewPool Info:", this.info(caller));
-				conn.release();
+			this.pool.getConnection().then((conn) => {
+				// console.log("NewPool Info:", this.info(caller));
 				resolve(conn);
 			}).catch(async (err) => {
 				console.log("getConnection Error:", err);
