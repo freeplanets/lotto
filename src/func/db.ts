@@ -38,7 +38,7 @@ const mdOptions: mariadb.PoolConfig = {
     // timezone: "Asia/Taipei",
     timezone: "+08:00",
     charset: "UTF8",
-    // idleTimeout: 300,
+    idleTimeout: 600,
     connectionLimit: process.env.MAX_CONNECTIONS ? parseInt(process.env.MAX_CONNECTIONS, 10) : 100,
 };
 /*
