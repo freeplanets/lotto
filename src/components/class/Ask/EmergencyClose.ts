@@ -1,7 +1,7 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../../../class/JTable";
-import { ErrCode } from "../../../DataSchema/ENum";
-import { IHasID, IKeyVal, IMsg } from "../../../DataSchema/if";
+import { ErrCode, FuncKey } from "../../../DataSchema/ENum";
+import { IHasID, IKeyVal, IMsg, WsMsg } from "../../../DataSchema/if";
 import { WsClient } from "../../webSC";
 
 export default class EmergencyClose {
@@ -11,15 +11,20 @@ export default class EmergencyClose {
 	}
 	public async doit() {
 		let msg: IMsg = { ErrNo: ErrCode.PASS };
-		msg = await this.getUnPricedAsk();
+		msg = await this.CancelUnPricedAsk();
 		if (msg.ErrNo === ErrCode.PASS) {
-			const ids = msg.data as IHasID[];
+			const wsg: WsMsg = {
+				Func: FuncKey.EMERGENCY_CLOSE,
+			};
+			this.wsc.Send(JSON.stringify(wsg));
+		} else {
+			console.log(msg);
 		}
 	}
-	private getUnPricedAsk() {
+	private CancelUnPricedAsk() {
 		const param: IKeyVal[] = [];
 		param.push({ ProcStatus: 2, Cond: "<" });
 		param.push({ SetID: 0, USetID: 0 });
-		return this.jt.Lists(param, ["id"]);
+		return this.jt.Updates({ ProcStatus: 4 }, param);
 	}
 }

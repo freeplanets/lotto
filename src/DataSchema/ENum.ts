@@ -25,6 +25,7 @@ export enum FuncKey {
 	CLIENT_INFO = "ClientInfo",
   MESSAGE = "sendMessage",
   SAVE_MESSAGE = "saveMessage",
+  EMERGENCY_CLOSE = "emergencyClose",
   GET_CRYPTOITEM_LEVER = "getCryptoItemLever",
   GET_CRYPTOITEM_ALL = "getCryptoItemAll",
   GET_CRYPTOITEM_CODE_DISTINCT = "getCryptoItemCodeDistinct",
