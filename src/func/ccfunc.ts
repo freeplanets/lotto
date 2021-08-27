@@ -9,6 +9,7 @@ import wsclient from "../components/webSC";
 import { ErrCode, StopType } from "../DataSchema/ENum";
 import { AskTable, ChatMsg, HasUID, IHasID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
+import EmergencyClose from '../components/class/Ask/EmergencyClose';
 
 interface IMyFunction<T> extends GetPostFunction {
   (param: T, conn: PoolConnection): IMsg;
@@ -78,6 +79,10 @@ export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: P
         } else {
           msg = await jt.Insert(param.TableDatas);
         }
+      }
+      if (param.EC) { // 緊急關閉
+        const ec = new EmergencyClose(wsclient, conn);
+        await ec.doit();
       }
     }
   } else {
