@@ -391,7 +391,7 @@ async function getTicketDetail(req, res) {
         from BetTable where UpId=${params.agentId} and isCancled=0 and
         ModifyTime between from_unixtime(${param.startTime}) and from_unixtime(${param.endTime})`;
     console.log("getTicketDetail", sql);
-    await conn.query(sql).then((rows) => {
+    conn.query(sql).then((rows) => {
         data.list = rows;
         // console.log("getTicketDetail", sql);
     }).catch((err) => {
@@ -571,7 +571,7 @@ async function getLedgerLever(req, res) {
         from LedgerLever left join Member on LedgerLever.UserID = Member.id where LedgerLever.UpId=${params.agentId} and BuyTime > 0 and
         SellTime between ${param.startTime} and ${param.endTime} order by SellTime limit 0,1000`;
     // console.log("getLedgerLever", sql);
-    await conn.query(sql).then((rows) => {
+    conn.query(sql).then((rows) => {
         data.list = rows;
         // console.log("getTicketDetail", sql);
     }).catch((err) => {
@@ -614,7 +614,7 @@ async function getAskTable(req, res) {
         AskTable.ModifyTime between from_unixtime(${startTime}) and from_unixtime(${endTime})
         order by AskTable.ModifyTime limit 0,1000`;
     // console.log("getAskTable", sql);
-    await conn.query(sql).then((rows) => {
+    conn.query(sql).then((rows) => {
         data.list = rows;
         // console.log("getTicketDetail", sql);
     }).catch((err) => {
