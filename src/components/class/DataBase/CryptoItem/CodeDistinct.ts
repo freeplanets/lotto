@@ -17,9 +17,9 @@ export default class CodeDistinct extends AGet {
 					if (res) {
 						tmp = res;
 					}
-					await conn.release();
-					resolve(tmp);
 				});
+				await conn.release();
+				resolve(tmp);
 			} else {
 				resolve(false);
 			}

@@ -1,6 +1,7 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
+import EmergencyClose from "../components/class/Ask/EmergencyClose";
 import UserInfoCrypto from "../components/class/Ledger/UserInfoCrypto";
 import Message from "../components/class/Message/Message";
 import ReceiverManager from "../components/class/Order/ReceiverManager";
@@ -9,7 +10,6 @@ import wsclient from "../components/webSC";
 import { ErrCode, StopType } from "../DataSchema/ENum";
 import { AskTable, ChatMsg, HasUID, IHasID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
-import EmergencyClose from '../components/class/Ask/EmergencyClose';
 
 interface IMyFunction<T> extends GetPostFunction {
   (param: T, conn: PoolConnection): IMsg;
