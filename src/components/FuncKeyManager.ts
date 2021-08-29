@@ -1,4 +1,3 @@
-import e from "cors";
 import WebSocket from "ws";
 import { FuncKey } from "../DataSchema/ENum";
 import { WsMsg } from "../DataSchema/if";
