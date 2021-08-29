@@ -390,7 +390,7 @@ async function getTicketDetail(req, res) {
         UNIX_TIMESTAMP(CreateTime) CreateTime,UNIX_TIMESTAMP(ModifyTime) ModifyTime,case isCancled when 1 then 3 else isSettled+1 end as \`status\`
         from BetTable where UpId=${params.agentId} and isCancled=0 and
         ModifyTime between from_unixtime(${param.startTime}) and from_unixtime(${param.endTime})`;
-    console.log("getTicketDetail", sql);
+    // console.log("getTicketDetail", sql);
     conn.query(sql).then((rows) => {
         data.list = rows;
         // console.log("getTicketDetail", sql);

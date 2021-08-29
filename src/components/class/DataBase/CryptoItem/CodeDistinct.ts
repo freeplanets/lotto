@@ -8,7 +8,7 @@ export default class CodeDistinct extends AGet {
 	}
 	public getItem() {
 		return new Promise<any>(async (resolve) => {
-			const conn = await getConnection();
+			const conn = await getConnection("CodeDistinct getItem");
 			let tmp = [];
 			if (conn) {
 				const sql = "select distinct Code from Items where isActive = 1";

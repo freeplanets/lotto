@@ -6,7 +6,7 @@ import AGet from "./AGet";
 export default class GetUnFinishedAsks extends AGet {
 	public getItem() {
 		return new Promise<any>(async (resolve) => {
-			const conn = await getConnection();
+			const conn = await getConnection("GetUnFinishedAsks getItem");
 			if (conn) {
 				const jt = new JTable(conn, "AskTable");
 				const filter: IKeyVal = {
@@ -16,6 +16,7 @@ export default class GetUnFinishedAsks extends AGet {
 				};
 				// console.log("before list");
 				const ans = await jt.List(filter);
+				await conn.release();
 				if (ans) {
 					// console.log("before resolve");
 					resolve(ans);

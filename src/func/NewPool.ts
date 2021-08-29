@@ -1,13 +1,15 @@
-import mariadb, { PoolConnection } from "mariadb";
+import mariadb, { Connection, PoolConnection } from "mariadb";
 export default class NewPool {
 	private pool: mariadb.Pool;
+	private curCaller = "";
 	constructor(private opt: mariadb.PoolConfig) {
 		this.pool = this.createPool();
 	}
 	public getConnection(caller: string= ""): Promise<mariadb.PoolConnection | undefined> {
 		return new Promise((resolve) => {
 			this.pool.getConnection().then((conn) => {
-				// console.log("NewPool Info:", this.info(caller));
+				if (caller) { console.log("NewPool getConnection:", caller); }
+				this.curCaller = caller;
 				resolve(conn);
 			}).catch(async (err) => {
 				console.log("getConnection Error:", err);
@@ -21,10 +23,30 @@ export default class NewPool {
 	}
 	public createPool() {
 		const pool = mariadb.createPool(this.opt);
+		const showInfo = (action: string, conn?: Connection) => {
+			let id: number | null = null;
+			if (conn) {
+				id = conn.info ? conn.info.threadId : 0;
+			}
+			let caller = this.curCaller;
+			if (action === "connection") { caller = ""; }
+			console.log(`NewPool ${action}:`, this.info(id, caller));
+		};
 		pool.on("release", (conn) => {
-			 console.log("conn release:", this.info(), "conn info:", conn.info?.threadId);
+			showInfo("release", conn);
 		});
-		console.log("NewPool Info:", this.info(this.opt.connectionLimit));
+		/*
+		pool.on("connection", (conn) => {
+			showInfo("connection", conn);
+		});
+		*/
+		pool.on("acquire", (conn) => {
+			showInfo("acquire", conn);
+		});
+		pool.on("enqueue", () => {
+			showInfo("enqueue");
+		});
+		// console.log("NewPool Info:", this.info(this.opt.connectionLimit));
 		return pool;
 	}
 	public async resetPool() {
@@ -34,7 +56,7 @@ export default class NewPool {
 		const conn = await this.getConnection();
 		return conn;
 	}
-	private info(max?: number | string) {
+	private info(idorfunc?: number | null, funcName?: string) {
 		let info: any = {};
 		if (this.pool) {
 			info = {
@@ -42,14 +64,13 @@ export default class NewPool {
 				active: this.pool.activeConnections(),
 				idle: this.pool.idleConnections(),
 			};
-			if (max) {
-				if (typeof max === "number") {
-					info.max = max;
-				}	else {
-					info.func = max;
-				}
+			if (idorfunc) {
+				info.connID = idorfunc;
+			}
+			if (funcName) {
+				info.func = funcName;
 			}
 		}
-		return info;
+		return JSON.stringify(info);
 	}
 }
