@@ -487,6 +487,7 @@ export interface Items {
     StopGain: number;
     StopLose: number;
     Closed: number;
+    EmergencyClosed?: number; // 0 開放, 1 關閉
     OneHand: number;
     Type: number;
     IMG?: string;

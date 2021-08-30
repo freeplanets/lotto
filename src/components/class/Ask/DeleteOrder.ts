@@ -30,7 +30,8 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
         return msg;
       }
       this.tb.ExtFilter = " ProcStatus < 2 ";
-      msg = await this.tb.Update(this.ask);
+      console.log("DeleteOrder ask", this.ask);
+      msg = await this.tb.Update({ id: this.ask.id, UserID: this.ask.UserID, ProcStatus: this.ask.ProcStatus });
       if (msg.ErrNo === ErrCode.PASS) {
         const ansAsk = await this.tb.getOne(this.ask.id);
         if (ansAsk) { msg.Ask = ansAsk as AskTable; }

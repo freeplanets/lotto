@@ -210,7 +210,7 @@ export default class JTable<T extends IHasID> {
         return ans;
     }
     public async Updates(updates: IKeyVal|IKeyVal[], extfilter?: IKeyVal|IKeyVal[]) {
-        const msg: IMsg = {};
+        let msg: IMsg = {};
         const fields = new UpdateFieldString().generate(updates);
         let filters = "";
         if (extfilter) {
@@ -220,7 +220,7 @@ export default class JTable<T extends IHasID> {
             const sql = `update ${this.TableName} set ${fields} ${filters}`;
             msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
             msg.ErrCon = sql;
-            // msg = await Query(sql, this.conn);
+            msg = await Query(sql, this.conn);
         } else {
             msg.ErrNo = ErrCode.MISS_PARAMETER;
         }

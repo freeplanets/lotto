@@ -1,6 +1,6 @@
 import { PoolConnection } from "mariadb";
 import { ErrCode, StopType } from "../../../DataSchema/ENum";
-import { IHasID, IMsg, Items, Order, UserInfo, WebParams } from "../../../DataSchema/if";
+import { IMsg, Items, Order, UserInfo, WebParams } from "../../../DataSchema/if";
 import DataAccess from "../DataBase/DataAccess";
 import AProcess from "./AProcess";
 import LoanProcess from "./LoanProcess";
@@ -24,7 +24,7 @@ export default class ReceiverManager {
 					msg = await da.getItemByID(order.ItemID);
 					if (msg.ErrNo === ErrCode.PASS) {
 						const item = msg.data as Items;
-						msg = this.itemCheck(item, order);
+						msg = await this.itemCheck(item, order, da);
 						if (msg.ErrNo === ErrCode.PASS) {
 							let proc: AProcess;
 							msg = await da.getUser(UserID);
@@ -72,19 +72,32 @@ export default class ReceiverManager {
 		msg.data = order;
 		return msg;
 	}
-	private itemCheck(Item: Items, order: Order) {
+	private async itemCheck(Item: Items, order: Order, da: DataAccess) {
 		const msg: IMsg = { ErrNo: ErrCode.PASS };
   if (Item.isLoan) {
-      let ST = StopType.LONG_STOP;
-      if ( order.ItemType === -1 ) { ST = StopType.SHORT_STOP; }
-      const isClosed: boolean = !!(Item.Closed & ST);
-      if (isClosed) {
-        let str = "short";
-        if (ST === StopType.LONG_STOP ) { str = "long"; }
-        msg.ErrNo = ErrCode.NUM_STOPED;
-        msg.ErrCon = `Not accpet new ${str} order now!!`;
-      }
-    }
+			if (Item.EmergencyClosed) {
+				console.log("ReceiverManager itemCheck order:", order);
+				msg.ErrNo = ErrCode.EMERGENCY_STOPED;
+				if (order.ProcStatus === 2) {
+					const ans = await da.asignSettleMark(order.id);
+					console.log("itemCheck add mark", ans);
+				}
+			} else {
+				let ST = StopType.LONG_STOP;
+				if ( order.ItemType === -1 ) { ST = StopType.SHORT_STOP; }
+				const isClosed: boolean = !!(Item.Closed & ST);
+				if (isClosed) {
+					let str = "short";
+					if (ST === StopType.LONG_STOP ) { str = "long"; }
+					msg.ErrNo = ErrCode.NUM_STOPED;
+					msg.ErrCon = `Not accpet new ${str} order now!!`;
+				}
+			}
+    } else {
+			if (Item.EmergencyClosed) {
+				msg.ErrNo = ErrCode.EMERGENCY_STOPED;
+			}
+		}
 		return msg;
 	}
 }

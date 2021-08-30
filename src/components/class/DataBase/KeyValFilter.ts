@@ -26,6 +26,8 @@ export default class KeyValFilter extends AFilter {
           break;
         case "or":
           return this.KeyEqualOR(f);
+        case "in":
+          return `${f.Key} in (${f.Val})`;
       }
     } else {
       f.Cond = "=";

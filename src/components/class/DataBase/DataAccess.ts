@@ -4,7 +4,10 @@ import { ErrCode } from "../../../DataSchema/ENum";
 import { IHasID, IKeyVal, IMsg } from "../../../DataSchema/if";
 
 export default class DataAccess {
-	constructor(private conn: PoolConnection, private getList: boolean= false) {}
+	private jt: JTable<IHasID>;
+	constructor(conn: PoolConnection, private getList: boolean= false) {
+		this.jt = new JTable(conn, "");
+	}
 	public getLeverParam(level?: number) {
 		const filter: IKeyVal = { Multiples: level };
 		return this.getData("Lever", filter);
@@ -26,7 +29,7 @@ export default class DataAccess {
 	}
 	public getItemByID(itemid: number): Promise<IMsg> {
 		const filter: IKeyVal = { id: itemid };
-		const fields = ["id", "Code", "Closed", "isLoan", "CloseFee", "OpenFee", "StopGain", "StopLose"];
+		const fields = ["id", "Code", "Closed", "EmergencyClosed", "isLoan", "CloseFee", "OpenFee", "StopGain", "StopLose"];
 		return this.getData("Items", filter, fields);
 	}
 	public getUser(UserID: number): Promise<IMsg> {
@@ -53,15 +56,20 @@ export default class DataAccess {
 		}
 		return msg;
 	}
+	public asignSettleMark(AskID: number): Promise<IMsg> {
+		this.jt.setTableName("MemberSettleMark");
+		return this.jt.Insert({id: 0, AskID});
+	}
 	private getData(tablename: string, filter: IKeyVal | IKeyVal[], fields?: string|string[]): Promise<IMsg> {
 		return new Promise((resolve) => {
-			const jt = new JTable<IHasID>(this.conn, tablename);
+			// const jt = new JTable<IHasID>(this.conn, tablename);
+			this.jt.setTableName(tablename);
 			const msg: IMsg = { ErrNo: ErrCode.PASS };
 			let func: Promise<any>;
 			if (this.getList) {
-				func = jt.List(filter, fields);
+				func = this.jt.List(filter, fields);
 			} else {
-				func = jt.getOne(filter, fields);
+				func = this.jt.getOne(filter, fields);
 			}
 			// jt.getOne(filter, fields)
 			func.then((res) => {

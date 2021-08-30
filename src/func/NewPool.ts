@@ -21,7 +21,7 @@ export default class NewPool {
 			});
 		});
 	}
-	public createPool() {
+	public createPool(withListener: boolean = false) {
 		const pool = mariadb.createPool(this.opt);
 		const showInfo = (action: string, conn?: Connection) => {
 			let id: number | null = null;
@@ -32,21 +32,14 @@ export default class NewPool {
 			if (action === "connection") { caller = ""; }
 			console.log(`NewPool ${action}:`, this.info(id, caller));
 		};
-		pool.on("release", (conn) => {
-			showInfo("release", conn);
-		});
-		/*
-		pool.on("connection", (conn) => {
-			showInfo("connection", conn);
-		});
-		*/
-		pool.on("acquire", (conn) => {
-			showInfo("acquire", conn);
-		});
-		pool.on("enqueue", () => {
-			showInfo("enqueue");
-		});
-		// console.log("NewPool Info:", this.info(this.opt.connectionLimit));
+		if (withListener) {
+			pool.on("release", (conn) => {
+				showInfo("release", conn);
+			});
+			pool.on("acquire", (conn) => {
+				showInfo("acquire", conn);
+			});
+		}
 		return pool;
 	}
 	public async resetPool() {
