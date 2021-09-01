@@ -12,13 +12,15 @@ export default class EmergencyClose {
 	public async doit() {
 		let msg: IMsg = { ErrNo: ErrCode.PASS };
 		msg = await this.CancelUnPricedAsk();
-		console.log("EmergencyClose doit:", msg);
+		// console.log("EmergencyClose doit:", msg);
 		if (msg.ErrNo === ErrCode.PASS) {
-			const wsg: WsMsg = {
-				Func: FuncKey.EMERGENCY_CLOSE,
-				Asks: msg.data as AskTable[],
-			};
-			this.wsc.Send(JSON.stringify(wsg));
+			if (msg.data) {
+				const wsg: WsMsg = {
+					Func: FuncKey.EMERGENCY_CLOSE,
+					Asks: msg.data as AskTable[],
+				};
+				this.wsc.Send(JSON.stringify(wsg));
+			}
 		} else {
 			console.log("EmergencyClose error:", msg);
 		}
@@ -40,7 +42,7 @@ export default class EmergencyClose {
 					};
 					return tmp;
 				});
-				msg.data = partAsk;
+				if (partAsk.length > 0) { msg.data = partAsk; }
 			}
 		}
 		return msg;

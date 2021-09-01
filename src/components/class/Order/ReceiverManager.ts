@@ -81,6 +81,11 @@ export default class ReceiverManager {
 				if (order.ProcStatus === 2) {
 					const ans = await da.asignSettleMark(order.id);
 					console.log("itemCheck add mark", ans);
+					if (ans.ErrNo === ErrCode.PASS) {
+						msg.ErrNo = ErrCode.EMERGENCY_STOPED;
+					} else {
+						msg.ErrNo = ans.ErrNo;
+					}
 				}
 			} else {
 				let ST = StopType.LONG_STOP;

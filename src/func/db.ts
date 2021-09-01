@@ -110,10 +110,20 @@ export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): 
     });
 }
 export function Query(sql: string, conn: PoolConnection, params?: IAxParams): Promise<IMsg> {
-    const msg: IMsg = { ErrNo: ErrCode.PASS };
+    let msg: IMsg = { ErrNo: ErrCode.PASS };
     // console.log("doQuery:", sql, params);
     return new Promise((resolve) => {
         conn.query(sql, params).then((res: IDbAns) => {
+            // console.log("db Func Query res:", res);
+            // console.log("db Func Query msg:", msg);
+            msg = Object.assign(msg, res);
+            if (msg.affectedRows === 0) {
+                msg.debug = sql;
+                msg.debugPaam = params;
+            }
+            // console.log("db Func Query after assign:", msg);
+            resolve(msg);
+            /*
             if (res.affectedRows > 0) {
                 resolve(msg);
             } else {
@@ -123,6 +133,7 @@ export function Query(sql: string, conn: PoolConnection, params?: IAxParams): Pr
                 msg.dbans = res;
                 resolve(msg);
             }
+            */
         }).catch((err) => {
             // console.log("doQuery", sql, params, err);
             // console.log("doQuery:", err, "SQL:", sql, "params:", params, "\nErrNo:", err.errno);
