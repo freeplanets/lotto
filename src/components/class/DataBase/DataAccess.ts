@@ -56,9 +56,17 @@ export default class DataAccess {
 		}
 		return msg;
 	}
-	public asignSettleMark(AskID: number): Promise<IMsg> {
+	public async asignSettleMark(AskID: number): Promise<IMsg> {
+		let msg: IMsg = { ErrNo: ErrCode.PASS };
 		this.jt.setTableName("MemberSettleMark");
-		return this.jt.Insert({id: 0, AskID});
+		this.jt.Insert({id: 0, AskID}).then(async (ans: IMsg) => {
+			if (ans.ErrNo === ErrCode.PASS) {
+				msg.data = await this.jt.getOne({AskID}, ["AskID", "MarkTS"]);
+			} else {
+				msg = ans;
+			}
+		});
+		return msg;
 	}
 	private getData(tablename: string, filter: IKeyVal | IKeyVal[], fields?: string|string[]): Promise<IMsg> {
 		return new Promise((resolve) => {

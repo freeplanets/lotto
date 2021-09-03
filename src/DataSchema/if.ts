@@ -41,6 +41,7 @@ export interface IMsg {
     ErrCon?: string;
     Balance?: number;
     LedgerTotal?: any;
+    UserID?: number;
     [key: string]: any;
 }
 

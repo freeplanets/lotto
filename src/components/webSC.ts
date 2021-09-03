@@ -86,7 +86,7 @@ export class WsClient {
           const msg = await Askman.doit();
           // console.log("after doit:", JSON.stringify(msg));
           if (msg.ErrNo === ErrCode.PASS ) {
-            const newWsmsg: WsMsg = Object.assign({}, msg);
+            const newWsmsg: WsMsg = { ...msg };
             delete newWsmsg.ErrNo;
             // console.log("before send", JSON.stringify(newWsmsg));
             if ( this.ws.readyState === WebSocket.OPEN ) {

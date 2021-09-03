@@ -152,8 +152,8 @@ export default class JTable<T extends IHasID> {
             if (row.affectedRows === 0) {
                 ans.ErrNo = ErrCode.DB_QUERY_ERROR;
                 ans.ErrCon = "Update Error!!";
-                // ans.debug = sql;
-                // ans.debugParam = params;
+                ans.debug = sql;
+                ans.dbans = row;
             }
             // console.log("JTable Update ans:", row);
         }).catch((err) => {
