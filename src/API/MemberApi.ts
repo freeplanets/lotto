@@ -187,7 +187,7 @@ export async function getGame(GameID: number, conn: mariadb.PoolConnection) {
 }
 
 export async function getTermDateNotSettled(GameID: number, conn: mariadb.PoolConnection) {
-    const sql: string = "select PDate from Terms where isSettled=0 and GameID=? order by id desc limit 0,1";
+    const sql: string = "select PDate from Terms where isSettled=0 and isCanceled=0 and GameID=? order by id desc limit 0,1";
     const ans = await doQuery(sql, conn, [GameID]);
     if (ans.length > 0) { return ans[0].PDate; }
     return;

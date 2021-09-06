@@ -56,10 +56,10 @@ export default class DataAccess {
 		}
 		return msg;
 	}
-	public async asignSettleMark(AskID: number): Promise<IMsg> {
+	public async asignSettleMark(AskID: number, ItemID: number): Promise<IMsg> {
 		let msg: IMsg = { ErrNo: ErrCode.PASS };
 		this.jt.setTableName("MemberSettleMark");
-		this.jt.Insert({id: 0, AskID}).then(async (ans: IMsg) => {
+		this.jt.Insert({id: 0, AskID, ItemID}).then(async (ans: IMsg) => {
 			if (ans.ErrNo === ErrCode.PASS) {
 				msg.data = await this.jt.getOne({AskID}, ["AskID", "MarkTS"]);
 			} else {

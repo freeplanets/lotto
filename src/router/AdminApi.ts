@@ -402,7 +402,7 @@ app.get("/member/GameResult", async (req, res) => {
     if (conn) {
         const param = req.query;
         console.log("/member/m_stirsbead_result", param);
-        const sql = "select TermID,PTime,Result,SpNo,isSettled from Terms where GameID = ? and isSettled order by id limit 0,20";
+        const sql = "select TermID,PTime,Result,SpNo,isSettled from Terms where GameID = ? and isSettled order by id desc limit 0,20";
         const ans = await doQuery(sql, conn, [parseInt(param.GameID as string, 10)]);
         if (ans) {
             const gr: IGameResult[] = [];

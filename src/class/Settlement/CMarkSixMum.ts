@@ -191,6 +191,7 @@ export class CMarkSixMum {
       this.DragonTiger();
   }
   get Nums(): IMSResult {
+      console.log("CMarkSixMum get Nums", this.imsr);
       return this.imsr;
   }
   private TailNums(nums: string[]) {

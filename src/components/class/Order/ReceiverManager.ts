@@ -79,7 +79,7 @@ export default class ReceiverManager {
 				console.log("ReceiverManager itemCheck order:", order);
 				msg.ErrNo = ErrCode.EMERGENCY_STOPED;
 				if (order.ProcStatus === 2) {
-					const ans = await da.asignSettleMark(order.id);
+					const ans = await da.asignSettleMark(order.id, order.ItemID);
 					console.log("itemCheck add mark", ans);
 					if (ans.ErrNo === ErrCode.PASS) {
 						msg.ErrNo = ErrCode.EMERGENCY_STOPED;

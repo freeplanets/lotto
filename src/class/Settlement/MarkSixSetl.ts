@@ -28,7 +28,7 @@ export function MarkSixSetl(tid: number, GameID: number, imsra: any, rtn: any, c
           }
       }
   });
-  ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  ans.final = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
   // console.log("MarkSixSetl sql:", ans);
   return ans;
 }
