@@ -57,16 +57,29 @@ export default class DataAccess {
 		return msg;
 	}
 	public async asignSettleMark(AskID: number, ItemID: number): Promise<IMsg> {
-		let msg: IMsg = { ErrNo: ErrCode.PASS };
-		this.jt.setTableName("MemberSettleMark");
-		this.jt.Insert({id: 0, AskID, ItemID}).then(async (ans: IMsg) => {
-			if (ans.ErrNo === ErrCode.PASS) {
-				msg.data = await this.jt.getOne({AskID}, ["AskID", "MarkTS"]);
-			} else {
-				msg = ans;
-			}
+		return new Promise((resolve) => {
+			let msg: IMsg = { ErrNo: ErrCode.PASS };
+			this.jt.setTableName("MemberSettleMark");
+			this.jt.Insert({id: 0, AskID, ItemID}).then(async (ans: IMsg) => {
+				if (ans.ErrNo === ErrCode.PASS) {
+					msg.data = await this.jt.getOne({AskID}, ["AskID", "ItemID", "MarkTS"]);
+				} else {
+					msg = ans;
+				}
+				// console.log("asignSettleMark", msg);
+				resolve(msg);
+			});
 		});
-		return msg;
+	}
+	public ServiceSettleMark(AskID: number, SettleServiceID: number) {
+		return new Promise<IMsg>(async (resolve) => {
+			let msg: IMsg = {};
+			this.jt.setTableName("MemberSettleMark");
+			const update = { ModifyID: SettleServiceID };
+			const filter = { AskID };
+			msg = await this.jt.Updates(update, filter);
+			resolve(msg);
+		});
 	}
 	private getData(tablename: string, filter: IKeyVal | IKeyVal[], fields?: string|string[]): Promise<IMsg> {
 		return new Promise((resolve) => {

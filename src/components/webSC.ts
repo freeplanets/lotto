@@ -36,13 +36,13 @@ export class WsClient {
       this.ws.send(JSON.stringify(wsmsg));
     }
   }
-  public Send(msg: string) {
+  public Send(msg: WsMsg) {
     // console.log("before Send Mesage:", msg);
     if (!this.isConnected) { return; }
-    console.log("Send Mesage:", msg);
+    // console.log("Send Mesage:", msg);
     // this.ws.send(msg);
     try {
-      this.ws.send(msg);
+      this.ws.send(JSON.stringify(msg));
     } catch (err) {
       console.log("WsClient Send error:", err);
     }

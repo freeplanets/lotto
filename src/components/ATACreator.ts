@@ -8,10 +8,10 @@ import NewOrder from "./class/Ask/NewOrder";
 export default class ATACreator {
   private ATA: AskTableAccess<HasUID>;
   private checkName: string;
-  constructor(ask: HasUID, conn: PoolConnection, tableName: string) {
+  constructor(ask: HasUID, conn: PoolConnection, tableName: string, SettleServiceID?: number) {
     switch (ask.ProcStatus) {
       case 2: // 成交後處理
-        this.ATA = new DealOrder(ask, conn, tableName);
+        this.ATA = new DealOrder(ask, conn, tableName, SettleServiceID);
         this.checkName = "DealOrder";
         break;
       case 3: // 刪除

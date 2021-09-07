@@ -192,7 +192,7 @@ export default class JTable<T extends IHasID> {
             params.push(v[key]);
         });
         const sql = `
-            insert into ${this.TableName}(${fields.join(",")}) values(${vals.join(",")})
+            insert IGNORE into ${this.TableName}(${fields.join(",")}) values(${vals.join(",")})
         `;
         // console.log("JTable Insert:", sql, params);
         let ans: IMsg = { ErrNo: ErrCode.PASS };

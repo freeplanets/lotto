@@ -256,14 +256,14 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
   if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);
       delete wsmsg.ErrNo;
-      wsclient.Send(JSON.stringify(wsmsg));
+      wsclient.Send(wsmsg);
     }
 
   return msg;
 };
 export const SendOrderNew: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {};
-  const Receiver: ReceiverManager = new ReceiverManager(conn);
+  const Receiver: ReceiverManager = new ReceiverManager(conn, wsclient);
   msg = await Receiver.Process(param);
   // console.log("before ModifyOrder:", JSON.stringify(msg));
 
@@ -273,7 +273,7 @@ export const SendOrderNew: IMyFunction<WebParams> = async (param: WebParams, con
     if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);
       delete wsmsg.ErrNo;
-      wsclient.Send(JSON.stringify(wsmsg));
+      wsclient.Send(wsmsg);
     }
   }
   return msg;
@@ -299,7 +299,7 @@ export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn
     if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);
       delete wsmsg.ErrNo;
-      wsclient.Send(JSON.stringify(wsmsg));
+      wsclient.Send(wsmsg);
     }
   } else {
     msg.ErrNo = ErrCode.MISS_PARAMETER;
@@ -344,7 +344,7 @@ export const sendMessage = async (param: WebParams, conn: PoolConnection) => {
           msg.MKey = Msger.MKey;
           if (!chatMsg.MKey) { chatMsg.MKey = Msger.MKey; }
           wsmsg.Message = JSON.stringify(chatMsg);
-          wsclient.Send(JSON.stringify(wsmsg));
+          wsclient.Send(wsmsg);
           return msg;
         }
       }

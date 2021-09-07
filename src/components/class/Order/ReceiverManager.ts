@@ -1,13 +1,14 @@
 import { PoolConnection } from "mariadb";
-import { ErrCode, StopType } from "../../../DataSchema/ENum";
-import { IMsg, Items, Order, UserInfo, WebParams } from "../../../DataSchema/if";
+import { WsClient } from "../../../components/webSC";
+import { Channels, ErrCode, StopType } from "../../../DataSchema/ENum";
+import { IMsg, Items, Order, UserInfo, WebParams, WsMsg } from "../../../DataSchema/if";
 import DataAccess from "../DataBase/DataAccess";
 import AProcess from "./AProcess";
 import LoanProcess from "./LoanProcess";
 import NotLoanProcess from "./NotLoanProcess";
 
 export default class ReceiverManager {
-	constructor(private conn: PoolConnection) {}
+	constructor(private conn: PoolConnection, private ws: WsClient) {}
 	public Process(param: WebParams): Promise<IMsg> {
 		return new Promise(async (resolve) => {
 			let msg = this.ParamPreCheck(param);
@@ -25,6 +26,7 @@ export default class ReceiverManager {
 					if (msg.ErrNo === ErrCode.PASS) {
 						const item = msg.data as Items;
 						msg = await this.itemCheck(item, order, da);
+						// console.log("RecevierManager after itemCheck:", msg);
 						if (msg.ErrNo === ErrCode.PASS) {
 							let proc: AProcess;
 							msg = await da.getUser(UserID);
@@ -76,13 +78,19 @@ export default class ReceiverManager {
 		const msg: IMsg = { ErrNo: ErrCode.PASS };
   if (Item.isLoan) {
 			if (Item.EmergencyClosed) {
-				console.log("ReceiverManager itemCheck order:", order);
+				// console.log("ReceiverManager itemCheck order:", order);
 				msg.ErrNo = ErrCode.EMERGENCY_STOPED;
 				if (order.ProcStatus === 2) {
 					const ans = await da.asignSettleMark(order.id, order.ItemID);
-					console.log("itemCheck add mark", ans);
+					// console.log("itemCheck add mark", ans);
 					if (ans.ErrNo === ErrCode.PASS) {
 						msg.ErrNo = ErrCode.EMERGENCY_STOPED;
+						msg.data = ans.data;
+						const wsmsg: WsMsg = {
+							ChannelName: Channels.ADMIN,
+							SettleMark: ans.data,
+						};
+						this.ws.Send(wsmsg);
 					} else {
 						msg.ErrNo = ans.ErrNo;
 					}

@@ -12,7 +12,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
     this.MGL = new Member(conn);
   }
   public async add(ask: AskTable): Promise<IMsg> {
-    console.log("LedgerLeverAccess add:", ask.id, ask.SetID, ask.USetID);
+    // console.log("LedgerLeverAccess add:", ask.id, ask.SetID, ask.USetID);
     let  msg: IMsg = { ErrNo: ErrCode.PASS };
     if (ask.USetID || ask.SetID) {
       msg = await this.SettleOne(ask);

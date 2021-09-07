@@ -2,12 +2,15 @@ import { PoolConnection } from "mariadb";
 import { CreditType, ErrCode, MemoType } from "../../../DataSchema/ENum";
 import { AskTable, CreditMemo, HasUID, IDbAns, IMsg, MemoCryptoCur } from "../../../DataSchema/if";
 import LedgerFactor from "../../LedgerFactor";
+import DataAccess from "../DataBase/DataAccess";
 import AskTableAccess from "./AskTableAccess";
 
 export default class DealOrder extends AskTableAccess<HasUID> {
   private DecimalPlaces = 2;
-  constructor(ask: HasUID, conn: PoolConnection, tableName: string) {
+  private SettleServiceID = 0;
+  constructor(ask: HasUID, conn: PoolConnection, tableName: string, SettleServiceID?: number) {
     super(ask, conn, tableName);
+    if (SettleServiceID) { this.SettleServiceID = SettleServiceID; }
   }
   public async doit(): Promise<IMsg> {
     const msg: IMsg = { ErrNo: ErrCode.PASS };
@@ -25,7 +28,18 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     if (ask.AskFee) { ask.Fee = ask.AskFee * ask.Amount; }
     if (ask.TermFee) { ask.TFee =  parseFloat((ask.TermFee * ask.Amount).toFixed(this.DecimalPlaces)); }
     // console.log("DealOrder before", JSON.stringify(ask));
-    const update = await this.tb.Update(ask);
+    let update: IMsg = {};
+    if (this.SettleServiceID) {
+      const da = new DataAccess(this.conn);
+      update = await da.ServiceSettleMark(ask.id, this.SettleServiceID);
+      if ( update.ErrNo !== ErrCode.PASS ) {
+        await this.conn.rollback();
+        msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+        msg.Error = update.Error;
+        return msg;
+      }
+    }
+    update = await this.tb.Update(ask);
     if ( update.ErrNo !== ErrCode.PASS ) {
       await this.conn.rollback();
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;

@@ -19,7 +19,7 @@ export default class EmergencyClose {
 					Func: FuncKey.EMERGENCY_CLOSE,
 					Asks: msg.data as AskTable[],
 				};
-				this.wsc.Send(JSON.stringify(wsg));
+				this.wsc.Send(wsg);
 			}
 		} else {
 			console.log("EmergencyClose error:", msg);
