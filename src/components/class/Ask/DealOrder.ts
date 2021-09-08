@@ -112,7 +112,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     const tmp: AskTable[] = [];
     if (askOne) { tmp.push(askOne as AskTable); }
     if (NewAsk) {
-      console.log("DealOrder has NewAsk", JSON.stringify(NewAsk));
+      // console.log("DealOrder has NewAsk", JSON.stringify(NewAsk));
       tmp.push(NewAsk);
     }
     if ( tmp.length > 0 ) {

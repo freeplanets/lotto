@@ -11,6 +11,7 @@ export interface WsMsg extends AnyObject {
     Message?: string;
     ChannelName?: string;
     LedgerTotal?: LedgerTotal[];
+    SettleServiceID?: number;
     UserID?: number;
 }
 export interface IHasID {

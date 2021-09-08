@@ -82,7 +82,7 @@ export class WsClient {
         if (wsmsg.Ask) {
           // const ask: AskTable = JSON.parse(data as string);
           const ask = wsmsg.Ask;
-          const Askman = await ATAF.getATA(ask);
+          const Askman = await ATAF.getATA(ask, wsmsg.SettleServiceID);
           const msg = await Askman.doit();
           // console.log("after doit:", JSON.stringify(msg));
           if (msg.ErrNo === ErrCode.PASS ) {
