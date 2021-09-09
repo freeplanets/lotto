@@ -7,7 +7,7 @@ import AskTableAccess from "./class/Ask/AskTableAccess";
 export default class ATAFactor {
   private conn: PoolConnection| undefined;
   public async getATA(ask: AskTable, SettleServiceID?: number): Promise<AskTableAccess<HasUID>> {
-    if (!this.conn) {
+    if (!this.conn || !this.conn.isValid()) {
       this.conn = await getConnection();
     }
     if (this.conn) {
