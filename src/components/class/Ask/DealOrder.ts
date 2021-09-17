@@ -46,11 +46,16 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       msg.Error = update.Error;
       return msg;
     }
-    // console.log("DealOrder doit after update:", msg, ask.ProcStatus);
-    if (ask.BuyType === 1) {
-      const Fee = ask.Fee ? ask.Fee : 0;
-      const TFee = ask.TFee ? ask.TFee : 0;
-      const Credit = ask.Amount - Fee - TFee;
+    const lgmsg = await this.AddToLedger(ask);
+    if (lgmsg.ErrNo !== ErrCode.PASS) {
+      await this.conn.rollback();
+      return msg;
+    }
+    // console.log("DealOrder doit after AddToLedger:", lgmsg);
+    if (ask.BuyType === 1 && lgmsg.Credit) {
+      // const Fee = ask.Fee ? ask.Fee : 0;
+      // const TFee = ask.TFee ? ask.TFee : 0;
+      const Credit = lgmsg.Credit as number; // ask.Amount - Fee - TFee;
       const memoMsg: MemoCryptoCur = {
         Type: ask.BuyType ? MemoType.SETTLE : MemoType.NEW,
         AskID: ask.id,
@@ -74,11 +79,6 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       // console.log("ModifyCredit", modifycredit);
     }
 
-    const lgmsg = await this.AddToLedger(ask);
-    if (lgmsg.ErrNo !== ErrCode.PASS) {
-      await this.conn.rollback();
-      return msg;
-    }
     // console.log("AddToLedger", JSON.stringify(lgmsg));
 
     let NewAsk: AskTable|undefined;

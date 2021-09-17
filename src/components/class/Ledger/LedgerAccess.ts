@@ -22,16 +22,16 @@ export default class LedgerAccess extends ALedger<Ledger> {
       Fee: ask.Fee ? ask.Fee : 0,
     };
     // const jt = new JTable<Ledger>(conn, "Ledger");
-    const msg: IMsg = await this.jtable.Insert(ledger);
+    let msg: IMsg = await this.jtable.Insert(ledger);
     if (msg.ErrNo === ErrCode.PASS ) {
       const sql = `insert into LedgerTotal(UserID,ItemID,Qty)
           values(${ledger.UserID},${ledger.ItemID},${ledger.Qty})
           on duplicate key update Qty = Qty + values(Qty)`;
       // console.log("LedgerAccess add:", sql);
-      return  await Query(sql, this.conn);
-    } else {
-      return msg;
+      msg = await Query(sql, this.conn);
+      msg.Credit = ledger.Amount - ledger.Fee;
     }
+    return msg;
   }
   public async get(UserID: number): Promise<IMsg> {
     const param: IKeyVal = {

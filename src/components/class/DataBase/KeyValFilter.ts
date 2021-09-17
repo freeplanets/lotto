@@ -28,6 +28,8 @@ export default class KeyValFilter extends AFilter {
           return this.KeyEqualOR(f);
         case "in":
           return `${f.Key} in (${f.Val})`;
+        case "like":
+          return `${f.Key} like '%${f.Val}%'`;
       }
     } else {
       f.Cond = "=";

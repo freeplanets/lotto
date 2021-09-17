@@ -35,9 +35,9 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
     };
     const ldg: LedgerLever[] | undefined = await this.jtable.List(kv);
     // console.log("SettleOne", JSON.stringify(kv), JSON.stringify(ldg), JSON.stringify(ask));
+    let ldgOne: LedgerLever | undefined;
     if (ldg) {
       // console.log("LedgerLeverAccess SettleOne chk1");
-      let ldgOne: LedgerLever;
       if (ldg.length > 0) {
         ldgOne = ldg[0];
         ldgOne.SellID = ask.id;
@@ -46,13 +46,13 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
         ldgOne.TFee = ask.TFee,
         ldgOne.SellFee = ask.Fee,
         ldgOne.SellTime = ask.DealTime;
-        return await this.jtable.Update(ldgOne);
+        msg = await this.jtable.Update(ldgOne);
       } else {
         // console.log("LedgerLeverAccess SettleOne chk2");
         const jt: JTable<AskTable> = new JTable(this.conn, "AskTable");
         const ans = await jt.getOne(SearchID);
         if (ans) {
-          const Lever = ans.Lever ? ans.Lever : 0;
+          const Lever = ans.Lever ? ans.Lever : 1;
           ldgOne = {
             id: 0,
             UserID: ans.UserID,
@@ -73,7 +73,9 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
             SellTime: ask.DealTime ? ask.DealTime : 0,
           };
           msg = await this.MGL.add(ldgOne);
-          if (msg.ErrNo === ErrCode.PASS) { return await this.jtable.Insert(ldgOne); }
+          if (msg.ErrNo === ErrCode.PASS) {
+            msg = await this.jtable.Insert(ldgOne);
+          }
         } else {
           msg.ErrNo = ErrCode.DB_QUERY_ERROR;
           msg.ErrCon = "LedgerLever and Ask record not found!";
@@ -83,10 +85,13 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;
       msg.ErrCon = "LedgerLever record not found!";
     }
+    if (ldgOne && ldgOne.GainLose) {
+      msg.Credit = (ask.LeverCredit || 0) + (ask.ExtCredit || 0) + ldgOne.GainLose;
+    }
     return msg;
   }
   private async CreateNew(ask: AskTable): Promise<IMsg> {
-    console.log("LedgerLeverAccess CreateNew", ask.SetID, ask.USetID);
+    // console.log("LedgerLeverAccess CreateNew", ask.SetID, ask.USetID);
     const ledger: LedgerLever = {
       id: 0,
       UserID: ask.UserID,
