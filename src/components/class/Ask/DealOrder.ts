@@ -61,7 +61,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
         AskID: ask.id,
         ItemID: ask.ItemID,
         ItemType: ask.ItemType,
-        Amount: ask.Amount,
+        Amount: lgmsg.GainLose ? lgmsg.GainLose : ask.Amount,
         Fee: ask.Fee,
         TFee: ask.TFee,
         Qty: ask.Qty

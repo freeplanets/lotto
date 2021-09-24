@@ -512,7 +512,7 @@ async function register(params, res: Response) {
         msg.ErrCon = "Agent not found!!";
     }
     await conn.release();
-    console.log("doRegister:", msg);
+    // console.log("doRegister:", msg);
     res.send(JSON.stringify(msg));
 }
 /*

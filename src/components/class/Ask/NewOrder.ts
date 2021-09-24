@@ -33,7 +33,7 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     }
     let AskID = 0;
     if (ask.id) {
-      console.log("NewOrder doit update");
+      // console.log("NewOrder doit update");
       msg = await this.tb.Update(ask);
       AskID = ask.id;
     } else {

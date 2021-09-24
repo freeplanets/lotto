@@ -87,6 +87,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
     }
     if (ldgOne && ldgOne.GainLose) {
       msg.Credit = (ask.LeverCredit || 0) + (ask.ExtCredit || 0) + ldgOne.GainLose;
+      msg.GainLose = ldgOne.GainLose;
     }
     return msg;
   }
