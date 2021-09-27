@@ -86,7 +86,7 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
       msg.ErrCon = "LedgerLever record not found!";
     }
     if (ldgOne && ldgOne.GainLose) {
-      msg.Credit = (ask.LeverCredit || 0) + (ask.ExtCredit || 0) + ldgOne.GainLose;
+      msg.Credit = (ask.LeverCredit || 0) + (ask.ExtCredit || 0) + ldgOne.GainLose - (ldgOne.SellFee || 0) - (ldgOne.TFee || 0);
       msg.GainLose = ldgOne.GainLose;
     }
     return msg;

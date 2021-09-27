@@ -26,7 +26,11 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     if (ask.CreateTime) { delete ask.CreateTime; }
     if (ask.ModifyTime) { delete ask.ModifyTime; }
     if (ask.AskFee) { ask.Fee = ask.AskFee * ask.Amount; }
-    if (ask.TermFee) { ask.TFee =  parseFloat((ask.TermFee * ask.Amount).toFixed(this.DecimalPlaces)); }
+    if (ask.TermFee) {
+      // const LeverCredit = ask.LeverCredit ? ask.LeverCredit : 0;
+      // const ExtCredit = ask.ExtCredit ? ask.ExtCredit :  0;
+      ask.TFee =  parseFloat((ask.TermFee * ((ask.LeverCredit || 0) + (ask.ExtCredit || 0))).toFixed(this.DecimalPlaces));
+    }
     // console.log("DealOrder before", JSON.stringify(ask));
     let update: IMsg = {};
     if (this.SettleServiceID) {
@@ -130,6 +134,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
   private async AddToLedger(ask: AskTable) {
     const ledgerF: LedgerFactor = new LedgerFactor(ask, this.conn);
     const msg = await ledgerF.AddToLedger();
+    // console.log("DealOrder AddToLedger:", msg);
     if ( msg.ErrNo === ErrCode.PASS ) {
       const ldMsg = await ledgerF.GetLedger();
       // console.log("DealOrder AddToLedger:", ldMsg);

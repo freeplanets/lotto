@@ -428,7 +428,7 @@ export interface AskTable extends HasUID {
     Price: number;
     Qty: number;
     Fee?: number; // 手續費
-    TFee?: number;  // 短線線
+    TFee?: number;  // 短線手續費
     AskFee: number; // 手續費率
     TermFee?: number; // 短線費率
     AskPrice: number; // 下單價格
