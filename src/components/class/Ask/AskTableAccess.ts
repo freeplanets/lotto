@@ -9,6 +9,7 @@ export default abstract class AskTableAccess<T extends HasUID> {
   protected tb: JTable<T>;
   protected creditA: CreditAccess;
   protected ItemTotal: ItemTotalAccess;
+  protected decimalPlaces = 2;
   constructor(protected ask: T, protected conn: PoolConnection, tableName: string) {
     this.tb = new JTable(conn, tableName);
     this.creditA = new CreditAccess(ask.UserID, conn);

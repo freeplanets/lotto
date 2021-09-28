@@ -1,8 +1,10 @@
 import { PoolConnection } from "mariadb";
 import { ErrCode } from "../../../DataSchema/ENum";
 import { CreditMemo, IDbAns, IMsg } from "../../../DataSchema/if";
+import NumFunc from "../Functions/MyNumber";
 
 export default class CreditAccess {
+  private decimalPlaces = 2;
   constructor(private UserID: number, private conn: PoolConnection) {}
   public getUserCredit(): Promise<IMsg> {
     return new Promise<IMsg>(async (resolve) => {
@@ -13,6 +15,7 @@ export default class CreditAccess {
             if (res[0]) {
                 balance = balance + res[0].balance;
             }
+            if (balance) { balance = NumFunc.DecimalPlaces(balance, this.decimalPlaces); }
             msg.balance = balance;
             resolve(msg);
         }).catch((err) => {

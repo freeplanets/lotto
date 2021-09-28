@@ -1,5 +1,6 @@
 import { CreditType, ErrCode, MemoType } from "../../../DataSchema/ENum";
 import { AskTable, CreditMemo, HasUID, IMsg, MemoCryptoCur } from "../../../DataSchema/if";
+import NumFunc from "../Functions/MyNumber";
 import AskTableAccess from "./AskTableAccess";
 
 export default class NewOrder extends AskTableAccess<HasUID> {
@@ -10,7 +11,12 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     await this.conn.beginTransaction();
     // console.log("NewOrder doit:", JSON.stringify(ask));
     if (ask.BuyType === 0) {
-      ask.Fee = ask.Amount * ask.AskFee;
+      if (ask.LeverCredit) {
+        ask.Fee = ask.Fee ? ask.LeverCredit * ask.Fee : 0;
+      } else {
+        ask.Fee = ask.Amount * ask.AskFee;
+      }
+      if (ask.Fee) { ask.Fee = NumFunc.DecimalPlaces(ask.Fee, this.decimalPlaces); }
       const credit = ask.Amount + ask.Fee;
       const memoMsg: MemoCryptoCur = {
         Type: MemoType.NEW,

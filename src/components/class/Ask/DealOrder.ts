@@ -3,10 +3,10 @@ import { CreditType, ErrCode, MemoType } from "../../../DataSchema/ENum";
 import { AskTable, CreditMemo, HasUID, IDbAns, IMsg, MemoCryptoCur } from "../../../DataSchema/if";
 import LedgerFactor from "../../LedgerFactor";
 import DataAccess from "../DataBase/DataAccess";
+import NumFunc from "../Functions/MyNumber";
 import AskTableAccess from "./AskTableAccess";
 
 export default class DealOrder extends AskTableAccess<HasUID> {
-  private DecimalPlaces = 2;
   private SettleServiceID = 0;
   constructor(ask: HasUID, conn: PoolConnection, tableName: string, SettleServiceID?: number) {
     super(ask, conn, tableName);
@@ -25,11 +25,20 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     this.tb.ExtFilter = " ProcStatus < 2 ";
     if (ask.CreateTime) { delete ask.CreateTime; }
     if (ask.ModifyTime) { delete ask.ModifyTime; }
-    if (ask.AskFee) { ask.Fee = ask.AskFee * ask.Amount; }
+    const TotalCredit = (ask.LeverCredit || 0) + (ask.ExtCredit || 0);
+    ask.Amount = NumFunc.DecimalPlaces(ask.Amount, this.decimalPlaces);
+    if (ask.AskFee) {
+      if (TotalCredit) {
+        ask.Fee = ask.AskFee * TotalCredit;
+      } else {
+        ask.Fee = ask.AskFee * ask.Amount;
+      }
+      ask.Fee = NumFunc.DecimalPlaces(ask.Fee, this.decimalPlaces);
+    }
     if (ask.TermFee) {
       // const LeverCredit = ask.LeverCredit ? ask.LeverCredit : 0;
       // const ExtCredit = ask.ExtCredit ? ask.ExtCredit :  0;
-      ask.TFee =  parseFloat((ask.TermFee * ((ask.LeverCredit || 0) + (ask.ExtCredit || 0))).toFixed(this.DecimalPlaces));
+      ask.TFee =  NumFunc.DecimalPlaces((ask.TermFee * TotalCredit), this.decimalPlaces);
     }
     // console.log("DealOrder before", JSON.stringify(ask));
     let update: IMsg = {};
