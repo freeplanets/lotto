@@ -5,7 +5,7 @@ export interface AnyObject {
 export interface WsMsg extends AnyObject {
     Func?: ENUM.FuncKey;
     data?: any;
-    Asks?: AskTable |AskTable[];
+    Asks?: AskTable | AskTable[];
     Ask?: AskTable;
     Balance?: number;
     Message?: string;

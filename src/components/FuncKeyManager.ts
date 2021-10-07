@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import { FuncKey } from "../DataSchema/ENum";
+import { Channels, FuncKey } from "../DataSchema/ENum";
 import { WsMsg } from "../DataSchema/if";
 import AGet from "./class/DataBase/CryptoItem/AGet";
 import CodeDistinct from "./class/DataBase/CryptoItem/CodeDistinct";
@@ -30,6 +30,7 @@ export default class FuncKeyManager {
 				if (res) {
 					const wsg: WsMsg = {
 						Func: this.returnfunc,
+						ChannelName: Channels.SETTLE_SERVER,
 						data: res,
 					};
 					// console.log("FuncKeyManager doit", JSON.stringify(wsg));

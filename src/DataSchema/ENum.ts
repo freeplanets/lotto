@@ -39,6 +39,7 @@ export enum PriceCheckType {
 export enum Channels {
   ASK = "AskChannel",
   API_SERVER = "AskCreator",
+  SETTLE_SERVER = "SettleServer",
   ADMIN = "AdminChannel",
   PUB = "PublicChannel",
 }

@@ -9,12 +9,13 @@ dotenv.config();
 
 const ATAF = new ATAFactor();
 
-const wsSERVER =  process.env.WS_SERVER === "localhost:4001" ? `ws://${process.env.WS_SERVER}` : `wss://${process.env.WS_SERVER}`;
+const wsHost =  process.env.WS_SERVER === "localhost:4001" ? `ws://${process.env.WS_SERVER}` : `wss://${process.env.WS_SERVER}`;
+const sitename = process.env.SITE_NAME ? process.env.SITE_NAME : "Crypto";
 const wsOptions: ClientOptions = {
   // localAddress: 'localhost',
 };
 const ChannelName = Channels.API_SERVER;
-
+const wsSERVER = `${wsHost}/${sitename}/${ChannelName}/apiZero`;
 export class WsClient {
   get isConnected() {
     if (!this.ws) { return false; }
@@ -69,10 +70,10 @@ export class WsClient {
       console.log("WS connected:", data);
       console.log("status", this.ws.readyState, this.ws.OPEN);
       this.SendMessage("First Message");
-      this.registerChannel(ChannelName);
+      // this.registerChannel(ChannelName);
     });
     this.ws.on("message", async (data) => {
-      // console.log("message from WS:", data);
+      console.log("message from WS:", data);
       try {
         const wsmsg: WsMsg = JSON.parse(data as string);
         if (wsmsg.Func) {
@@ -103,7 +104,7 @@ export class WsClient {
           console.log("Message from server:", wsmsg.Message);
         }
       } catch (error) {
-        console.log("message json parse error:", data, error);
+        console.log("message json parse error:", data);
       }
     });
     // ws.on("ping", this.heartbeat);
