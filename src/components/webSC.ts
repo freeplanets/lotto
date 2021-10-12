@@ -15,7 +15,8 @@ const wsOptions: ClientOptions = {
   // localAddress: 'localhost',
 };
 const ChannelName = Channels.API_SERVER;
-const wsSERVER = `${wsHost}/${sitename}/${ChannelName}/apiZero`;
+// const wsSERVER = `${wsHost}/${sitename}/${ChannelName}/apiZero`;
+const wsSERVER = `${wsHost}`;
 export class WsClient {
   get isConnected() {
     if (!this.ws) { return false; }
@@ -70,14 +71,14 @@ export class WsClient {
       console.log("WS connected:", data);
       console.log("status", this.ws.readyState, this.ws.OPEN);
       this.SendMessage("First Message");
-      // this.registerChannel(ChannelName);
+      this.registerChannel(ChannelName);
     });
     this.ws.on("message", async (data) => {
-      console.log("message from WS:", data);
+      // console.log("message from WS:", data);
       try {
         const wsmsg: WsMsg = JSON.parse(data as string);
         if (wsmsg.Func) {
-          new FuncKeyManager(wsmsg.Func, this.ws).doit();
+          new FuncKeyManager(wsmsg, this.ws).doit();
           // console.log("after FuncKeyManager doit");
         }
         if (wsmsg.Ask) {

@@ -617,3 +617,12 @@ export interface ItemTotal {
     Total?: number;
     InProc?: number;
 }
+export interface PriceTick {
+    code: string;
+    lastPrice: number;
+    lastVol: number;
+    ticktime: number;
+}
+export interface PriceTickID extends PriceTick {
+    id: number;
+}

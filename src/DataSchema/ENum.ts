@@ -31,6 +31,8 @@ export enum FuncKey {
   GET_CRYPTOITEM_ALL = "getCryptoItemAll",
   GET_CRYPTOITEM_CODE_DISTINCT = "getCryptoItemCodeDistinct",
   GET_UNFINISHED_ASKS = "getUnFinishedAsks",
+  SAVE_PRICETICK = "savePriceTick",
+  DO_NOTHING = "doNothing",
 }
 export enum PriceCheckType {
   CurPrice = 0,

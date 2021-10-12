@@ -2,7 +2,7 @@ import mariadb from "mariadb";
 import UpdateFieldString from "../components/class/DataBase/UpdateFieldString";
 import FilterFactory from "../components/FilterFactory";
 import { ErrCode } from "../DataSchema/ENum";
-import { IDbAns, IHasID, IKeyVal, IMsg } from "../DataSchema/if";
+import { AnyObject, IDbAns, IKeyVal, IMsg } from "../DataSchema/if";
 import { doQuery, Query } from "../func/db";
 import eds from "./EncDecString";
 
@@ -26,7 +26,7 @@ interface ITBIdxes {
 }
 
 const ED = new eds();
-export default class JTable<T extends IHasID> {
+export default class JTable<T extends AnyObject> {
     private query = doQuery;
     private extFilter = "";
     private defaultTableName = "";
@@ -226,7 +226,7 @@ export default class JTable<T extends IHasID> {
         }
         return msg;
     }
-    public async MultiInsert(v: T[]): Promise<IMsg> {
+    public async MultiInsert(v: T[], isIgnore = false): Promise<IMsg> {
         const fields: string[] = [];
         const vals: string[] = [];
         let cnt = 0;
@@ -250,7 +250,7 @@ export default class JTable<T extends IHasID> {
                 vals.push(`(${params.join(",")})`);
             });
             const sql = `
-                insert into ${this.TableName}(${fields.join(",")}) values${vals.join(",")}
+                insert ${ isIgnore ? "IGNORE" : "" } into ${this.TableName}(${fields.join(",")}) values${vals.join(",")}
             `;
             // console.log("JTable Multi Insert:", sql);
 

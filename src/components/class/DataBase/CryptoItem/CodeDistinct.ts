@@ -1,12 +1,12 @@
 // import { PoolConnection } from "mariadb";
 import { doQuery, getConnection } from "../../../../func/db";
-import AGet from "./AGet";
-export default class CodeDistinct extends AGet {
+import AOneFunction from "./AOneFunction";
+export default class CodeDistinct extends AOneFunction {
 	private query = doQuery;
 	constructor() {
 		super();
 	}
-	public getItem() {
+	public execute() {
 		return new Promise<any>(async (resolve) => {
 			const conn = await getConnection("CodeDistinct getItem");
 			let tmp = [];

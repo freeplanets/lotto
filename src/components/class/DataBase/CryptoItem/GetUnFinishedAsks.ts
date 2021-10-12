@@ -1,14 +1,15 @@
 import JTable from "../../../../class/JTable";
-import { IKeyVal } from "../../../../DataSchema/if";
+import { AskTable, IKeyVal } from "../../../../DataSchema/if";
 import { getConnection } from "../../../../func/db";
-import AGet from "./AGet";
+import AOneFunction from "./AOneFunction";
 
-export default class GetUnFinishedAsks extends AGet {
-	public getItem() {
+export default class GetUnFinishedAsks extends AOneFunction {
+	public execute() {
 		return new Promise<any>(async (resolve) => {
 			const conn = await getConnection("GetUnFinishedAsks getItem");
+			// console.log("conn:", conn);
 			if (conn) {
-				const jt = new JTable(conn, "AskTable");
+				const jt: JTable<AskTable> = new JTable(conn, "AskTable");
 				const filter: IKeyVal = {
 					Key: "ProcStatus",
 					Val: 2,
@@ -21,9 +22,11 @@ export default class GetUnFinishedAsks extends AGet {
 					// console.log("before resolve");
 					resolve(ans);
 				} else {
+					// console.log("check1");
 					resolve(false);
 				}
 			} else {
+				// console.log("check2");
 				resolve(false);
 			}
 		});
