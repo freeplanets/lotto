@@ -44,6 +44,8 @@ export enum Channels {
   SETTLE_SERVER = "SettleServer",
   ADMIN = "AdminChannel",
   PUB = "PublicChannel",
+  MEMBER = "MemberChannel",
+  SERVICE = "ServiceChannel",
 }
 
 export enum CreditType {

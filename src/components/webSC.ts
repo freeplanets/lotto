@@ -1,22 +1,33 @@
 import dotenv from "dotenv";
-import WebSocket, { ClientOptions } from "ws";
-import { Channels, ErrCode, FuncKey } from "../DataSchema/ENum";
-import { WsMsg } from "../DataSchema/if";
-import ATAFactor from "./ATAFactor";
-import FuncKeyManager from "./FuncKeyManager";
+import { ClientOptions } from "ws";
+// import WebSocket, { ClientOptions } from "ws";
+// import { Channels, ErrCode, FuncKey } from "../DataSchema/ENum";
+import { Channels } from "../DataSchema/ENum";
+// import { WsMsg } from "../DataSchema/if";
+// import ATAFactor from "./ATAFactor";
+// import FuncKeyManager from "./FuncKeyManager";
+import AskProcWS from "./class/WebSocket/AskProcWS";
+import ChatWS from "./class/WebSocket/ChatWS";
 
 dotenv.config();
 
-const ATAF = new ATAFactor();
+// const ATAF = new ATAFactor();
 
 const wsHost =  process.env.WS_SERVER === "localhost:4001" ? `ws://${process.env.WS_SERVER}` : `wss://${process.env.WS_SERVER}`;
+const chatHost = process.env.WS_CHATSERVER === "localhost:4002" ? `ws://${process.env.WS_CHATSERVER}` : `wss://${process.env.WS_CHATSERVER}`;
+
 const sitename = process.env.SITE_NAME ? process.env.SITE_NAME : "Crypto";
 const wsOptions: ClientOptions = {
   // localAddress: 'localhost',
 };
 const ChannelName = Channels.API_SERVER;
-// const wsSERVER = `${wsHost}/${sitename}/${ChannelName}/apiZero`;
+const ChatSERVER = `${chatHost}/${sitename}/${ChannelName}/apiZero`;
 const wsSERVER = `${wsHost}`;
+// const chatClient = new ChatWS(ChatSERVER, wsOptions);
+const wsclient = new AskProcWS(wsSERVER, wsOptions, ChannelName);
+// export { chatClient };
+export default wsclient;
+/*
 export class WsClient {
   get isConnected() {
     if (!this.ws) { return false; }
@@ -139,6 +150,7 @@ export class WsClient {
 }
 const wsclient = new WsClient(wsSERVER, wsOptions);
 export default wsclient;
+*/
 /*
 setTimeout(()=>{
   wsclient.Close();

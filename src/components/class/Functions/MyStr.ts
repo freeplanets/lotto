@@ -28,5 +28,13 @@ class Mystr {
 		const reg = /(%\w\.\d|%\w)/g;
 		return fmt.replace(reg, func);
 	}
+	public toJSON(data: string): any {
+		try {
+			return JSON.parse(data);
+		}	catch (e) {
+			console.log("JSON parse error:", data, " > error:", e);
+			return data;
+		}
+	}
 }
 export default new Mystr();

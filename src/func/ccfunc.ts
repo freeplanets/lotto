@@ -8,7 +8,7 @@ import ReceiverManager from "../components/class/Order/ReceiverManager";
 import MemberReport from "../components/class/Report/Member";
 import wsclient from "../components/webSC";
 import { ErrCode, StopType } from "../DataSchema/ENum";
-import { AskTable, ChatMsg, HasUID, IHasID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
+import { AskTable, ChatMsg, HasUID, IHasID, IKeyVal, IMsg, Items, Lever, NoDelete, PriceTick, WebParams, WsMsg } from "../DataSchema/if";
 import { GetPostFunction } from "./ExpressAccess";
 
 interface IMyFunction<T> extends GetPostFunction {
@@ -95,7 +95,6 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
   let msg: IMsg = {};
   if (param.TableName) {
     // console.log("getdata:", param);
-
     let filters: string | IKeyVal | IKeyVal[] | undefined;
     if (Array.isArray(param.Filter)) {
       filters = param.Filter.map((itm) => {
@@ -114,18 +113,21 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
         }
       }
     }
-    let jt: JTable<IHasID> | MemberReport;
+    // let jt: JTable<IHasID> | MemberReport;
     switch (param.TableName) {
       case "MemberReport":
         if (filters) {
-          jt = new MemberReport();
-          msg = jt.getGainLose(filters, conn);
+          const mr: MemberReport = new MemberReport();
+          msg = mr.getGainLose(filters, conn);
         } else {
           msg.ErrNo = ErrCode.MISS_PARAMETER;
         }
         break;
+      // case "PriceTick":
+      //  msg = getPriceTick(param, conn);
+      //  break;
       default:
-        jt = new JTable(conn, param.TableName);
+        const jt: JTable<IHasID> = new JTable(conn, param.TableName);
         msg = await jt.Lists(filters, param.Fields, param.orderField);
     }
   } else {
@@ -326,6 +328,16 @@ export const getLedgerDetail: IMyFunction<WebParams> = async (param: WebParams, 
 export const ModifyOrder = async (ask: HasUID, conn: PoolConnection) => {
   const ata: ATACreator = new ATACreator(ask, conn, "AskTable");
   return ata.doit();
+};
+export const getPriceTick: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
+  const code = param.code as string;
+  const dealtime = param.DealTime as number;
+  const gapMS = 3000;
+  const filter: IKeyVal[] = [];
+  filter.push({ Key: "code", Val: code });
+  filter.push({ Key: "ticktime", Val: dealtime - gapMS , Val2: dealtime + gapMS, Cond: "BETWEEN"});
+  const jt: JTable<PriceTick> = new JTable(conn, "PriceTick");
+  return await jt.Lists(filter);
 };
 export const sendMessage = async (param: WebParams, conn: PoolConnection) => {
   // const UserID = param.UserID;

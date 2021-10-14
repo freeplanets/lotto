@@ -1,14 +1,15 @@
 import { PoolConnection } from "mariadb";
-import { WsClient } from "../../../components/webSC";
 import { Channels, ErrCode, StopType } from "../../../DataSchema/ENum";
 import { IMsg, Items, Order, UserInfo, WebParams, WsMsg } from "../../../DataSchema/if";
 import DataAccess from "../DataBase/DataAccess";
+// import { AskProcWS } from "../../../components/webSC";
+import AWebSocket from "../WebSocket/AWebSocket";
 import AProcess from "./AProcess";
 import LoanProcess from "./LoanProcess";
 import NotLoanProcess from "./NotLoanProcess";
 
 export default class ReceiverManager {
-	constructor(private conn: PoolConnection, private ws: WsClient) {}
+	constructor(private conn: PoolConnection, private ws: AWebSocket) {}
 	public Process(param: WebParams): Promise<IMsg> {
 		return new Promise(async (resolve) => {
 			let msg = this.ParamPreCheck(param);

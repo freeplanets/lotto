@@ -82,6 +82,8 @@ app.get("/login", async (req, res) => {
                     info.sid = logkey ;
                     msg.data = info;
                     msg.wsServer = process.env.WS_SERVER;
+                    msg.chatServer = process.env.WS_CHATSERVER;
+                    msg.chatSite = process.env.SITE_NAME;
                 } else {
                     msg.ErrNo = 9;
                     msg.ErrCon = "login error!!";

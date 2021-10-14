@@ -132,6 +132,8 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
                 user.Params = msg.data as CryptoOp[];
                 msg.data = user;
                 msg.wsServer = process.env.WS_SERVER;
+                msg.chatServer = process.env.WS_CHATSERVER;
+                msg.chatSite = process.env.SITE_NAME;
             }
         }
     } else {

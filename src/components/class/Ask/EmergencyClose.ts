@@ -2,11 +2,12 @@ import { PoolConnection } from "mariadb";
 import JTable from "../../../class/JTable";
 import { ErrCode, FuncKey } from "../../../DataSchema/ENum";
 import { AskTable, HasUID, IHasID, IKeyVal, IMsg, WsMsg } from "../../../DataSchema/if";
-import { WsClient } from "../../webSC";
+// import { AskProcWS } from "../../webSC";
+import AWebSocket from "../WebSocket/AWebSocket";
 
 export default class EmergencyClose {
 	private jt: JTable<IHasID>;
-	constructor(private wsc: WsClient, conn: PoolConnection, tableName = "AskTable") {
+	constructor(private wsc: AWebSocket, conn: PoolConnection, tableName = "AskTable") {
 		this.jt = new JTable(conn, tableName);
 	}
 	public async doit() {
