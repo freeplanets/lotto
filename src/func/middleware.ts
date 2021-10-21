@@ -95,20 +95,6 @@ const LoginChk = async (UserID: number, sid: string, UpId?: number): Promise<IMs
       resolve(msg);
     });
   });
-  /*
-  const msg: IMsg = {ErrNo: 0};
-  const conn = await db.getConnection();
-  if (conn) {
-    const ans = await chkLogin(UserID, sid, conn, UpId);
-    if (!ans) {
-      msg.ErrNo = ErrCode.NO_LOGIN;
-    }
-  } else {
-    msg.ErrNo = 9;
-    msg.ErrCon = "Connect Fail!!";
-  }
-  return msg;
-  */
 };
 const chkLogin = (uid: number, sid: string, conn: mariadb.PoolConnection) => {
   return new Promise(async (resolve) => {

@@ -329,6 +329,7 @@ export const ModifyOrder = async (ask: HasUID, conn: PoolConnection) => {
   const ata: ATACreator = new ATACreator(ask, conn, "AskTable");
   return ata.doit();
 };
+/*
 export const getPriceTick: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   const code = param.code as string;
   const dealtime = param.DealTime as number;
@@ -339,6 +340,7 @@ export const getPriceTick: IMyFunction<WebParams> = async (param: WebParams, con
   const jt: JTable<PriceTick> = new JTable(conn, "PriceTick");
   return await jt.Lists(filter);
 };
+*/
 export const sendMessage = async (param: WebParams, conn: PoolConnection) => {
   // const UserID = param.UserID;
   if (param.WsMsg) {

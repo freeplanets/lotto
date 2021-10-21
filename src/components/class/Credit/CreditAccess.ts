@@ -31,6 +31,7 @@ export default class CreditAccess {
     return new Promise<IMsg>(async (resolve) => {
       const msg: IMsg = { ErrNo: ErrCode.PASS };
       const sql = `update Member set Balance=${balance} where id=${this.UserID}`;
+      // console.log("CreditAccess conn info", this.conn.info);
       this.conn.query(sql).then((res: IDbAns) => {
         if (res.affectedRows > 0) {
           resolve(msg);

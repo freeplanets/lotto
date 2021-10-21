@@ -21,7 +21,24 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       msg.ErrCon = "Amount=0";
       return msg;
     }
-    await this.conn.beginTransaction();
+    /*
+    const askone = await this.tb.getOne(ask.id, 'id,ProcStatus');
+    if(!askone || (askone && askone.ProcStatus > 1)) {
+      console.log()
+      msg.Ask = ask;
+      return msg;
+    }
+    */
+    // await this.conn.beginTransaction();
+    await this.BeginTrans();
+    // console.log("DealOrder conn info:", this.conn.info);
+    /*
+    this.conn.query("SELECT @@AUTOCOMMIT;").then((res) => {
+      console.log("DealOrder check:", res);
+    }).catch((err) => {
+      console.log("DealOrder check err:", err);
+    });
+    */
     this.tb.ExtFilter = " ProcStatus < 2 ";
     if (ask.CreateTime) { delete ask.CreateTime; }
     if (ask.ModifyTime) { delete ask.ModifyTime; }
@@ -46,7 +63,8 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       const da = new DataAccess(this.conn);
       update = await da.ServiceSettleMark(ask.id, this.SettleServiceID);
       if ( update.ErrNo !== ErrCode.PASS ) {
-        await this.conn.rollback();
+        // await this.conn.rollback();
+        await this.RollBack();
         msg.ErrNo = ErrCode.DB_QUERY_ERROR;
         msg.Error = update.Error;
         return msg;
@@ -54,14 +72,16 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     }
     update = await this.tb.Update(ask);
     if ( update.ErrNo !== ErrCode.PASS ) {
-      await this.conn.rollback();
+      // await this.conn.rollback();
+      await this.RollBack();
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;
       msg.Error = update.Error;
       return msg;
     }
     const lgmsg = await this.AddToLedger(ask);
     if (lgmsg.ErrNo !== ErrCode.PASS) {
-      await this.conn.rollback();
+      // await this.conn.rollback();
+      await this.RollBack();
       return msg;
     }
     // console.log("DealOrder doit after AddToLedger:", lgmsg);
@@ -85,7 +105,8 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       };
       const modifycredit = await this.creditA.ModifyCredit(Credit, memo);
       if ( modifycredit.ErrNo !== ErrCode.PASS ) {
-        await this.conn.rollback();
+        // await this.conn.rollback();
+        await this.RollBack();
         msg.ErrNo = ErrCode.NO_CREDIT;
         return msg;
       }
@@ -110,7 +131,8 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       } else if (!ask.SetID && !ask.USetID ) {
         const csa = await this.CreateSettleAsk(ask);
         if (csa.ErrNo !== ErrCode.PASS) {
-          await this.conn.rollback();
+          // await this.conn.rollback();
+          await this.RollBack();
           msg.ErrNo = ErrCode.DB_QUERY_ERROR;
           msg.Error = csa.Error;
           return msg;
@@ -119,7 +141,8 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       }
     }
     // console.log("DealOrder doit before commit", msg);
-    await this.conn.commit();
+    // await this.conn.commit();
+    await this.Commit();
     const askOne = await this.tb.getOne(ask.id);
     // console.log("DealOrder askOne", JSON.stringify(askOne));
     const tmp: AskTable[] = [];

@@ -73,8 +73,9 @@ app.get("/saveGames", async (req, res) => {
             conn.query(sql, params).then(async (v) => {
                 await conn.release();
                 res.send(JSON.stringify(v));
-            }).catch((err) => {
+            }).catch(async (err) => {
                 console.log("saveGames", err);
+                await conn.release();
                 res.send(err);
             });
         } else {
