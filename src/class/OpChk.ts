@@ -1,5 +1,6 @@
 import mariadb from "mariadb";
-import JDate from "../class/JDate";
+import DateFunc from "../components/class/Functions/MyDate";
+// import JDate from "../class/JDate";
 import { ErrCode } from "../DataSchema/ENum";
 import {IBasePayRateItm, IBetTable, ICurOddsData, IDayReport,
     IHasID, INumAvg, INumData, IStepG, IStrKeyNumer} from "../DataSchema/if";
@@ -7,6 +8,7 @@ import {IGame} from "../DataSchema/user";
 import {doQuery} from "../func/db";
 import {getOtherSide} from "./Func";
 import JTable from "./JTable";
+
 interface ICurOddsT {
     id: 0;
     tid: number;
@@ -96,7 +98,7 @@ export class OpChk {
         this.MCurOT = [];
         this.AvgT = [];
         this.UnT = [];
-        const sdate: string = JDate.LocalDateStr;
+        const sdate: string = DateFunc.toDbDateString();
         const dayR: IDayReport[] = [];
         data.map((itm) => {
             this.addCurOddT(itm);

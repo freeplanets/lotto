@@ -15,7 +15,8 @@ import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
 import { ErrCode } from "../DataSchema/ENum";
-import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDbAns, IDfOddsItems, IGameDataCaption , IGameItem , IGameResult, IHashAna, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
+import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
+    IGameDataCaption , IGameItem , IGameResult, IHashAna, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import {doQuery, getConnection, IAxParams} from "../func/db";
 const app: Router = express.Router();
@@ -1868,6 +1869,7 @@ app.get("/getBetTotal", async (req, res) => {
     if (conn) {
         // const tmp = await doQuery('show variables like "%time_zone%";', conn);
         // console.log("timezone chk:", tmp);
+        // await modifySDateForDayReport(conn);
         console.log("getBetTotal sql:", sql);
         const data = await doQuery(sql, conn);
         const ids: number[] = [];
@@ -2109,7 +2111,7 @@ function getBetTotalSql(param: ICommonParams): string {
     const sql: string = `SELECT UpId${extField}${param.Ledger === "2" ? ",SDate" : ""},sum(Total) Total,sum(WinLose) WinLose FROM DayReport
         WHERE ${cond.length > 0 ? cond.join("and") : 1 }
         group by UpId${extField}${param.Ledger === "2" ? ",SDate" : ""}`;
-    console.log("getBetTotalSql:", sql, param);
+    // console.log("getBetTotalSql:", sql, param);
     return sql;
 }
 function getBetTotalSql_back(param: ICommonParams): string {
@@ -2194,5 +2196,34 @@ async function createBasePayRate(GameID, conn: mariadb.PoolConnection) {
         select g.id GameID,p.GType,p.BetType,p.SubType from ProbabilityTable p left join Games g on p.GType=g.GType where g.id = ?`;
     const ans = await doQuery(sql, conn, [GameID]);
     return ans;
+}
+async function modifySDateForDayReport(conn: mariadb.PoolConnection) {
+    const jt = new JTable<IDayReport>(conn, "DayReport");
+    const msg = await jt.Lists();
+    // console.log(msg);
+    if (msg.ErrNo === ErrCode.PASS) {
+        const dta = msg.data as IDayReport[];
+        const tmp: IDayReport[] = [];
+        dta.map((itm) => {
+            const d = dateChk(itm.SDate);
+            if (d) {
+                itm.SDate = d;
+                tmp.push(itm);
+            }
+        });
+        if (tmp.length > 0) {
+            await jt.MultiUpdate(tmp);
+        }
+    }
+}
+function dateChk(d: string) {
+    if (d.indexOf("-") !== -1) { return false; }
+    const tmp = d.split("/");
+    const iTmp = tmp.map((itm) => parseInt(itm, 10));
+    if (iTmp[0] > 2000 ) {
+        return `${tmp[0]}-${tmp[1]}-${tmp[2]}`;
+    } else {
+        return `${tmp[2]}-${tmp[0]}-${tmp[1]}`;
+    }
 }
 export default app;

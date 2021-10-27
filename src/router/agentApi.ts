@@ -229,8 +229,8 @@ async function CreditAC(params, res: Response, ac: number) {
 }
 async function getAgent(id: string, conn: PoolConnection) {
     const sql: string = "select * from User where id=?";
-    // console.log("getAgent:", sql, id);
     const row = await conn.query(sql, [id]);
+    // console.log("getAgent:", sql, id, row);
     return row[0];
 }
 function decParam(param: string): IGameAccessParams {
@@ -385,6 +385,7 @@ async function getTicketDetail(req, res) {
         return;
     }
     const Agent: IUser = await getAgent(params.agentId, conn);
+    // console.log("Agent:", Agent);
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
     console.log("getTicketDetail param:", param);
@@ -392,7 +393,7 @@ async function getTicketDetail(req, res) {
         UNIX_TIMESTAMP(CreateTime) CreateTime,UNIX_TIMESTAMP(ModifyTime) ModifyTime,case isCancled when 1 then 3 else isSettled+1 end as \`status\`
         from BetTable where UpId=${params.agentId} and isCancled=0 and
         ModifyTime between from_unixtime(${param.startTime}) and from_unixtime(${param.endTime})`;
-    // console.log("getTicketDetail", sql);
+    console.log("getTicketDetail", sql);
     conn.query(sql).then((rows) => {
         data.list = rows;
         // console.log("getTicketDetail", sql);
