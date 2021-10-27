@@ -1815,7 +1815,7 @@ app.get("/getBetHeaders", async (req, res) => {
             });
         }
         console.log("getbetHeaders:", param);
-        const ans = await afunc.getBetHeaders(params, conn, uids);
+        const ans = await afunc.getBetHeaders(param as ICommonParams, conn, uids);
        // console.log("AdminApi /getBetHeaders ans", ans);
         if (ans) {
           msg.data = ans;
