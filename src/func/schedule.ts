@@ -1,12 +1,14 @@
 import mariadb from "mariadb";
 import schedule from "node-schedule";
+import DateFunc from "../components/class/Functions/MyDate";
 import * as db from "./db";
 // 秒 分 時 日 月 星期
 export function scheduleTest() {
   schedule.scheduleJob("30 50 23 * * *", () => {
-    const d: string = dateAddZero(new Date().toLocaleDateString("zh-TW", {timeZone: "Asia/Taipei"}));
+    // const d: string = dateAddZero(new Date().toLocaleDateString("zh-TW", {timeZone: "Asia/Taipei"}));
+    const d = DateFunc.toDbDateString();
     doDayTotal(d);
-    console.log("scheduleTest:", new Date().toLocaleString("zh-TW", {timeZone: "Asia/Taipei", hour12: false}));
+    console.log("scheduleTest:", DateFunc.toLocalString());
   });
 }
 async function doDayTotal(d: string) {
