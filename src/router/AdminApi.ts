@@ -1465,7 +1465,9 @@ app.get("/getUsers", async (req, res) => {
   if (param.OnlyID) {
       params.OnlyID = !!param.OnlyID;
   }
-  const ans = await getUsers(conn, params);
+  let tb = "";
+  if (param.userType === "0" ) { tb = "Member"; }
+  const ans = await getUsers(conn, params, tb);
   if (ans) {
       msg.data = ans;
   } else {
