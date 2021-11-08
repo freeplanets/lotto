@@ -368,3 +368,6 @@ export const sendMessage = async (param: WebParams, conn: PoolConnection) => {
   }
   return { ErrNo: ErrCode.MISS_PARAMETER };
 };
+export const getEmergencyLog = async (conn: PoolConnection) => {
+  const sql = "Select e.*, u.Account from EmergencyClose e left join User u on e.ModifyID = u.id order by e.ModifyTime desc limit 0,10";
+};
