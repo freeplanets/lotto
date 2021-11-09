@@ -233,7 +233,7 @@ export class Bet implements IBet {
                             itm.Num = "0";
                         });
                     }
-                    const totchk = Chker.updateTotals(BetDetail, this.conn);
+                    const totchk = await Chker.updateTotals(BetDetail, this.conn);
                     console.log("totalchk", totchk);
                     if (!totchk) {
                         // await this.conn.rollback();
@@ -525,7 +525,7 @@ export class Bet implements IBet {
             if (rlt1) {
                 if (Chker) {
                     // console.log("do Chker updateTotals");
-                    const totchk = Chker.updateTotals(BetDetail, this.conn);
+                    const totchk = await Chker.updateTotals(BetDetail, this.conn);
                     if (!totchk) {
                         // await this.conn.rollback();
                         await this.RollBack();
@@ -763,7 +763,7 @@ export class Bet implements IBet {
             if (rlt1) {
                 if (Chker) {
                     // console.log("do Chker updateTotals");
-                    const totchk = Chker.updateTotals(BetDetail, this.conn);
+                    const totchk = await Chker.updateTotals(BetDetail, this.conn);
                     if (!totchk) {
                         // await this.conn.rollback();
                         await this.RollBack();
