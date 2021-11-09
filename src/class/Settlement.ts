@@ -36,6 +36,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         final: ""
     };
     const SettleStatus: number = isSettled ? 3 : 1;
+    await conn.query("SET AUTOCOMMIT=0;");
     await conn.beginTransaction();
     sql = `update CurOddsInfo set isStop=1 where tid=${tid}`;
     await conn.query(sql).then(async (res) => {
@@ -85,6 +86,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     }
     if (!ans) {
         // return imsr;
+        await conn.query("SET AUTOCOMMIT=1;");
         return ans;
     }
     // 搜尋有下注的BetType
@@ -98,15 +100,16 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         ans = false;
     });
     if (rtn) {
-        // console.log("rtn chk:", sql, rtn);
+        console.log("rtn chk:", sql, rtn);
         sqls = doBT(tid, GameID, num, rtn, conn, GType);
-        console.log("after do BT:", sqls);
+        // console.log("after do BT:", sqls);
         if (sqls.pre.length > 0) {
             await Promise.all(sqls.pre.map(async (itm) => {
                 ans = await doQuery(itm, conn);
                 if (!ans) {
                     console.log("err rollback 0");
                     await conn.rollback();
+                    await conn.query("SET AUTOCOMMIT=1;");
                     return false;
                 }
             }));
@@ -144,6 +147,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
                 console.log("err rollback 1");
                 needBreak = true;
                 await conn.rollback();
+                await conn.query("SET AUTOCOMMIT=1;");
                 return false;
             }
         }));
@@ -163,8 +167,10 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     } else {
         console.log("err rollback 3");
         await conn.rollback();
+        await conn.query("SET AUTOCOMMIT=1;");
         return false;
     }
+    await conn.query("SET AUTOCOMMIT=1;");
     // console.log("SQL:", ans);
     return true;
 }

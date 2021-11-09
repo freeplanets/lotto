@@ -95,6 +95,9 @@ export interface IBetContent {
 export interface IBet {
     AnaNum(nums: string): any;
     Save?(data: string, f: () => void): void;
+    BeginTrans(): Promise<void>;
+    RollBack(): Promise<void>;
+    Commit(): Promise<void>;
 }
 
 export interface IBetHeader {

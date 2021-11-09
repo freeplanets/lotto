@@ -452,7 +452,7 @@ async function getGameDataCaption(req, res) {
 }
 async function register(params, res: Response) {
     // const params = req.query;
-    // console.log("agentApi/1 :", params);
+    console.log("agentApi/1 :", params);
     const msg: IMsg = {ErrNo: 0};
     const data: IAnsData = {code: 0};
     const conn = await getConnection();
@@ -464,7 +464,7 @@ async function register(params, res: Response) {
     }
     const Agent: IUser = await getAgent(params.agentId, conn);
     // console.log("agent Api /1", Agent);
-    if (Agent.DfKey) {
+    if (Agent && Agent.DfKey) {
         const eds = new EDS(Agent.DfKey);
         let param: IGameAccessParams;
         if (Agent.DfKey === "NOEDS") {

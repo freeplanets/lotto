@@ -193,7 +193,8 @@ export class Bet implements IBet {
             msg.ErrCon = "Insufficient credit";
             return msg;
         }
-        await this.conn.beginTransaction();
+        // await this.conn.beginTransaction();
+        await this.BeginTrans();
         const jt: JTable<IBetHeader> = new JTable(this.conn, "BetHeader");
         const bh: IBetHeader = {
             id: 0,
@@ -212,7 +213,8 @@ export class Bet implements IBet {
             if (ansmc) {
                 msg.balance = ansmc.balance;
             } else {
-                await this.conn.rollback();
+                // await this.conn.rollback();
+                await this.RollBack();
                 msg.ErrNo = 9;
                 msg.ErrCon = "System Busy!!";
                 return msg;
@@ -223,7 +225,7 @@ export class Bet implements IBet {
             const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
             console.log("AnaNum Save Detail:", rlt1);
-            if (rlt1) {
+            if (rlt1.ErrNo === ErrCode.PASS && rlt1.affectedRows > 0) {
                 if (Chker) {
                     // console.log("do Chker updateTotals");
                     if (ExtNumInfo) {
@@ -232,8 +234,10 @@ export class Bet implements IBet {
                         });
                     }
                     const totchk = Chker.updateTotals(BetDetail, this.conn);
+                    console.log("totalchk", totchk);
                     if (!totchk) {
-                        await this.conn.rollback();
+                        // await this.conn.rollback();
+                        await this.RollBack();
                         msg.ErrNo = 9;
                         msg.ErrCon = "Add Total error!!";
                         return msg;
@@ -242,14 +246,16 @@ export class Bet implements IBet {
                     console.log("no checker", Chker);
                 }
                 msg.data = rlt1;
-                await this.conn.commit();
+                // await this.conn.commit();
+                await this.Commit();
                 return msg;
             }
         }
         msg.ErrNo = 9;
         msg.ErrCon = "System busy";
         msg.header = rlt;
-        await this.conn.rollback();
+        // await this.conn.rollback();
+        await this.RollBack();
         return msg;
     }
     public async Parlay(BetType: number, Odds: string, Nums: string, Amt: number): Promise<IMsg> {
@@ -392,7 +398,8 @@ export class Bet implements IBet {
             msg.ErrCon = "Insufficient credit";
             return msg;
         }
-        await this.conn.beginTransaction();
+        // wait this.conn.beginTransaction();
+        await this.BeginTrans();
         const rlt = await jt.Insert(bh);
         console.log("Parlay SNB:", SNB);
         if (rlt && rlt.warningStatus === 0) {
@@ -404,6 +411,7 @@ export class Bet implements IBet {
                 msg.ErrNo = 9;
                 msg.ErrCon = "System Busy!!";
                 // await this.conn.rollback();
+                await this.RollBack();
                 return msg;
             }
             const BetDetail: IBetTable[] = [];
@@ -504,7 +512,8 @@ export class Bet implements IBet {
                     const unchk = Chker.overUnionNum(BetDetail, UnionTotals);
                     if (unchk !== ErrCode.PASS) {
                         msg.ErrNo = unchk;
-                        await this.conn.rollback();
+                        // await this.conn.rollback();
+                        await this.RollBack();
                         return msg;
                     }
                 }
@@ -512,13 +521,14 @@ export class Bet implements IBet {
             // 聯碼限額--End
             const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
-            console.log("Parlay Save Detail:", rlt1, BetDetail);
+            console.log("Parlay Save Detail:", rlt1); // , BetDetail);
             if (rlt1) {
                 if (Chker) {
                     // console.log("do Chker updateTotals");
                     const totchk = Chker.updateTotals(BetDetail, this.conn);
                     if (!totchk) {
-                        await this.conn.rollback();
+                        // await this.conn.rollback();
+                        await this.RollBack();
                         msg.ErrNo = 9;
                         msg.ErrCon = "Add Total error!!";
                         return msg;
@@ -530,23 +540,27 @@ export class Bet implements IBet {
                     const exjtd: JTable<IExProc> = new JTable(this.conn, "BetTableEx");
                     const exrlt = await exjtd.MultiInsert(exproc);
                     if (!exrlt) {
-                        await this.conn.rollback();
+                        // await this.conn.rollback();
+                        await this.RollBack();
                         msg.ErrNo = 9;
                         msg.ErrCon = "Save BetTableEx error!!";
                         return msg;
                     }
                 }
             } else {
-                await this.conn.rollback();
+                // await this.conn.rollback();
+                await this.RollBack();
                 msg.ErrNo = 9;
                 msg.ErrCon = "Save detail error !!";
                 return msg;
             }
             msg.data = rlt1;
-            await this.conn.commit();
+            // await this.conn.commit();
+            await this.Commit();
             return msg;
         }
-        await this.conn.rollback();
+        // await this.conn.rollback();
+        await this.RollBack();
         msg.ErrNo = 9;
         msg.ErrCon = "System busy!!";
         msg.header = rlt;
@@ -689,9 +703,10 @@ export class Bet implements IBet {
             msg.ErrCon = "Insufficient credit";
             return msg;
         }
-        await this.conn.beginTransaction();
+        // await this.conn.beginTransaction();
+        await this.BeginTrans();
         const rlt = await jt.Insert(bh);
-        console.log("Parlay SNB:", SNB);
+        console.log("Parlay SNB:", SNB, rlt);
         if (rlt && rlt.warningStatus === 0) {
             const ts = new Date().getTime();
             const ansmc = await ModifyCredit(this.UserID, "", -1, bh.Total * -1, ts + "ts" + this.UserID, this.conn);
@@ -701,6 +716,7 @@ export class Bet implements IBet {
                 msg.ErrNo = 9;
                 msg.ErrCon = "System Busy!!";
                 // await this.conn.rollback();
+                await this.RollBack();
                 return msg;
             }
             const BetDetail: IBetTable[] = [];
@@ -749,7 +765,8 @@ export class Bet implements IBet {
                     // console.log("do Chker updateTotals");
                     const totchk = Chker.updateTotals(BetDetail, this.conn);
                     if (!totchk) {
-                        await this.conn.rollback();
+                        // await this.conn.rollback();
+                        await this.RollBack();
                         msg.ErrNo = 9;
                         msg.ErrCon = "Add Total error!!";
                         return msg;
@@ -761,7 +778,8 @@ export class Bet implements IBet {
                     const exjtd: JTable<IExProc> = new JTable(this.conn, "BetTableEx");
                     const exrlt = await exjtd.MultiInsert(exproc);
                     if (!exrlt) {
-                        await this.conn.rollback();
+                        // await this.conn.rollback();
+                        await this.RollBack();
                         msg.ErrNo = 9;
                         msg.ErrCon = "Save BetTableEx error!!";
                         return msg;
@@ -769,15 +787,29 @@ export class Bet implements IBet {
                 }
             }
             msg.data = rlt1;
-            await this.conn.commit();
+            // await this.conn.commit();
+            await this.Commit();
             return msg;
         }
-        await this.conn.rollback();
+        // await this.conn.rollback();
+        await this.RollBack();
         msg.ErrNo = 9;
         msg.ErrCon = "System busy!!";
         msg.header = rlt;
         return msg;
 
+    }
+    public async BeginTrans() {
+        await this.conn.query("SET AUTOCOMMIT=0;");
+        await this.conn.beginTransaction();
+    }
+    public async RollBack() {
+        await this.conn.rollback();
+        await this.conn.query("SET AUTOCOMMIT=1;");
+    }
+    public async Commit() {
+        await this.conn.commit();
+        await this.conn.query("SET AUTOCOMMIT=1;");
     }
     private async getGameInfo(GameID: number, conn: mariadb.PoolConnection) {
         const jt: JTable<IGame> = new JTable(conn, "Games");

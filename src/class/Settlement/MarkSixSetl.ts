@@ -20,6 +20,7 @@ export function MarkSixSetl(tid: number, GameID: number, imsra: any, rtn: any, c
       const found: ISetl | undefined = MarkSixST.find((el) => el.BetTypes === rd.BetType);
       if (found) {
           sqls = CreateSql(tid, GameID, found, imsr, conn);
+          console.log("MarkSixSetl:", rd, sqls);
           if (sqls.pre.length > 0) {
               ans.pre = ans.pre.concat(sqls.pre);
           }
