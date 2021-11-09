@@ -1030,7 +1030,7 @@ app.get("/getTerms", async (req, res) => {
       pa.push(param.SDate as string);
   }
   sql = sql + "order by id desc limit 0,10";
-  // console.log("getTerms", sql, pa);
+  console.log("getTerms", sql, pa);
   const tans = await doQuery(sql, conn, pa);
   if (tans) {
       msg.data = tans;
@@ -1712,7 +1712,7 @@ app.get("/setStop", async (req, res) => {
   } else {
       const param = req.query;
       console.log("setStop param", param);
-      const tid = parseInt(param.id as string, 10);
+      const tid = parseInt(param.tid as string, 10);
       const GameID = parseInt(param.GameID as string, 10);
       const BetTypes = param.BetTypes as string;
       const Num = param.Num as string;

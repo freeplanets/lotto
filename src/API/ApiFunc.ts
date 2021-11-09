@@ -265,6 +265,7 @@ export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOdds
   const sql = `select UNIX_TIMESTAMP(OID) OID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps,PerStep,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and UNIX_TIMESTAMP(OID) > ?`;
   const ans = {};
   const res = await doQuery(sql, conn, [tid, GameID, MaxOddsID]);
+  // console.log("getCurOddsInfo:", sql, [tid, GameID, MaxOddsID]);
   if (res) {
       // console.log("getCurOddsInfo", res);
       res.map((itm) => {
@@ -330,6 +331,7 @@ export async function setStop(tid: number, GameID: number, isStop: number, UserI
     const BTS: string = !!BetTypes  ? ` and BetType in (${BetTypes})` : "";
     const NN: string = Num !== undefined ? ` and Num=${Num}` : "";
     const sql = `update CurOddsInfo set isStop=? where tid=? and GameID=? ${BTS}${NN}`;
+    console.log("setStop", sql, [isStop, tid, GameID]);
     const ans = await doQuery(sql, conn, [isStop, tid, GameID]);
     if (ans) {
         const Bt = BetTypes ? BetTypes : "all";
