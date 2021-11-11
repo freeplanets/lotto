@@ -113,6 +113,7 @@ export class OpChk {
                     SDate: sdate,
                     UpId: itm.UpId,
                     UserID: itm.UserID,
+                    tid: itm.tid,
                     GameID: itm.GameID,
                     BetType: itm.BetType,
                     Total: itm.Amt,
@@ -163,10 +164,10 @@ export class OpChk {
         return err;
     }
     private async saveDayReport(dayR: IDayReport[], conn: mariadb.PoolConnection) {
-        let sql: string = "insert into DayReport(SDate,UpId,UserID,GameID,BetType,Total) values";
+        let sql: string = "insert into DayReport(SDate,UpId,UserID,tid,GameID,BetType,Total) values";
         const dta: string[] = [];
         dayR.map((itm) => {
-            dta.push(`('${itm.SDate}',${itm.UpId},${itm.UserID},${itm.GameID},${itm.BetType},${itm.Total})`);
+            dta.push(`('${itm.SDate}',${itm.UpId},${itm.UserID},${itm.tid},${itm.GameID},${itm.BetType},${itm.Total})`);
         });
         sql += dta.join(",") + " on duplicate key update Total=Total+values(Total)";
         return await doQuery(sql, conn);

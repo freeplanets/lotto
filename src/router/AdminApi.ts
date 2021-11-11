@@ -1971,6 +1971,8 @@ app.get("/CancelTerm", async (req, res) => {
     let msg: IMsg = { ErrNo: 0 };
     const param = req.query;
     const tid = parseInt(param.tid as string, 10);
+    // console.log("CancelTerm", param);
+    // res.send(JSON.stringify(param));
     const conn = await getConnection();
     if (conn) {
         msg = await CancelTerm(tid, conn);

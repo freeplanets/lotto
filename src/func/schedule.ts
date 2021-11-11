@@ -75,8 +75,8 @@ async function doDayTotal(d: string) {
 
     // Member(UserID) total with GameID,BetType
     sql = "insert into DayReport(SDate,UpId,UserID,tid,GameID,BetType,Total,WinLose)";
-    sql += " select convert(CreateTime,Date) SDate,UpId,UserID,0,GameID,BetType,sum(Amt) Total,sum(WinLose) WinLose ";
-    sql += ` From BetTable where isCancled = 0 ${cond} group by convert(CreateTime,Date),UpId,UserID,GameID,BetType `;
+    sql += " select convert(CreateTime,Date) SDate,UpId,UserID,tid,GameID,BetType,sum(Amt) Total,sum(WinLose) WinLose ";
+    sql += ` From BetTable where isCancled = 0 ${cond} group by convert(CreateTime,Date),UpId,UserID,tid,GameID,BetType `;
     sql += " on duplicate key update Total=values(Total),WinLose=values(WinLose)";
     sqls.push(sql);
     let ErrRaised = false;

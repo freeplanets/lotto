@@ -25,6 +25,9 @@ export default class CancelTerm extends ATrans {
 				sqls.push(sql);
 				sql = `update BetHeader set isCancled=1,WinLose=0 where tid=${tid}`; // and GameID=${term.GameID}`;
 				sqls.push(sql);
+				// cancel DayReport
+				sql = `update DayReport set total=0,WinLose=0 where tid=${tid}`;
+				sqls.push(sql);
 				// 損益歸戶
 				sql = `insert into UserCredit(uid,GameID,tid,DepWD,memo)
 						select UserID uid,GameID,tid,sum(Total) DepWD,'CancelTerm' memo

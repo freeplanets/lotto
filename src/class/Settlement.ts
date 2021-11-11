@@ -6,6 +6,7 @@ import {doQuery} from "../func/db";
 // const SettleMethods=MarkSixST['MarkSix'];
 import CancelTermF from "./DBFunction/CancelTerm";
 import CurOddsInfo from "./DBFunction/CurOddsInfo";
+import DayReport from "./DBFunction/DayReport";
 import {AlwaysSetl} from "./Settlement/AlwaysSetl";
 import {BTCHashSetl} from "./Settlement/BTCHashSetl";
 import {CarsSetl} from "./Settlement/CarsSetl";
@@ -160,6 +161,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         if (ans) {
             // console.log("commit 1");
             await conn.commit();
+            await new DayReport(conn).Cal(tid);
             await new CurOddsInfo(conn).Save(tid, GameID);
         } else {
             console.log("err rollback 2");

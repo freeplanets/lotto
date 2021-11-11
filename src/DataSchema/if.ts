@@ -305,6 +305,7 @@ export interface IDayReport {
     SDate: string;
     UpId: number;
     UserID: number;
+    tid: number;
     GameID: number;
     BetType: number;
     Total: number;
