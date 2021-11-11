@@ -8,7 +8,8 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
     msg.UserID = this.ask.UserID;
     const ans = await this.tb.getOne(this.ask.id);
     if (ans) {
-      this.conn.beginTransaction();
+      // this.conn.beginTransaction();
+      await this.BeginTrans();
       const ask = ans as AskTable;
       const credit = ask.Amount + ( ask.Fee ? ask.Fee : 0 );
       const memoMsg: MemoCryptoCur = {
@@ -36,7 +37,8 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
         const ansAsk = await this.tb.getOne(this.ask.id);
         if (ansAsk) { msg.Ask = ansAsk as AskTable; }
       } else {
-        await this.conn.rollback();
+        // await this.conn.rollback();
+        await this.RollBack();
         return msg;
       }
       /*
@@ -48,7 +50,8 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
         }
       }
       */
-      await this.conn.commit();
+      // await this.conn.commit();
+      await this.Commit();
     } else {
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;
     }

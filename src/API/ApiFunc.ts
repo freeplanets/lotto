@@ -284,6 +284,16 @@ export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOdds
           };
           ans[itm.BetType][itm.Num] = Object.assign({}, tmp);
       });
+      /*
+      if (MaxOddsID === 0) {
+          const oddSql = "insert into OpHistory(GameID, tid, OddsInfo) values(?,?,?) on duplicate key update GameID=values(GameID)";
+          doQuery(oddSql, conn, [GameID, tid, JSON.stringify(ans)]).then((saveinfo) => {
+            console.log("save odds history:", saveinfo);
+          }).catch((err) => {
+            console.log("save odds history error:", err);
+          });
+      }
+      */
   } else  {
       return;
   }

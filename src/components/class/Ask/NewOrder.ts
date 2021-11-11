@@ -8,7 +8,8 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     let msg: IMsg = { ErrNo: ErrCode.PASS };
     const ask: AskTable = this.ask as AskTable;
     msg.UserID = ask.UserID;
-    await this.conn.beginTransaction();
+    // await this.conn.beginTransaction();
+    await this.BeginTrans();
     // console.log("NewOrder doit:", JSON.stringify(ask));
     if (ask.BuyType === 0) {
       if (ask.LeverCredit) {
@@ -33,7 +34,8 @@ export default class NewOrder extends AskTableAccess<HasUID> {
       };
       msg = await this.creditA.ModifyCredit(credit * -1, memo);
       if (msg.ErrNo !== ErrCode.PASS) {
-        await this.conn.rollback();
+        // await this.conn.rollback();
+        await this.RollBack();
         return msg;
       }
     }
@@ -49,7 +51,8 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     if (msg.ErrNo !== 0) {
       console.log("NewOrder doit error:", msg);
       msg.ErrNo = ErrCode.DB_QUERY_ERROR;
-      await this.conn.rollback();
+      // await this.conn.rollback();
+      await this.RollBack();
       return msg;
     }
     /*
@@ -61,7 +64,8 @@ export default class NewOrder extends AskTableAccess<HasUID> {
       }
     }
     */
-    this.conn.commit();
+    // this.conn.commit();
+    this.Commit();
     const hasOne = await this.tb.getOne(AskID);
     if (hasOne) { msg.Ask = hasOne as AskTable; }
     msg.Balance = await this.getBalance();
