@@ -1,9 +1,9 @@
 import LZString from "lz-string";
 import { PoolConnection } from "mariadb";
 import { chkTermIsSettled } from "../../API/ApiFunc";
-import { doQuery } from "../../func/db";
-import { IMsg } from "../../DataSchema/if";
 import { ErrCode } from "../../DataSchema/ENum";
+import { IMsg } from "../../DataSchema/if";
+import { doQuery } from "../../func/db";
 
 export default class CurOddsInfo {
 	constructor(private conn: PoolConnection) {}
@@ -51,11 +51,11 @@ export default class CurOddsInfo {
 			});
 		}
 	}
-	public async getHisList(GameID:number):Promise<IMsg> {
+	public async getHisList(GameID: number): Promise<IMsg> {
 		return new Promise<IMsg>((resolve) => {
-			const msg:IMsg = { ErrNo: ErrCode.PASS };
-			const sql=`Select tid,t.TermID from 
-			OpHistory o left join Terms t on o.tid = t.id 
+			const msg: IMsg = { ErrNo: ErrCode.PASS };
+			const sql = `Select tid,t.TermID from
+			OpHistory o left join Terms t on o.tid = t.id
 			where o.GameID = ${GameID} order by TermID desc limit 0, 10`;
 			doQuery(sql, this.conn).then((res) => {
 				msg.data = res;
@@ -65,6 +65,6 @@ export default class CurOddsInfo {
 				msg.error = err;
 				resolve(msg);
 			});
-		})
+		});
 	}
 }
