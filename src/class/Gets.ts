@@ -30,7 +30,7 @@ export class Gets {
         const msg: IMsg = {
             ErrNo: 0
         };
-        const sql: string = `select b.*,t.TermID from BetHeader b,Terms t where b.tid=t.id and UserID = ? and CreateTime > ?`;
+        const sql: string = `select b.*,t.TermID from BetHeader b,Terms t where b.tid=t.id and UserID = ? and b.CreateTime > ?`;
         await this.conn.query(sql, [UserID, date]).then((rows) => {
             const items: IItems = {};
             const tolSum: ISum = {no: 0, gold: 0, end: 0 };

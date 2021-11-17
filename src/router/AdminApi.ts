@@ -18,7 +18,9 @@ import { ErrCode } from "../DataSchema/ENum";
 import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
     IGameDataCaption , IGameItem , IGameResult, IHashAna, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
+import { getUserCredit } from "../func/Credit";
 import {doQuery, getConnection, IAxParams} from "../func/db";
+
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
 interface IProgs {
@@ -1289,7 +1291,10 @@ app.get("/member/getOddsItems", async (req, res) => {
   }
   const param = req.query;
   // console.log("/api/member/getOddsItems", param);
+  const UserID = parseInt(`${param.UserID}`, 10);
   const ans = await getOddsData(param.GameID as string, parseInt(param.PayClassID as string, 10), parseInt(param.maxOID as string, 10), conn);
+  ans.Balance = await getUserCredit(UserID, conn);
+
   await conn.release();
   res.send(JSON.stringify(ans));
 });
