@@ -330,7 +330,7 @@ export class Bet implements IBet {
             tmpNums.push(iNumD);
         });
         const ans: ICurOddsData[] = await this.getOddsData(GType, arrNum);
-        console.log("Parlay getOddsData:", ans);
+        // console.log("Parlay getOddsData:", ans);
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetTypes);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
@@ -380,6 +380,11 @@ export class Bet implements IBet {
             BNum = Odd.length;
         }
         console.log("Parlay numsets", setsN, BNum, Odd);
+        if (setsN.length < BNum) {
+            msg.ErrNo = ErrCode.NOT_ENOUGH_NUM;
+            msg.ErrCon = "Not enough num";
+            return msg;
+        }
         const numsets = C(setsN, BNum);
         const jt: JTable<IBetHeader> = new JTable(this.conn, "BetHeader");
         SNB.Sets = numsets.length;

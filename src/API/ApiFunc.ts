@@ -233,7 +233,7 @@ export async function getGameList(conn: mariadb.PoolConnection) {
 }
 
 export async function getBtList(GameID: number|string, conn: mariadb.PoolConnection) {
-  const sql: string = "select b.BetType id,b.Title name,p.isParlay from BasePayRate b left join ProbabilityTable p on b.GType=p.GType and b.BetType=p.BetType and b.SubType=p.SubType where b.GameID=?  and b.SubType=0";
+  const sql: string = "select b.BetType id,b.Title name,p.isParlay,b.MinHand from BasePayRate b left join ProbabilityTable p on b.GType=p.GType and b.BetType=p.BetType and b.SubType=p.SubType where b.GameID=?  and b.SubType=0";
   const ans = await doQuery(sql, conn, [GameID]);
   /*
   await conn.query(sql, [GameID]).then((rows) => {

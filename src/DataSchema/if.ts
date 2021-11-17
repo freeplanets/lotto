@@ -30,6 +30,7 @@ export interface IBTItem {
     id: string;
     name: string;
     isParlay: number;
+    MinHand: number;
 }
 
 export interface IMsg {
