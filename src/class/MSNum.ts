@@ -1,3 +1,4 @@
+import { AnyObject } from "../DataSchema/if";
 import XFunc from "./XFunc";
 /**
  * 半波
@@ -14,8 +15,8 @@ import XFunc from "./XFunc";
  * 綠大 10
  * 綠小 11
  */
-const HalfWaveOE = [];
-const HalfWaveBS = [];
+const HalfWaveOE: AnyObject = {};
+const HalfWaveBS: AnyObject = {};
 HalfWaveOE["00"] = 0;
 HalfWaveOE["01"] = 1;
 HalfWaveBS["00"] = 2;

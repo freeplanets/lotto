@@ -393,10 +393,18 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
         cond.push(` b.tid = ${param.tid} `);
     }
     if (param.BetID) {
-        cond.push(` b.id in (${param.BetID}) `);
+        if (param.isDetail === "1") {
+            cond.push(` b.betid in (${param.BetID}) `);
+        } else {
+            cond.push(` b.id in (${param.BetID}) `);
+        }
     }
     if (param.BetType) {
-        cond.push(` BetContent like '%"BetType":${param.BetType}%'`);
+        if (param.isDetail === "1") {
+            cond.push(` BetType = ${param.BetType} `);
+        } else {
+            cond.push(` BetContent like '%"BetType":${param.BetType}%'`);
+        }
     }
     if (param.isCanceled !== undefined) {
         cond.push(` isCancled = ${param.isCanceled} `);
@@ -405,14 +413,18 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
     if (f) {
         cond = cond.concat(f);
     }
-    const table = "BetHeader";
+    let table = "BetHeader";
+    if (param.isDetail === "1") {
+        console.log("isDetail", param.isDetail);
+        table = "BetTable";
+    }
     /*
     if (param.Table) {
         table = param.Table as string;
     }
     */
     const sql = `select b.*,t.TermID from ${table} b left join Terms t on b.tid=t.id where ${cond.join(" and ")}`;
-    // console.log("ApiFunc get getBetHeaders sql:", sql);
+    console.log("ApiFunc get getBetHeaders sql:", sql);
     // console.log("ApiFunc get getBetHeaders cond:", cond);
     let rr;
     await conn.query(sql).then((res) => {

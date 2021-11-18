@@ -45,11 +45,11 @@ class JDate {
         console.log("timeMoveSec:", hour, min, sec);
         return `${this.addZeroIfUnderTen(hour)}:${this.addZeroIfUnderTen(min)}:${this.addZeroIfUnderTen(sec)}`;
       }
-    private getTime(dStr: string): number {
+    private getTime(dStr: string, gmt= "GMT+0800"): number {
         if (!this.DateStrChk(dStr)) {
             dStr = this.DateStr + " " + dStr;
         }
-        const d = new Date(dStr);
+        const d = new Date(`${dStr} ${gmt}`);
         return d.getTime();
     }
     private DateStrChk(s: string): boolean {
