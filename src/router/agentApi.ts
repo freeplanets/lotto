@@ -572,7 +572,7 @@ async function getLedgerLever(req, res) {
     const param = decParam(eds.Decrypted(params.param));
     console.log("getLedgerLever param:", JSON.stringify(param));
     const sql = `select LedgerLever.id,Member.Account userCode,ItemID,ItemType,BuyID,SellID,Qty,BuyPrice,SellPrice,(BuyFee + TFee) Fee,Lever,Qty*BuyPrice*Lever Amt,
-        GainLose,(GainLose - BuyFee - TFee) WinLose,floor(BuyTime/1000) BuyTime,floor(SellTime/1000) SellTime
+        GainLose,(GainLose - BuyFee - TFee) WinLose,floor(BuyTime/1000) BuyTime,SellTime
         from LedgerLever left join Member on LedgerLever.UserID = Member.id where LedgerLever.UpId=${params.agentId} and BuyTime > 0 and
         SellTime > ${param.startTime} order by SellTime limit 0,1000`;
     console.log("getLedgerLever", sql);
@@ -615,7 +615,7 @@ async function getAskTable(req, res) {
     console.log("getAskTable param:", JSON.stringify(param));
     const sql = `select AskTable.id,Member.Account userCode,ItemID,ItemType,AskType,BuyType,Qty,Price,
         Amount,Fee,UNIX_TIMESTAMP(AskTable.CreateTime) CreateTime,UNIX_TIMESTAMP(AskTable.ModifyTime) ModifyTime,
-        AskTable.DealTime tm
+        AskTable.DealTime DealTime
         from AskTable left join Member on AskTable.UserID = Member.id where AskTable.UpId=${params.agentId} and
         AskTable.DealTime between ${startTime} and ${endTime}
         order by AskTable.ModifyTime limit 0,1000`;
