@@ -132,40 +132,49 @@ async function getOddsItem(GameID: number|string, tid: string, isSettled: number
     return {MaxOID: MaxID, Odds: gameOdds};
 }
 
-export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonParams, tb?: string): Promise<any> {
+export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonParams | number[], tb?: string, moreField = false): Promise<any> {
     const cond: string[] = [];
     const params: any[] = [];
+    let exFields = "";
     if (param) {
-        if (param.findString) {
-            if (param.findString === "ALL") {
-                cond.push(" 1 ");
-            } else {
-                cond.push(" (Account like ? or Nickname like ? ) ");
-                params.push(`%${param.findString}%`);
-                params.push(`%${param.findString}%`);
+        if (Array.isArray(param)) {
+            if (param.length > 0) {
+                cond.push(`id in (${param.join(",")})`);
             }
-        }
-        if (param.userType !== undefined) {
-            cond.push(" Types = ? ");
-            params.push(param.userType);
-        }
-        if (param.UpId) {
-            if (Array.isArray(param.UpId)) {
-                cond.push(` UpId in (${param.UpId.join(",")}) `);
-            } else {
-                cond.push(" UpId = ? ");
-                params.push(param.UpId);
+        } else {
+            if (param.findString) {
+                if (param.findString === "ALL") {
+                    cond.push(" 1 ");
+                } else {
+                    cond.push(" (Account like ? or Nickname like ? ) ");
+                    params.push(`%${param.findString}%`);
+                    params.push(`%${param.findString}%`);
+                }
+            }
+            if (param.userType !== undefined) {
+                cond.push(" Types = ? ");
+                params.push(param.userType);
+            }
+            if (param.UpId) {
+                if (Array.isArray(param.UpId)) {
+                    cond.push(` UpId in (${param.UpId.join(",")}) `);
+                } else {
+                    cond.push(" UpId = ? ");
+                    params.push(param.UpId);
+                }
+            }
+            if (param?.OnlyID) {
+                exFields = "";
             }
         }
     }
     if (cond.length === 0) { cond.push("1"); }
-    let exFields = ",SiteName,Account,Nickname,Types";
-    if (param?.OnlyID) {
-        exFields = "";
-    }
     if (!tb) {
         tb = "User";
-        exFields += ",PayClass,Programs";
+    }
+    if (moreField) {
+        exFields = ",SiteName,Account,Nickname,Types";
+        if (!tb) { exFields += ",PayClass,Programs"; }
     }
     const sql = `select id${exFields} from ${tb} where ${cond.join("and")}`;
     let ans;

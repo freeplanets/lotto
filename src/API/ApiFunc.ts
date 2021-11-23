@@ -392,6 +392,13 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
     if (param.tid) {
         cond.push(` b.tid = ${param.tid} `);
     }
+    if (param.UpId) {
+        if (Array.isArray(param.UpId)) {
+            cond.push(` b.UpId in (${param.UpId.join(",")})`);
+        } else {
+            cond.push(` b.UpId = ${param.UpId} `);
+        }
+    }
     if (param.BetID) {
         if (param.isDetail === "1") {
             cond.push(` b.betid in (${param.BetID}) `);
@@ -424,7 +431,7 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
     }
     */
     const sql = `select b.*,t.TermID from ${table} b left join Terms t on b.tid=t.id where ${cond.join(" and ")} order by id`;
-    console.log("ApiFunc get getBetHeaders sql:", sql);
+    // console.log("ApiFunc get getBetHeaders sql:", sql);
     // console.log("ApiFunc get getBetHeaders cond:", cond);
     let rr;
     await conn.query(sql).then((res) => {

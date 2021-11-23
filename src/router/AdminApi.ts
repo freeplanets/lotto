@@ -15,8 +15,8 @@ import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
 import { ErrCode } from "../DataSchema/ENum";
-import {IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
-    IGameDataCaption , IGameItem , IGameResult, IHashAna, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
+import {HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
+    IGameDataCaption , IGameItem , IGameResult, IHashAna, IHasID, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import { getUserCredit } from "../func/Credit";
 import {doQuery, getConnection, IAxParams} from "../func/db";
@@ -1785,52 +1785,71 @@ app.post("/getComments", async (req, res) => {
 app.get("/getBetHeaders", async (req, res) => {
   const param = req.query;
   const msg: IMsg = { ErrNo: 0 };
+  // console.log("getBetHeaders param:", param);
   const conn: mariadb.PoolConnection | undefined = await getConnection();
   if (conn) {
-        const uids: number[] = [];
-        let upid: number[]|undefined = [];
-        const params: ICommonParams = {};
+        let uids: number[] = [];
+        let upid: IUser[]|undefined;
+        const params: ICommonParams = {
+            findString: param.findString ? param.findString as string : "",
+        };
         const uparam = {
-            findString: param.UpName ? param.UpName as string : "ALL"
+            findString: param.UpName ? param.UpName as string : "",
         };
 
         if (param.Types) {
-            if (parseInt(param.Types + "", 10) === 1) {
+            if (parseInt(param.Types + "", 10) < 3) {
                 params.UpId = parseInt(param.UserID as string, 10);
             }
         }
-        if (!param.UpId) {
+        if (!param.UpId && uparam.findString) {
             upid = await getUsers(conn, uparam);
+            console.log("getUser upid", upid);
             if (!upid || upid.length === 0) {
+                msg.ErrNo = ErrCode.NO_DATA_FOUND;
+                msg.ErrCon = "Get up error!";
+            } else {
+                param.UpId = upid.map((u: IUser) => u.id.toString() );
+            }
+            console.log("get up:", msg);
+        }
+        if (msg.ErrNo === 0) {
+            if (params.findString) {
+                const ids = await getUsers(conn, params, "Member");
+                // console.log("getBetHeaders findString:", ids);
+                if (ids) {
+                    ids.map((itm: IHasID) => {
+                        uids.push(itm.id);
+                    });
+                }
+            }
+            // console.log("getbetHeaders:", param);
+            const ans = await afunc.getBetHeaders(param as ICommonParams, conn, uids);
+            console.log("AdminApi /getBetHeaders ans", ans.length);
+            if (ans) {
+                params.UpId = 0;
+                const tmp = ans as HasUpID[];
+                uids = [];
+                const upids: number[] = [];
+                tmp.map((itm) => {
+                    const fIdx = uids.findIndex((uid) => uid === itm.UserID);
+                    if (fIdx === -1) { uids.push(itm.UserID); }
+                    const uIdx = upids.findIndex((pid) => pid === itm.UpId);
+                    if (uIdx === -1) { upids.push(itm.UpId); }
+                });
+                if (uids.length > 0) {
+                    const users = await getUsers(conn, params, "Member", true);
+                    msg.users = users;
+                }
+                if (upids.length > 0) {
+                    upid = await getUsers(conn, upids, "", true);
+                    msg.UpUser = upid;
+                }
+                msg.data = ans;
+            } else {
                 msg.ErrNo = 9;
                 msg.ErrCon = "Get BetLists error!";
-                await conn.release();
-                res.send(JSON.stringify(msg));
             }
-            msg.UpUser = upid;
-            if (upid) {
-                const tmpU: number[] = [];
-                upid.map((u: any) => {
-                    tmpU.push(u.id);
-                });
-                params.UpId = tmpU.length === 1 ? tmpU[0] : tmpU ;
-            }
-        }
-        const users = await getUsers(conn, params, "Member");
-        if (users) {
-            users.map((itm) => {
-                uids.push(itm.id);
-            });
-        }
-        // console.log("getbetHeaders:", param);
-        const ans = await afunc.getBetHeaders(param as ICommonParams, conn, uids);
-       // console.log("AdminApi /getBetHeaders ans", ans);
-        if (ans) {
-          msg.data = ans;
-          msg.users = users;
-        } else {
-          msg.ErrNo = 9;
-          msg.ErrCon = "Get BetLists error!";
         }
         await conn.release();
   } else {
@@ -1978,13 +1997,18 @@ app.get("/CancelTerm", async (req, res) => {
     const tid = parseInt(param.tid as string, 10);
     // console.log("CancelTerm", param);
     // res.send(JSON.stringify(param));
-    const conn = await getConnection();
-    if (conn) {
-        msg = await CancelTerm(tid, conn);
-        await conn.release();
+    if (tid) {
+        const conn = await getConnection();
+        if (conn) {
+            msg = await CancelTerm(tid, conn);
+            await conn.release();
+        } else {
+            msg.ErrNo = ErrCode.GET_CONNECTION_ERR;
+            msg.debug = "db connection error!!";
+        }
     } else {
-        msg.ErrNo = 9;
-        msg.debug = "db connection error!!";
+        msg.ErrNo = ErrCode.MISS_PARAMETER;
+        msg.ErrCon = "tid is required!!";
     }
     res.send(JSON.stringify(msg));
 });

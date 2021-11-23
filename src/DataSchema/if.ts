@@ -21,6 +21,10 @@ export interface IHasID {
 export interface HasUID extends IHasID {
     UserID: number;
 }
+export interface HasUpID extends IHasID {
+    UserID: number;
+    UpId: number;
+}
 export interface IGameItem {
     id: string;
     name: string;
