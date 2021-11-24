@@ -148,6 +148,7 @@ export interface IGameAccessParams {
     endTime?: number;
     getKey?: string;
     gameType?: string; // cc: 數字貨幣, 其他： lottory
+    id?: string;
   }
 
 export interface IDbAns  {

@@ -50,6 +50,7 @@ export default class AskProcWS extends AWebSocket {
 			}
 		} catch (error) {
 			console.log("message json parse error:", data);
+			console.log(error);
 		}
 	}
   private registerChannel(channel: string) {
