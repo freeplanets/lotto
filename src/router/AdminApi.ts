@@ -1025,14 +1025,14 @@ app.get("/getTerms", async (req, res) => {
   if (pdate) {
       msg.PDate = pdate;
   }
-  let sql = "select * from Terms where GameID=? ";
+  let sql = "select t.*,u.Nickname UserName from Terms t left join User u on t.ModifyID = u.id  where GameID=? ";
   pa.push(param.GameID as string);
   if (param.SDate) {
       sql = sql + " and PDate=? ";
       pa.push(param.SDate as string);
   }
-  sql = sql + "order by id desc limit 0,10";
-  console.log("getTerms", sql, pa);
+  sql = sql + "order by t.id desc limit 0,10";
+  // console.log("getTerms", sql, pa);
   const tans = await doQuery(sql, conn, pa);
   if (tans) {
       msg.data = tans;
@@ -1947,7 +1947,7 @@ app.get("/getEditRecord", async (req, res) => {
         const param = req.query;
         const id = parseInt(param.id as string, 10);
         const tb = param.tb as string;
-        const sql = "select * from ParamsLog where uid=? and tb=?";
+        const sql = "select p.*,u.NickName UserName from ParamsLog p left join User u on p.adminid = u.id where uid=? and tb=?";
         const ans = await doQuery(sql, conn, [id, tb]);
         if (ans) {
             msg.data = ans;
