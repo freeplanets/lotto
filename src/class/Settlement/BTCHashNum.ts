@@ -1,3 +1,4 @@
+import { AnyObject } from "../../DataSchema/if";
 import {IHNums, INumSet} from "./if";
 import {OeBsP} from "./OeBsP";
 import * as SFunc from "./SFunc";
@@ -92,6 +93,7 @@ export class BTCHashNum {
     this.NumSet.MixedM3 = this.chkMiscellaneous(this.Mid3);
     this.NumSet.MixedL3 = this.chkMiscellaneous(this.Last3);
     this.NumSet.PASS = this.getPass();
+    this.NumSet.GoldenFlower = this.getGoldenFlower(this.nums);
     // this.NumSet.Set3All = this.getSet3All(nums) as number;
     // const cc = SFunc.Combs(anum);
   }
@@ -132,18 +134,60 @@ export class BTCHashNum {
     return false;
   }
   private isStra(nums: number[]) {
-    const snum = nums.sort();
+    const snum = nums.sort(function sortab(a, b) { return a - b; });
     for (let i = 0, n = snum.length; i < n - 1; i++) {
-      if (snum[i + 1] - snum[i] !== 0) { return false; }
+      console.log(typeof snum[i]);
+      console.log(snum[i + 1], "-", snum[i], "=", snum[i + 1] - snum[i]);
+      if (snum[i + 1] - snum[i] !== 1) { return false; }
     }
     return true;
   }
   private isStraHalf(nums: number[]) {
     if (nums.length !== 3) { return false; }
-    const snum = nums.sort();
+    const snum = nums.sort(function sortab(a, b) { return a - b; });
     const chk1 = (snum[1] - snum[0]) === 1 ? 1 : 0;
-    const chk2 = (snum[1] - snum[0]) === 1 ? 1 : 0;
+    const chk2 = (snum[2] - snum[1]) === 1 ? 1 : 0;
     return !!(chk1 ^ chk2);
+  }
+  private getGoldenFlower(nums: string[]) {
+    let ans = this.chkSameNum(nums);
+    if (ans === 6) {
+      const b = this.chkStraightOrHalf(nums, this.isStra);
+      if (b) { ans = 3; }
+    }
+    return ans;
+  }
+  private chkSameNum(nums: string[]) {
+    const ans: AnyObject = {};
+    nums.map((n) => {
+      if (ans[n]) { ans[n] += 1; } else { ans[n] = 1; }
+    });
+    const arr: number[] = [];
+    Object.keys(ans).map((key) => {
+      arr.push(ans[key]);
+    });
+    switch (arr.length) {
+      case 1:	// 五同
+        return 0;
+      case 2:	// (4,1),(3,2)
+        if (arr.indexOf(4) === -1) {
+          // (3,2)
+          return 2;
+        } else {
+          // (4,1)
+          return 1;
+        }
+      case 3: // (3,1,1) (2,2,1)
+        if (arr.indexOf(3) === -1) {
+          // (2,2,1)
+          return 5;
+        } else {
+          // (3,1,1)
+          return 4;
+        }
+      default:	// 順，對或沒有
+        return 6;
+    }
   }
   private chkStraightPart(n: string) {
     const aNum = n.split(",").sort();

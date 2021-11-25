@@ -52,7 +52,7 @@ export default class JTable<T extends AnyObject> {
         if (fields) { field = Array.isArray(fields) ? fields.join(",") : fields; }
         const sql = `select ${field} from ${this.TableName} where ${filter}`;
         let mb: T | undefined;
-        if (this.TableName === "Terms") { console.log("getone debug:", sql, id); }
+        // if (this.TableName === "Terms") { console.log("getone debug:", sql, id); }
         const ans = await this.query(sql, this.conn);
         // if (this.TableName === "Terms") { console.log("JTable List mb", ans); }
         if (ans) {

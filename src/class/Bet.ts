@@ -826,9 +826,10 @@ export class Bet implements IBet {
         return await jt.getOne(tid);
     }
     private async getOddsData(GType: string, nums: INum|string, BT?: number) {
+        // console.log("getOddsData", GType, nums);
         let chk45: boolean = false;
         let sql: string = `select c.BetType,c.SubType,UNIX_TIMESTAMP(c.OID) OID,c.Num,Odds+Rate Odds,tolS,Odds BaseOdds from CurOddsInfo c left join PayRate p
-        on c.GameID=p.GameID and c.BetType=p.BetType where p.SubType=0 and
+        on c.GameID=p.GameID and c.BetType=p.BetType and c.SubType = p.SubType where
         c.tid= ${this.tid} and c.GameID = ${this.GameID} and p.PayClassID= ${this.PayClassID} and `;
         if (typeof(nums) === "string") {
             sql = sql + ` c.BetType = ${BT} and Num in (${nums})`;
