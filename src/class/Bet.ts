@@ -343,7 +343,7 @@ export class Bet implements IBet {
             }
             */
         }
-        // console.log("Parlay data:", tmpNums, ans);
+        console.log("Parlay data:", tmpNums, ans);
         // tmpNums.map((itm) => {
         for (let i = 0, n = tmpNums.length; i < n; i++) {
             const itm = tmpNums[i];
@@ -358,8 +358,8 @@ export class Bet implements IBet {
                 }
                 itm.Odds = fnd.Odds;
                 NumOdd[itm.Num] = fnd.Odds;
-                if (itm.Num > 100 && !isPASS) {
-                    const tNum: number = itm.Num as number - 100;
+                if (itm.Num > 99 && !isPASS) {
+                    const tNum: number = itm.Num as number % 100;
                     SNB.Content.find((im) => {
                         if (im.Num === tNum) {
                             im.Odds += "," + fnd.Odds;
@@ -379,7 +379,7 @@ export class Bet implements IBet {
         if (BNum === 0) {
             BNum = Odd.length;
         }
-        console.log("Parlay numsets", setsN, BNum, Odd);
+        // console.log("Parlay numsets", setsN, BNum, Odd);
         if (setsN.length < BNum) {
             msg.ErrNo = ErrCode.NOT_ENOUGH_NUM;
             msg.ErrCon = "Not enough num";
@@ -406,7 +406,7 @@ export class Bet implements IBet {
         // wait this.conn.beginTransaction();
         await this.BeginTrans();
         const rlt = await jt.Insert(bh);
-        console.log("Parlay SNB:", SNB);
+        // console.log("Parlay SNB:", SNB);
         if (rlt && rlt.warningStatus === 0) {
             const ts = new Date().getTime();
             const ansmc = await ModifyCredit(this.UserID, "", -1, bh.Total * -1, ts + "ts" + this.UserID, this.conn);
@@ -526,8 +526,8 @@ export class Bet implements IBet {
             // 聯碼限額--End
             const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
-            console.log("Parlay Save Detail:", rlt1); // , BetDetail);
-            if (rlt1) {
+            // console.log("Parlay Save Detail:", rlt1); // , BetDetail);
+            if (rlt1.ErrNo === ErrCode.PASS) {
                 if (Chker) {
                     // console.log("do Chker updateTotals");
                     const totchk = await Chker.updateTotals(BetDetail, this.conn);
@@ -711,7 +711,7 @@ export class Bet implements IBet {
         // await this.conn.beginTransaction();
         await this.BeginTrans();
         const rlt = await jt.Insert(bh);
-        console.log("Parlay SNB:", SNB, rlt);
+        console.log("ParOne SNB:", SNB, rlt);
         if (rlt && rlt.warningStatus === 0) {
             const ts = new Date().getTime();
             const ansmc = await ModifyCredit(this.UserID, "", -1, bh.Total * -1, ts + "ts" + this.UserID, this.conn);
@@ -764,8 +764,8 @@ export class Bet implements IBet {
             BetDetail.push(bd);
             const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
-            console.log("Parlay Save Detail:", rlt1);
-            if (rlt1) {
+            console.log("ParOne Save Detail:", rlt1);
+            if (rlt1.ErrNo === ErrCode.PASS) {
                 if (Chker) {
                     // console.log("do Chker updateTotals");
                     const totchk = await Chker.updateTotals(BetDetail, this.conn);
@@ -805,14 +805,17 @@ export class Bet implements IBet {
 
     }
     public async BeginTrans() {
+        console.log("BeginTrans");
         await this.conn.query("SET AUTOCOMMIT=0;");
         await this.conn.beginTransaction();
     }
     public async RollBack() {
+        console.log("RollBack");
         await this.conn.rollback();
         await this.conn.query("SET AUTOCOMMIT=1;");
     }
     public async Commit() {
+        console.log("Commit");
         await this.conn.commit();
         await this.conn.query("SET AUTOCOMMIT=1;");
     }

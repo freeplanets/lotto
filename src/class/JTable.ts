@@ -252,7 +252,9 @@ export default class JTable<T extends AnyObject> {
             const sql = `
                 insert ${ isIgnore ? "IGNORE" : "" } into ${this.TableName}(${fields.join(",")}) values${vals.join(",")}
             `;
-            // if (this.TableName !== "PriceTick") { console.log("JTable Multi Insert:", sql); }
+            // if (this.TableName !== "PriceTick") {
+            // console.log("JTable Multi Insert:", sql);
+            // }
 
             await this.conn.query(sql).then((rows) => {
                 ans = rows as IMsg;

@@ -1377,7 +1377,7 @@ app.post("/member/mwagerjn", async (req, res) => {
     return;
   }
   const param = req.body;
-  // console.log("/api/member/mwagerjn", param);
+  console.log("/api/member/mwagerjn", param);
   const UserID = param.UserID;
   const Account = param.Account;
   const UpId = param.UpId;

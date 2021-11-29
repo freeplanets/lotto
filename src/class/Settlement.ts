@@ -95,6 +95,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     let rtn;
     await conn.query(sql).then( (res) => {
         rtn = res;
+        // console.log("搜尋有下注的BetType", sql, res);
     }).catch(async (err) => {
         console.log("WinLose=Amt*-1 err 2", err);
         await conn.rollback();
