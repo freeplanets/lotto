@@ -171,10 +171,9 @@ export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonPara
     if (cond.length === 0) { cond.push("1"); }
     if (!tb) {
         tb = "User";
-    }
-    if (moreField) {
-        exFields = ",SiteName,Account,Nickname,Types";
-        if (!tb) { exFields += ",PayClass,Programs"; }
+        if (moreField) { exFields += ",Account,PayClass,Programs,Types,SiteName"; }
+    } else if (moreField) {
+        exFields = ",Account,Nickname,UpId";
     }
     const sql = `select id${exFields} from ${tb} where ${cond.join("and")}`;
     let ans;

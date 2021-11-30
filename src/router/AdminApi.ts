@@ -1472,7 +1472,24 @@ app.get("/getUsers", async (req, res) => {
   }
   let tb = "";
   if (param.userType === "0" ) { tb = "Member"; }
-  const ans = await getUsers(conn, params, tb);
+  const ans = await getUsers(conn, params, tb, true);
+  if (tb) {
+    const upids: number[] = [];
+    ans.map((itm) => {
+        const fid = upids.find((id) => id === itm.UpId);
+        if (!fid) { upids.push(itm.UpId); }
+    });
+    if (upids.length > 0) {
+        const up = await getUsers(conn, upids, "", true);
+        ans.forEach((itm) => {
+            const fup = up.find((upman) => upman.id === itm.UpId);
+            if (fup) {
+                itm.SiteName = fup.SiteName;
+            }
+            return itm;
+        });
+    }
+  }
   if (ans) {
       msg.data = ans;
   } else {
@@ -1799,7 +1816,8 @@ app.get("/getBetHeaders", async (req, res) => {
 
         if (param.Types) {
             if (parseInt(param.Types + "", 10) < 3) {
-                params.UpId = parseInt(param.UserID as string, 10);
+                // params.UpId = parseInt(param.UserID as string, 10);
+                param.UpId = param.UserID;
             }
         }
         if (!param.UpId && uparam.findString) {
@@ -1825,7 +1843,7 @@ app.get("/getBetHeaders", async (req, res) => {
             }
             // console.log("getbetHeaders:", param);
             const ans = await afunc.getBetHeaders(param as ICommonParams, conn, uids);
-            console.log("AdminApi /getBetHeaders ans", ans.length);
+            // console.log("AdminApi /getBetHeaders ans", ans.length);
             if (ans) {
                 params.UpId = 0;
                 const tmp = ans as HasUpID[];
@@ -1889,14 +1907,26 @@ app.get("/getBetTotal", async (req, res) => {
     if (param.Ledger) {
         params.Ledger = param.Ledger as string;
     }
-    const sql: string = getBetTotalSql(params);
     const msg: IMsg = {ErrNo: 0};
     const conn = await getConnection();
     if (conn) {
+        const userid = param.UserID ? parseInt(param.UserID as string, 10) : 0;
+        if (userid) {
+            const ans = await getUsers(conn, [userid], "", true);
+            // console.log("getUsers:", ans);
+            if (ans) {
+                if (Array.isArray(ans)) {
+                    if (ans[0].Types < 3) {
+                        params.UpId = userid;
+                    }
+                }
+            }
+        }
         // const tmp = await doQuery('show variables like "%time_zone%";', conn);
         // console.log("timezone chk:", tmp);
         // await modifySDateForDayReport(conn);
-        console.log("getBetTotal sql:", sql);
+        const sql: string = getBetTotalSql(params);
+        // console.log("getBetTotal sql:", sql, params);
         const data = await doQuery(sql, conn);
         const ids: number[] = [];
         if (data) {
