@@ -335,6 +335,8 @@ export interface ISetl {
     ExChk?: string;              // 額外檢查欄位名稱,開出的碼是否為組3或是組6
     differentOdds?: boolean;      // 多重倍率(不變動)
     MultiPay?: boolean;             // 倍數派彩
+    AddPosNum?: number;            // HashSix 正碼1-6 生肖，二肖，三肖..... val * pos
+    isNumber?: boolean;            // 同上  以數字的方式比對
 }
 
 export interface ISqlProc {

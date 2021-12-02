@@ -183,13 +183,14 @@ const SettleNums: ISetl[] = [
         BetTypes: 70,  // 尾數不中
         NumTarget: "tailNums",
         OpenAll: 0,
-        Position: -1
+        Position: -1,
+        isNumber: true,
     },
     {
         BetTypes: 31,    // 五不中
         NumTarget: "Nums",
         OpenAll: 0,
-        Position: -1
+        Position: -1,
     },
     {
         BetTypes: 48,    // 六不中
@@ -341,44 +342,45 @@ const SettleNums: ISetl[] = [
     },
     {
         BetTypes: 83,         // 正碼1-6生肖
-        NumTarget: "RGNums",
-        SubName: "Zadic",
-        Position: 0,
-        OpenAll: 1
+        NumTarget: "Zadic",
+        Position: -1,
+        OpenAll: 1,
+        AddPosNum: 100,
+        isNumber: true
     },
     {
         BetTypes: 84,         // 正碼1-6二肖
-        NumTarget: "RGNums",
-        SubName: "Zadic",
-        Position: 1,
+        NumTarget: "Zadic",
+        Position: -1,
+        AddPosNum: 100,
         OpenAll: 1
     },
     {
         BetTypes: 85,         // 正碼1-6三肖
-        NumTarget: "RGNums",
-        SubName: "Zadic",
-        Position: 2,
+        NumTarget: "Zadic",
+        Position: -1,
+        AddPosNum: 100,
         OpenAll: 1
     },
     {
         BetTypes: 86,         // 正碼1-6四肖
-        NumTarget: "RGNums",
-        SubName: "Zadic",
-        Position: 3,
+        NumTarget: "Zadic",
+        Position: -1,
+        AddPosNum: 100,
         OpenAll: 1
     },
     {
         BetTypes: 87,         // 正碼1-6五肖
-        NumTarget: "RGNums",
-        SubName: "Zadic",
-        Position: 4,
+        NumTarget: "Zadic",
+        Position: -1,
+        AddPosNum: 100,
         OpenAll: 1
     },
     {
         BetTypes: 88,         // 正碼1-6六肖
-        NumTarget: "RGNums",
-        SubName: "Zadic",
-        Position: 5,
+        NumTarget: "Zadic",
+        Position: -1,
+        AddPosNum: 100,
         OpenAll: 1
     },
     {
@@ -443,9 +445,10 @@ const SettleNums: ISetl[] = [
     },
     {
         BetTypes: 89,     // 五行
-        NumTarget: "RGNums",
-        Position: [0, 1, 2, 3, 4, 5],
-        SubName: "FiveElements",
+        NumTarget: "FiveElements",
+        AddPosNum: 10,
+        isNumber: true,
+        Position: -1,
         OpenAll: 1
     }
 

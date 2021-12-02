@@ -89,11 +89,28 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IMSResult, con
               // console.log("Position -1:", itm, imsr[itm.NumTarget]);
               const tmp: number[] = imsr[itm.NumTarget];
               // nn = tmp;
-              tmp.map((elm) => {
+              if (itm.isNumber) {
+                const nums = tmp.map((elm, idx) => {
+                    let newNum = elm;
+                    if (itm.AddPosNum) {
+                        newNum = itm.AddPosNum * (idx + 1) + elm;
+                    }
+                    return newNum;
                     // sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${elm}x%' and isCancled=0`;
-                    sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST('x${elm}x' IN BOOLEAN MODE) and isCancled=0`;
+                });
+                sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join("','")}') and isCancled=0`;
+                sqls.common.push(sql);
+              } else {
+                tmp.map((elm, idx) => {
+                    let newNum = elm;
+                    if (itm.AddPosNum) {
+                        newNum = itm.AddPosNum * (idx + 1) + elm;
+                    }
+                    // sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num like '%x${elm}x%' and isCancled=0`;
+                    sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and MATCH(Num) AGAINST('x${newNum}x' IN BOOLEAN MODE) and isCancled=0`;
                     sqls.common.push(sql);
                 });
+              }
           } else {
               if (itm.SubName) {
                   nn = imsr[itm.NumTarget][itm.Position][itm.SubName];

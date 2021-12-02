@@ -111,6 +111,7 @@ export interface IMSResult {
      OddEvenP?: number[];
      BigSmallP?: number[];
      SumOEP?: number[];
+     FiveElements?: number[];
 }
 /**
  *  六合彩
@@ -135,13 +136,14 @@ export class CMarkSixMum {
       tailNums: [],
       Zadic: [],
       Seven: [],
-      DragonTiger: []
+      DragonTiger: [],
+      FiveElements: [],
   };
   private xf = new XFunc();
   private totalMidNum = 175;
   private SOE = SevenOE;
   private SBS = SevenBS;
-  constructor(num: string, hasZero?: boolean) {
+  constructor(num: string, hasZero = false) {
       const nums: string[] = num.split(",");
       nums.map((itm) => {
           this.imsr.Nums.push(parseInt(itm, 10));
@@ -164,7 +166,9 @@ export class CMarkSixMum {
       });
       this.imsr.RGNums = [];
       nums.map((elm) => {
-          this.imsr.RGNums.push(new MSNum(parseInt(elm, 10), false, hasZero).Num);
+          const tmp = new MSNum(parseInt(elm, 10), false, hasZero).Num;
+          this.imsr.FiveElements?.push(tmp.FiveElements ? tmp.FiveElements : 0);
+          this.imsr.RGNums.push(tmp);
       });
       if (hasZero) {
         const me = this;
@@ -230,19 +234,21 @@ export class CMarkSixMum {
           }
           // console.log("find zadic", fzd, itm.Zadic, zd);
       });
-      if (this.imsr.SPNum.OddEven === 1) {
-          EvenCnt++;
-      } else {
-          OddCnt++;
-      }
-      if (this.imsr.SPNum.BigSmall === 1) {
-          SmallCnt++;
-      } else {
-          BigCnt++;
-      }
-      const sfzd = zd.find((elm) => elm === this.imsr.SPNum.Zadic);
-      if (sfzd) {
-          zd.push(this.imsr.SPNum.Zadic as number);
+      if (this.imsr.SPNum.Num) {
+        if (this.imsr.SPNum.OddEven === 1) {
+            EvenCnt++;
+        } else {
+            OddCnt++;
+        }
+        if (this.imsr.SPNum.BigSmall === 1) {
+            SmallCnt++;
+        } else {
+            BigCnt++;
+        }
+        const sfzd = zd.find((elm) => elm === this.imsr.SPNum.Zadic);
+        if (sfzd) {
+            zd.push(this.imsr.SPNum.Zadic as number);
+        }
       }
       tmp.push(this.SOE["0" + OddCnt]);
       tmp.push(this.SOE["1" + EvenCnt]);
