@@ -10,11 +10,11 @@ export const ZMap: IZadicMap = {};
 // const Zadic: IZadicC = getAnimals();
 
 export default getAnimals;
-function getAnimals(hasZero?: boolean): IZadicC {
+function getAnimals(hasZero = false, date = new Date()): IZadicC {
     const BASE_YEAR: number = 1900;
     const LOOPER: number = 12;
     const ANIMALS: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-    const lunar: ILunar = Lunar(new Date());
+    const lunar: ILunar = Lunar(date);
     const y: number = lunar.year as number;
     const base: number = (y - BASE_YEAR) % LOOPER;
     const NEW_ANIMALS: number[] = [];

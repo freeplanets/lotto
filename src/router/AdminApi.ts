@@ -14,8 +14,9 @@ import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
+import DateFunc from "../components/class/Functions/MyDate";
 import { ErrCode } from "../DataSchema/ENum";
-import {HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
+import {AnyObject, HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
     IGameDataCaption , IGameItem , IGameResult, IHashAna, IHasID, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import { getUserCredit } from "../func/Credit";
@@ -1018,8 +1019,10 @@ app.get("/getTerms", async (req, res) => {
   const pa: string[] = [];
   const GameID: number = parseInt(param.GameID as string, 10);
   const ans = await getGame(GameID, conn);
+  let GType = "";
   if (ans) {
       msg.Game = ans;
+      GType = ans.GType;
   }
   const pdate = await getTermDateNotSettled(GameID, conn);
   if (pdate) {
@@ -1033,8 +1036,22 @@ app.get("/getTerms", async (req, res) => {
   }
   sql = sql + "order by t.id desc limit 0,10";
   // console.log("getTerms", sql, pa);
-  const tans = await doQuery(sql, conn, pa);
+  let tans = await doQuery(sql, conn, pa);
   if (tans) {
+      let chkAnimal = false;
+      let hasZero = false;
+      if (GType === "MarkSix") {
+          chkAnimal = true;
+      } else if (GType === "HashSix") {
+          chkAnimal = true;
+          hasZero = true;
+      }
+      if (chkAnimal) {
+        tans = tans.map((itm: AnyObject) => {
+            itm.Zadic = getAnimals(hasZero, DateFunc.getDate(itm.PDate));
+            return itm;
+          });
+      }
       msg.data = tans;
   }
   /*
@@ -1803,7 +1820,7 @@ app.get("/getBetHeaders", async (req, res) => {
   const param = req.query;
   const msg: IMsg = { ErrNo: 0 };
   // console.log("getBetHeaders param:", param);
-  const conn: mariadb.PoolConnection | undefined = await getConnection();
+  const conn: mariadb.PoolConnection | undefined = await getConnection("getBetHeaders");
   if (conn) {
         let uids: number[] = [];
         let upid: IUser[]|undefined;
@@ -1869,6 +1886,7 @@ app.get("/getBetHeaders", async (req, res) => {
                 msg.ErrCon = "Get BetLists error!";
             }
         }
+        console.log("getBetHeaders before conn release");
         await conn.release();
   } else {
       msg.ErrNo = 9;

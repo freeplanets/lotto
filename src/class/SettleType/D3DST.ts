@@ -160,7 +160,8 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 24,              // 組 6轉直-5
     NumTarget: "C36S",
-    SubName: "isSet6",
+    SubName: "Num",
+    ExChk: "isSet6",
     OpenAll: 3,
     UseExTable: true
   },

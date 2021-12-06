@@ -63,9 +63,12 @@ class MyDate {
 	public getTime(time?: string) {
 		return this.getDate(time).getTime();
 	}
-	private getDate(time?: string | number) {
+	public getDate(time?: string | number) {
 		if (!time) { return new Date(); }
 		if (typeof time !== "number") {
+			if (time.indexOf("GMT") === -1 || time.indexOf("gmt") === -1 ) {
+				time = `${time} GMT+0800`;
+			}
 			time = Date.parse(time);
 		}
 		return new Date(time);
