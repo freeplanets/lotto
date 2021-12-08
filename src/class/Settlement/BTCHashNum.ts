@@ -136,8 +136,8 @@ export class BTCHashNum {
   private isStra(nums: number[]) {
     const snum = nums.sort(function sortab(a, b) { return a - b; });
     for (let i = 0, n = snum.length; i < n - 1; i++) {
-      console.log(typeof snum[i]);
-      console.log(snum[i + 1], "-", snum[i], "=", snum[i + 1] - snum[i]);
+      // console.log(typeof snum[i]);
+      // console.log(snum[i + 1], "-", snum[i], "=", snum[i + 1] - snum[i]);
       if (snum[i + 1] - snum[i] !== 1) { return false; }
     }
     return true;
@@ -214,13 +214,13 @@ export class BTCHashNum {
     return -1;
   }
   get Top3() {
-    return [this.nums[2], this.nums[3], this.nums[4]];
+    return [this.nums[0], this.nums[1], this.nums[2]];
   }
   get Mid3() {
     return [this.nums[1], this.nums[2], this.nums[3]];
   }
   get Last3() {
-    return [this.nums[0], this.nums[1], this.nums[2]];
+    return [this.nums[2], this.nums[3], this.nums[4]];
   }
 }
 

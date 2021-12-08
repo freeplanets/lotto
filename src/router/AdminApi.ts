@@ -1036,24 +1036,26 @@ app.get("/getTerms", async (req, res) => {
   }
   sql = sql + "order by t.id desc limit 0,10";
   // console.log("getTerms", sql, pa);
-  let tans = await doQuery(sql, conn, pa);
+  const tans = await doQuery(sql, conn, pa);
+  msg.data = tans;
+  /*
   if (tans) {
-      let chkAnimal = false;
-      let hasZero = false;
-      if (GType === "MarkSix") {
-          chkAnimal = true;
-      } else if (GType === "HashSix") {
-          chkAnimal = true;
-          hasZero = true;
-      }
-      if (chkAnimal) {
+        let chkAnimal = false;
+        let hasZero = false;
+        if (GType === "MarkSix") {
+            chkAnimal = true;
+        } else if (GType === "HashSix") {
+            chkAnimal = true;
+            hasZero = true;
+        }
         tans = tans.map((itm: AnyObject) => {
-            itm.Zadic = getAnimals(hasZero, DateFunc.getDate(itm.PDate));
+            if (chkAnimal) { itm.Zodaic = getAnimals(hasZero, DateFunc.getDate(itm.PDate)); }
+            itm.GType = GType;
             return itm;
-          });
-      }
-      msg.data = tans;
+        });
+        msg.data = tans;
   }
+  */
   /*
   await conn.query(sql, pa).then((rows) => {
       // console.log("getTerms", rows);

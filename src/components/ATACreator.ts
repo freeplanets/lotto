@@ -11,6 +11,7 @@ export default class ATACreator {
   constructor(ask: HasUID, conn: PoolConnection, tableName: string, SettleServiceID?: number) {
     switch (ask.ProcStatus) {
       case 2: // 成交後處理
+      case 5:
         this.ATA = new DealOrder(ask, conn, tableName, SettleServiceID);
         this.checkName = "DealOrder";
         break;
