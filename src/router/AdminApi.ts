@@ -1571,8 +1571,8 @@ app.get("/getOpParams", async (req, res) => {
 });
 */
 app.post("/SaveNums", async (req, res) => {
-  const msg: IMsg = { ErrNo: 0};
-  const conn = await getConnection();
+  let msg: IMsg = { ErrNo: 0};
+  const conn = await getConnection("SaveNums");
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
@@ -1590,13 +1590,7 @@ app.post("/SaveNums", async (req, res) => {
       msg.ErrCon = "Nums is missing!!";
   }
   if (msg.ErrNo === 0) {
-      const Nums = await SaveNums(param.tid, param.GameID, param.Nums, conn, param.isSettled, param.ParamLog);
-      if (Nums) {
-        msg.Data = Nums;
-      } else {
-          msg.ErrNo = 9;
-          msg.ErrCon = "Settle error!!";
-      }
+      msg = await SaveNums(param.tid, param.GameID, param.Nums, conn, param.isSettled, param.ParamLog);
       /*
       if (param.ParamLog) {
         await saveParamLog(param.ParamLog as IParamLog[], conn);
@@ -1888,7 +1882,7 @@ app.get("/getBetHeaders", async (req, res) => {
                 msg.ErrCon = "Get BetLists error!";
             }
         }
-        console.log("getBetHeaders before conn release");
+        // console.log("getBetHeaders before conn release");
         await conn.release();
   } else {
       msg.ErrNo = 9;

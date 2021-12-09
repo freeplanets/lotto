@@ -112,6 +112,10 @@ export class Bet implements IBet {
             dta.push(n);
         });
         const ans: ICurOddsData[] = await this.getOddsData(GType, arrNum);
+        if (ans.length !== num.length) {
+            msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
+            return msg;
+        }
         // console.log("AnaNum getOddsData", ans);
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetTypes);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
@@ -331,6 +335,10 @@ export class Bet implements IBet {
         });
         const ans: ICurOddsData[] = await this.getOddsData(GType, arrNum);
         // console.log("Parlay getOddsData:", ans);
+        if (tmpNums.length !== ans.length) {
+            msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
+            return msg;
+        }
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetTypes);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
@@ -343,7 +351,7 @@ export class Bet implements IBet {
             }
             */
         }
-        console.log("Parlay data:", tmpNums, ans);
+        // console.log("Parlay data:", tmpNums, ans);
         // tmpNums.map((itm) => {
         for (let i = 0, n = tmpNums.length; i < n; i++) {
             const itm = tmpNums[i];
@@ -647,6 +655,10 @@ export class Bet implements IBet {
         });
         */
         const ans: ICurOddsData[] = await this.getOddsData(GType, Nums, BetType);
+        if (setsN.length !== ans.length) {
+            msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
+            return msg;
+        }
         // console.log("after getOddsData:", ans);
         const navg: INumAvg[]|undefined = await this.getNumAvgle(BetType);
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetType);

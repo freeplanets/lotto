@@ -11,6 +11,10 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
       // this.conn.beginTransaction();
       await this.BeginTrans();
       const ask = ans as AskTable;
+      if (ask.ProcStatus && ask.ProcStatus > 1) {
+        msg.ErrNo = ErrCode.DEAL_IS_CLOSED;
+        return msg;
+      }
       const credit = ask.Amount + ( ask.Fee ? ask.Fee : 0 );
       const memoMsg: MemoCryptoCur = {
         Type: MemoType.DELETE,

@@ -1,6 +1,8 @@
 import mariadb from "mariadb";
 import JDate from "../class/JDate";
-import {ICommonParams, IGameInfo, IGameOdds, ILastGame, IMsg, IOdds} from "../DataSchema/if";
+import JTable from "../class/JTable";
+import {GameType, ICommonParams, IGameInfo, IGameOdds, ILastGame, IMsg, IOdds} from "../DataSchema/if";
+import { IGame } from "../DataSchema/user";
 import { doQuery } from "../func/db";
 
 interface IBtOdds {
@@ -188,10 +190,18 @@ export async function getUsers(conn: mariadb.PoolConnection, param?: ICommonPara
 }
 
 export async function getGame(GameID: number, conn: mariadb.PoolConnection) {
+    /*
     const sql: string = "select * from Games where id=?";
     const ans = await doQuery(sql, conn, [GameID]);
     if (ans.length > 0) { return ans[0]; }
     return;
+    */
+   const jt: JTable<IGame> = new JTable(conn, "Games");
+   return await jt.getOne(GameID);
+}
+export async function getGameType(GType: string, conn: mariadb.PoolConnection) {
+    const jt: JTable<GameType> = new JTable(conn, "GameType");
+    return await jt.getOne({GType});
 }
 
 export async function getTermDateNotSettled(GameID: number, conn: mariadb.PoolConnection) {

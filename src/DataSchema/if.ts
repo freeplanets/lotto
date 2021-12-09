@@ -638,3 +638,11 @@ export interface PriceTick {
 export interface PriceTickID extends PriceTick {
     id: number;
 }
+export interface GameType extends AnyObject {
+    GType: string;
+    OpenNums: number;
+    OpenSP: number;
+    StartNum: number;
+    EndNum: number;
+    SameNum: number;
+}

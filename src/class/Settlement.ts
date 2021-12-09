@@ -1,7 +1,8 @@
 import mariadb from "mariadb";
 import {saveParamLog} from "../API/ApiFunc";
-import {getGame} from "../API/MemberApi";
-import { IParamLog, ISqlProc} from "../DataSchema/if";
+import {getGame, getGameType} from "../API/MemberApi";
+import { ErrCode } from "../DataSchema/ENum";
+import { GameType, IMsg, IParamLog, ISqlProc} from "../DataSchema/if";
 import {doQuery} from "../func/db";
 // const SettleMethods=MarkSixST['MarkSix'];
 import CancelTermF from "./DBFunction/CancelTerm";
@@ -22,13 +23,18 @@ import {Speed3Setl} from "./Settlement/Speed3Setl";
 // 重結 isSettled =3 轉成 status = 4 提供平台視別
 export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection, isSettled?: number, PLog?: IParamLog[]) {
     let GType: string|undefined;
+    let msg: IMsg = { ErrNo: ErrCode.PASS };
     const g = await getGame(GameID, conn);
     if (g) {
         GType = g.GType;
+        // console.log("before checkNum");
+        msg = await checkNum(GType, num, conn);
+        // console.log("after checkNum", msg);
+        if (msg.ErrNo !== ErrCode.PASS ) { return msg; }
     } else {
-        return false;
+        msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+        return msg;
     }
-    let ans;
     let sql: string = "";
     // let sqls: string[];
     let sqls: ISqlProc = {
@@ -42,7 +48,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     sql = `update CurOddsInfo set isStop=1 where tid=${tid}`;
     await conn.query(sql).then(async (res) => {
         // console.log( "SaveNums", sql, res);
-        ans = true;
+        // ans = true;
         if (PLog) {
             // console.log("SaveNums", PLog);
             await saveParamLog(PLog, conn);
@@ -50,45 +56,55 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     }).catch(async (err) => {
         console.log(sql, err);
         await conn.rollback();
-        ans = false;
+        msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+        msg.error = err;
+        // ans = false;
     });
-    sql = `update BetTableEx set Opened=0 where tid=${tid} and GameID=${GameID}`;
-    await conn.query(sql).then(async (res) => {
-        console.log("BetTableEx set open zero:", sql, res);
-    }).catch(async (err) => {
-        console.log("update BetTableEx set Opened=0", err);
-        await conn.rollback();
-        ans = false;
-    });
-    if (ans) {
+    if (msg.ErrNo === ErrCode.PASS) {
+        sql = `update BetTableEx set Opened=0 where tid=${tid} and GameID=${GameID}`;
+        await conn.query(sql).then(async (res) => {
+            console.log("BetTableEx set open zero:", sql, res);
+        }).catch(async (err) => {
+            console.log("update BetTableEx set Opened=0", err);
+            await conn.rollback();
+            msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+            msg.error = err;
+            // ans = false;
+        });
+    }
+    if (msg.ErrNo === ErrCode.PASS) {
         // 還原結帳檢查結果,併預設會員為輸 WinLose=Amt*-1
         sql = `update BetTable set WinLose=Amt*-1,validAmt=Amt,OpNums=0,OpSP=0,isSettled=${SettleStatus} where tid=${tid} and GameID=${GameID} and isCancled=0`;
         // console.log("Update Settle Status", sql);
         await conn.query(sql).then((res) => {
             // console.log("WinLose=Amt*-1", sql, res);
-            ans = true;
+            msg.resetBetTable = res;
+            // ans = true;
         }).catch(async (err) => {
             console.log("WinLose=Amt*-1 err 1", err);
             await conn.rollback();
-            ans = false;
+            msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+            msg.error = err;
+            // ans = false;
         });
     }
-    if (ans) {
+    if (msg.ErrNo === ErrCode.PASS) {
         // winlose update check
         sql = `select count(*) cnt from BetTable where tid=${tid} and GameID=${GameID} and isCancled=0 and WinLose=0`;
         await conn.query(sql).then((res) => {
             // console.log("WinLose=0", sql, res);
-            ans = true;
+            // ans = true;
+            msg.cntBetTable = res;
         }).catch(async (err) => {
             console.log("WinLose=0", err);
-            await conn.rollback();
-            ans = false;
+            msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+            msg.error = err;
         });
     }
-    if (!ans) {
+    if (msg.ErrNo !== ErrCode.PASS) {
         // return imsr;
         await conn.query("SET AUTOCOMMIT=1;");
-        return ans;
+        return msg;
     }
     // 搜尋有下注的BetType
     sql = `SELECT BetType,COUNT(*) cnt FROM BetTable WHERE tid=${tid} and GameID=${GameID} and isCancled=0 group by BetType order by BetType`;
@@ -99,66 +115,52 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     }).catch(async (err) => {
         console.log("WinLose=Amt*-1 err 2", err);
         await conn.rollback();
-        ans = false;
+        // ans = false;
+        msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+        msg.error = err;
     });
     if (rtn) {
         // console.log("rtn chk:", sql, rtn);
         sqls = doBT(tid, GameID, num, rtn, conn, GType);
         // console.log("after do BT:", sqls);
+        let needBreak: boolean = false;
         if (sqls.pre.length > 0) {
             await Promise.all(sqls.pre.map(async (itm) => {
-                ans = await doQuery(itm, conn);
+                if (needBreak) { return; }
+                const ans = await doQuery(itm, conn);
                 if (!ans) {
                     console.log("err rollback 0");
-                    await conn.rollback();
-                    await conn.query("SET AUTOCOMMIT=1;");
-                    return false;
+                    needBreak = true;
+                    // await conn.rollback();
+                    // await conn.query("SET AUTOCOMMIT=1;");
+                    msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+                    if (!msg.ErrSql) { msg.ErrSql = []; }
+                    msg.ErrSql.push(itm);
+                    // return false;
                 }
             }));
-            /*
-            if (GType === "MarkSix") {  // 六合彩類 3中2 均成賠率或最小賠率檢查
-                sql = `select * from BetTableEx
-                    where tid=${tid} and GameID=${GameID} `;
-                let strs: string[] = [];
-                await conn.query(sql).then((res) => {
-                    strs = getEx(res);
-                }).catch(async (err) => {
-                    console.log("Ex proc error", err);
-                    await conn.rollback();
-                    return false;
-                });
-                if (strs.length > 0) {
-                    await Promise.all(strs.map(async (str) => {
-                        ans = await doQuery(str, conn);
-                        if (!ans) {
-                            console.log("err rollback ex modify:");
-                            await conn.rollback();
-                            return false;
-                        }
-                    }));
-                }
-            }
-            */
         }
-        let needBreak: boolean = false;
         await Promise.all(sqls.common.map(async (itm) => {
             if (needBreak) { return; }
             // console.log("sqls.common:", itm);
-            ans = await doQuery(itm, conn);
+            const ans = await doQuery(itm, conn);
             if (!ans) {
                 console.log("err rollback 1");
                 needBreak = true;
-                await conn.rollback();
-                await conn.query("SET AUTOCOMMIT=1;");
-                return false;
+                // await conn.rollback();
+                // await conn.query("SET AUTOCOMMIT=1;");
+                msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+                if (!msg.ErrSql) { msg.ErrSql = []; }
+                msg.ErrSql.push(itm);
+                // return false;
             }
         }));
     }
     // console.log("batch:", ans);
-    if (ans) {
+    if (msg.ErrNo === ErrCode.PASS) {
         // sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=${SettleStatus} where id=${tid}`;
         sql = sqls.final;
-        ans = await doQuery(sql, conn, [SettleStatus]);
+        const ans = await doQuery(sql, conn, [SettleStatus]);
         if (ans) {
             // console.log("commit 1");
             await conn.commit();
@@ -167,16 +169,16 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
         } else {
             console.log("err rollback 2");
             await conn.rollback();
+            msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+            msg.ErrCon = sql;
         }
     } else {
         console.log("err rollback 3");
         await conn.rollback();
-        await conn.query("SET AUTOCOMMIT=1;");
-        return false;
     }
     await conn.query("SET AUTOCOMMIT=1;");
     // console.log("SQL:", ans);
-    return true;
+    return msg;
 }
 export async function CancelTerm(tid: number, conn: mariadb.PoolConnection) {
     const CT = new CancelTermF(tid, conn);
@@ -232,5 +234,48 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
     sql = "insert into Member(id,Balance) select uid id,sum(DepWD) Balance from UserCredit where 1 group by uid";
     sql = sql + " on duplicate key update Balance=values(Balance)";
     ans.common.push(sql);
+    return ans;
+}
+
+async function checkNum(GType: string, num: string, conn: mariadb.PoolConnection) {
+    const ans: GameType | undefined = await getGameType(GType, conn);
+    // console.log("checkNum", ans);
+    const msg: IMsg = { ErrNo: ErrCode.PASS };
+    if (ans) {
+        const arr = num.split(",");
+        if (arr.length < ans.OpenNums) {
+            msg.ErrNo = ErrCode.NOT_ENOUGH_NUM;
+        } else {
+            const newV = arr.map((v) => parseInt(v, 10));
+            let pass = checkSameNum(newV, ans.SameNum);
+            if (pass) {
+                pass = newV.every((v) => {
+                    return checkNumBG(v, ans.StartNum, ans.EndNum);
+                 });
+                if (!pass) {
+                    msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
+                 }
+            } else {
+                msg.ErrNo = ErrCode.NO_SAME_NUMBER;
+            }
+        }
+    }
+    return msg;
+}
+function checkNumBG(num: number, start: number, end: number) {
+    if (num >= start && num <= end) { return true; }
+    return false;
+}
+function checkSameNum(nums: number[], allowSameNum = 0) {
+    const newN: number[] = [];
+    nums.map((n) => {
+        const fIdx = newN.findIndex((v) => v === n);
+        if (fIdx === -1) { newN.push(n); }
+    });
+    const hasNoSameNum = newN.length === nums.length;
+    let ans = true;
+    if (!hasNoSameNum) {
+         if (!allowSameNum) { ans = false; }
+    }
     return ans;
 }

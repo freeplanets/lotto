@@ -20,6 +20,10 @@ export enum ErrCode {
   IN_SHORT_TERM = 18,
   HAS_ASK_IN_PROCESS = 19,
   EMERGENCY_STOPED = 20,
+  APISERVER_GONE_AWAY = 21,
+  NO_SAME_NUMBER = 22,
+  UNEXPECT_NUMBER = 23,
+  DEAL_IS_CLOSED = 24,
 }
 export enum FuncKey {
 	SET_CHANNEL = "SetChannel",

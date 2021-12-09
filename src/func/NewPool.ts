@@ -2,17 +2,17 @@ import mariadb, { Connection, PoolConnection } from "mariadb";
 export default class NewPool {
 	private pool: mariadb.Pool;
 	private curCaller = "";
-	constructor(private opt: mariadb.PoolConfig) {
+	constructor(private opt: mariadb.PoolConfig, private isDebug = true) {
 		this.pool = this.createPool();
 	}
 	public getConnection(caller: string= ""): Promise<mariadb.PoolConnection | undefined> {
 		return new Promise((resolve) => {
+			this.curCaller = caller;
 			this.pool.getConnection().then((conn) => {
-				if (caller) { console.log("NewPool getConnection:", caller); }
-				this.curCaller = caller;
+				if (caller && this.isDebug) { console.log("NewPool getConnection:", caller); }
 				resolve(conn);
 			}).catch(async (err) => {
-				console.log("getConnection Error:", err);
+				console.log(`${caller} getConnection Error:`, err);
 				let conn: PoolConnection | undefined;
 				if (err.code === "ER_GET_CONNECTION_TIMEOUT") {
 					conn = await this.resetPool();
