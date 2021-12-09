@@ -65,7 +65,8 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IBTCHashResult
       sqls.common.push(sql);
     } else {
       const nums = imsr[itm.NumTarget];
-      sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join("','")}') and isCancled=0`;
+      const newN = itm.Position.map((idx) => nums[idx]);
+      sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${newN.join("','")}') and isCancled=0`;
       sqls.common.push(sql);
     }
   }
