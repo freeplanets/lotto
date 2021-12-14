@@ -1436,6 +1436,19 @@ app.get("/member/getWagerItems", async (req, res) => {
       param.date = JDate.DateStr;
   }
   msg = await gets.getBetLists(parseInt(param.UserID as string, 10), param.date as string);
+  if (msg.ErrNo === ErrCode.PASS) {
+      if (msg.items) {
+          const gids = Object.keys(msg.items).map((key) => key);
+          if (gids.length > 0) {
+              const jt: JTable<IHasID> = new JTable(conn, "Games");
+              const filter = `id in (${gids.join(",")})`;
+              const fields = ["id", "GType"];
+              const ans = await jt.List(filter, fields);
+              // console.log("getWagerItems GType", ans);
+              msg.GTypes = ans;
+          }
+      }
+  }
   await conn.release();
   res.send(JSON.stringify(msg));
 });
