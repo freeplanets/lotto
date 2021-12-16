@@ -10,33 +10,35 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     msg.UserID = ask.UserID;
     // await this.conn.beginTransaction();
     await this.BeginTrans();
-    // console.log("NewOrder doit:", JSON.stringify(ask));
+    console.log("NewOrder doit:", JSON.stringify(ask));
     if (ask.BuyType === 0) {
       if (ask.LeverCredit) {
         ask.Fee = ask.Fee ? ask.LeverCredit * ask.Fee : 0;
-      } else {
+      } else if (ask.AskFee) {
         ask.Fee = ask.Amount * ask.AskFee;
       }
-      if (ask.Fee) { ask.Fee = NumFunc.DecimalPlaces(ask.Fee, this.decimalPlaces); }
-      const credit = ask.Amount + ask.Fee;
-      const memoMsg: MemoCryptoCur = {
-        Type: MemoType.NEW,
-        // AskID: ask.id,
-        ItemID: ask.ItemID,
-        ItemType: ask.ItemType,
-        Amount: ask.Amount,
-        Fee: ask.Fee,
-        Qty: ask.Qty,
-      };
-      const memo: CreditMemo = {
-        Type: CreditType.CRYPTOCUR,
-        Message: memoMsg,
-      };
-      msg = await this.creditA.ModifyCredit(credit * -1, memo);
-      if (msg.ErrNo !== ErrCode.PASS) {
-        // await this.conn.rollback();
-        await this.RollBack();
-        return msg;
+      if (ask.Fee) {
+        ask.Fee = NumFunc.DecimalPlaces(ask.Fee, this.decimalPlaces);
+        const credit = ask.Amount + ask.Fee;
+        const memoMsg: MemoCryptoCur = {
+          Type: MemoType.NEW,
+          // AskID: ask.id,
+          ItemID: ask.ItemID,
+          ItemType: ask.ItemType,
+          Amount: ask.Amount,
+          Fee: ask.Fee,
+          Qty: ask.Qty,
+        };
+        const memo: CreditMemo = {
+          Type: CreditType.CRYPTOCUR,
+          Message: memoMsg,
+        };
+        msg = await this.creditA.ModifyCredit(credit * -1, memo);
+        if (msg.ErrNo !== ErrCode.PASS) {
+          // await this.conn.rollback();
+          await this.RollBack();
+          return msg;
+        }
       }
     }
     let AskID = 0;

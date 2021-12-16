@@ -47,10 +47,11 @@ interface ILoginInfo {
     Progs?: IProgs[];
     PayClass?: IPClass[];
 }
-app.get("/login", async (req, res) => {
+app.get("/login", async (req, res: Response) => {
     // console.log(req.query);
     const conn: mariadb.PoolConnection|undefined =  await getConnection();
     const msg: IMsg = { ErrNo: 0};
+    let logkey: string|undefined;
     if (conn) {
         const param = req.query;
         let sql: string = "";
@@ -81,7 +82,7 @@ app.get("/login", async (req, res) => {
                 if (progs) {
                     info.Progs = progs as IProgs[];
                 }
-                const logkey: string|undefined = await setLogin(user.id, user.Account, conn);
+                logkey = await setLogin(user.id, user.Account, conn);
                 if (logkey) {
                     info.sid = logkey ;
                     msg.data = info;
@@ -105,6 +106,7 @@ app.get("/login", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
+    res.setHeader("auth", `${logkey}`);
     res.send(JSON.stringify(msg));
 });
 app.get("/logout", async (req, res) => {
