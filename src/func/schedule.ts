@@ -1,8 +1,35 @@
 import mariadb from "mariadb";
 import schedule from "node-schedule";
 import DateFunc from "../components/class/Functions/MyDate";
+import StrFunc from "../components/class/Functions/MyStr";
+import BTCHashResult from "../components/class/GetHash/BTC";
+import HashGameManager from "../components/class/GetHash/HashGameManager";
+import HashNum from "../components/class/GetHash/HashNum";
 import * as db from "./db";
 // 秒 分 時 日 月 星期
+export function getHashResult(url?: string) {
+  schedule.scheduleJob("1 * * * * *", async () => {
+    const btcHash = new BTCHashResult(url);
+    const ans = await btcHash.get();
+    // console.log("getHashResult:", ans);
+    const data = StrFunc.toJSON(ans as string);
+    if (Array.isArray(data)) {
+      const conn = await db.getConnection("getHashResult");
+      if (conn) {
+        const hgm = new HashGameManager(conn, data);
+        await hgm.doit();
+        await conn.release();
+      }
+      /*
+      data.map((itm, idx) => {
+        const hash = itm.id;
+        const ha = new HashNum(hash, 49, 0, 6, false, true, true, true);
+        console.log("indx:", idx, "data:", itm, ha.NumLine);
+      });
+      */
+    }
+  });
+}
 export function scheduleTest() {
   schedule.scheduleJob("30 50 23 * * *", () => {
     // const d: string = dateAddZero(new Date().toLocaleDateString("zh-TW", {timeZone: "Asia/Taipei"}));

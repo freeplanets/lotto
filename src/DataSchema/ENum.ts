@@ -69,3 +69,9 @@ export enum StopType {
   SHORT_STOP = 2,
   STOPED = 3
 }
+
+export enum TermAuto {
+  GAP = 5,
+	CREATE_NEW = 4,
+	SETTLE_OLD = 3
+}

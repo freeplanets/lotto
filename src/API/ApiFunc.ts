@@ -3,7 +3,7 @@ import mariadb, {PoolConnection} from "mariadb";
 import JTable from "../class/JTable";
 import {IChaseNum, ICommonParams, IDbAns, IMsg, IParamLog} from "../DataSchema/if";
 import {IGame, IPayClassParam, IPayRateItm, ITerms, IUserPartial} from "../DataSchema/user";
-import {doQuery} from "../func/db";
+import { BeginTrans, Commit, doQuery, RollBack} from "../func/db";
 
 export async function setPayRateData(GameID: number, PayClassID: number, ModifyID: number, data: any, conn: mariadb.PoolConnection): Promise<boolean> {
   const jt: JTable<IPayRateItm> = new JTable(conn, "PayRate");
@@ -500,7 +500,8 @@ async function isGameAutoOpen(GameID: number|string, conn: mariadb.PoolConnectio
 }
 
 export async function createTerms(GType: string, term: ITerms, conn: PoolConnection, PLog?: IParamLog[]) {
-    await conn.beginTransaction();
+    // await conn.beginTransaction();
+    await BeginTrans(conn);
     const jt: JTable<ITerms> = new JTable(conn, "Terms");
     let ans;
     let msg: IMsg = {ErrNo: 0};
@@ -512,10 +513,12 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
             }
         }
         if (!ans) {
-            await conn.rollback();
+            await RollBack(conn);
+            // await conn.rollback();
             msg.ErrNo = 9;
         } else {
-            await conn.commit();
+            await Commit(conn);
+            // await conn.commit();
             msg.data = ans;
         }
         return msg;
@@ -531,7 +534,14 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
             msg.error = ans;
         }
     }
-    if (msg.ErrNo === 0) { await conn.commit(); } else { await conn.rollback(); }
+    if (msg.ErrNo === 0) {
+        await Commit(conn);
+        // await conn.commit();
+    } else {
+        console.log("CreateOddsData rollback", msg);
+        await RollBack(conn);
+        // await conn.rollback();
+    }
     return msg;
 }
 

@@ -146,4 +146,16 @@ export function Query(sql: string, conn: PoolConnection, params?: IAxParams): Pr
         });
     });
 }
+export async function BeginTrans(conn: PoolConnection) {
+    await conn.query("SET AUTOCOMMIT=0;");
+    await conn.beginTransaction();
+}
+export async function RollBack(conn: PoolConnection) {
+    await conn.rollback();
+    await conn.query("SET AUTOCOMMIT=1;");
+}
+export async function Commit(conn: PoolConnection) {
+    await conn.commit();
+    await conn.query("SET AUTOCOMMIT=1;");
+}
 // export default dbPool;

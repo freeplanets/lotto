@@ -54,7 +54,7 @@ export default class JTable<T extends AnyObject> {
         let mb: T | undefined;
         // if (this.TableName === "Terms") { console.log("getone debug:", sql, id); }
         const ans = await this.query(sql, this.conn);
-        // if (this.TableName === "Terms") { console.log("JTable List mb", ans); }
+        if (this.TableName === "Terms") { console.log("JTable List mb", ans); }
         if (ans) {
             if (ans.length > 0) {
                 mb = ans[0] as T;
