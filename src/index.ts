@@ -1,5 +1,6 @@
 // import bodyParser from "body-parser";
 import cors from "cors";
+import dotenv from "dotenv";
 import express, {Request, Response} from "express";
 import mariadb from "mariadb";
 import { IMsg} from "./DataSchema/if";
@@ -12,10 +13,16 @@ import apiRouter from "./router/api";
 import CryptoCur from "./router/CryptoCur";
 import GameCenter from "./router/FromCenter";
 
+dotenv.config();
 // const args: minimist.ParsedArgs = minimist(process.argv.slice(2), {});
 // console.log("minimist:", args);
 // schedule.scheduleTest();
-schedule.getHashResult();
+if (process.env.WORKSTATUS !== "localhost") {
+    console.log("Schedule Run");
+    schedule.getHashResult();
+} else {
+    console.log("No Schedule");
+}
 const app = express();
 /*
 dbPool.getConnection().then((conn) => {
