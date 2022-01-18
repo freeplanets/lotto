@@ -2,12 +2,20 @@ import { IncomingMessage } from "http";
 import https from "https";
 
 export default class BTC {
-	constructor(private sourceUrl =  "blockstream.info/api/blocks/") {}
-	public async get() {
+	constructor(private sourceUrl =  "blockstream.info/api") {}
+	public getHeght() {
+		const url = `${this.sourceUrl}/blocks/tip/height`;
+		return this.get(url);
+	}
+	public getBlock(height: any) {
+		const url = `${this.sourceUrl}/block-height/${height}`;
+		return this.get(url);
+	}
+	private async get(url: string) {
 		return new Promise((resolve, reject) => {
-		https.get(`https://${this.sourceUrl}`, (res: IncomingMessage) => {
-				console.log(`STATUS: ${res.statusCode}`);
-				console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+		https.get(`https://${url}`, (res: IncomingMessage) => {
+				// console.log(`STATUS: ${res.statusCode}`);
+				// console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 				if (res.statusCode === 200) {
 					let result = "";
 					res.setEncoding("utf8");
@@ -15,7 +23,7 @@ export default class BTC {
 						result += chunk;
 					});
 					res.on("end", () => {
-						console.log(`BODY: ${result}`);
+						// console.log(`BODY: ${result}`);
 						resolve(result);
 					});
 				} else {

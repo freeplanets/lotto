@@ -73,5 +73,6 @@ export enum StopType {
 export enum TermAuto {
   GAP = 5,
 	CREATE_NEW = 4,
-	SETTLE_OLD = 3
+	SETTLE_OLD = 3,
+  SAVE_DATA = 0
 }

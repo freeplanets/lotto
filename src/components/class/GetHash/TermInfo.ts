@@ -2,7 +2,6 @@ import { PoolConnection } from "mariadb";
 import { createTerms, setStop } from "../../../API/ApiFunc";
 import { SaveNums } from "../../../class/Settlement";
 import { CancelTerm } from "../../../class/Settlement";
-import { TermAuto } from "../../../DataSchema/ENum";
 import { ITerms } from "../../../DataSchema/user";
 import { doQuery } from "../../../func/db";
 import FuncDate from "../Functions/MyDate";
@@ -29,18 +28,7 @@ export default class TermInfo {
 	private curTerm: Term = { id: 0, GameID: 0, TermID: "0" };
 	private lastTerm: Term = { id: 0, GameID: 0, TermID: "0" };
 	private nextTermID = 0;	// 應開下期ID
-	constructor(private gameid: number, private gtype: string, private conn: PoolConnection, private hashblocks: HashBlock[]) {}
-	public async checkBlockID(block: HashBlock) {
-		// console.log(`${this.gameid}:${this.gtype} checkBlockID`, JSON.stringify(block));
-		const sw = block.height % TermAuto.GAP;
-		switch (sw) {
-			case TermAuto.SETTLE_OLD:
-				await this.forSettle(block);
-				break;
-			case TermAuto.CREATE_NEW:
-				await this.forNew(block);
-		}
-	}
+	constructor(private gameid: number, private gtype: string) {}
 	public addTerm(term: Term) {
 		if (!this.curTerm.id) {
 			this.setTerm(this.curTerm, term);
@@ -51,48 +39,43 @@ export default class TermInfo {
 			this.setTerm(this.lastTerm, term);
 		}
 	}
-	private async forNew(block: HashBlock): Promise<void> {
-		console.log("forNew", this.nextTermID, this.GameID, this.gtype, block.height);
+	public async forNew(height:number, conn:PoolConnection): Promise<void> {
+		console.log("forNew", this.nextTermID, this.GameID, this.gtype, height);
+		/*
 		if (this.nextTermID) {
 			return;
 		}
-		// const conn = await getConnection("forNew");
-		if (this.conn) {
+		*/
+		// const conn = await db.getConnection(`${this.gtype} forNew ${height}`);
+		if (conn) {
 			if (this.curTerm.id) {	// 已有彩期
-				console.log("closeCurrentTerm", block.height, this.curTerm.TermID);
-				if (block.height - parseInt(this.curTerm.TermID, 10) === 1) {
-					await this.closeCurrentTerm(this.conn);
+				console.log("closeCurrentTerm", height, this.curTerm.TermID);
+				if (height - parseInt(this.curTerm.TermID, 10) === 1) {
+					await this.closeCurrentTerm(conn);
 				}
 			}
-			this.nextTermID = block.height + 6;
-			await this.createNextTerm(this.conn);
+			this.nextTermID = height + 6;
+			await this.createNextTerm(conn);
 			// await conn.release();
 		}
 	}
-	private async forSettle(block: HashBlock): Promise<void> {
+	public async forSettle(block: HashBlock, conn:PoolConnection): Promise<void> {
 		if (this.lastTerm.id) {
-			console.log("TermInfo forSetle", JSON.stringify(this.lastTerm), JSON.stringify(block));
-			const lastTermID = parseInt(this.lastTerm.TermID, 10);
-			if (block.height - lastTermID === TermAuto.SETTLE_OLD) {
-				const f = this.hashblocks.find((itm) => itm.height === lastTermID);
-				if (f) {
-					const num = this.genHashNum(block.id);
-					// const conn = await getConnection("TermInfo settleTerm");
-					if (this.conn) {
-						const chk = await this.checkSettle(this.lastTerm.id, this.conn);
-						console.log("checkSettle", chk);
-						if (chk && chk[0].isSettled === 0) {
-							if (num) {
-								const ans = await SaveNums(this.lastTerm.id, this.GameID, num, this.conn);
-								console.log("TermInfo forSettle:", ans);
-							} else {
-								const ans = await CancelTerm(this.lastTerm.id, this.conn);
-								console.log("TermInfo CancelTerm:", ans);
-							}
-						}
-						// await conn.release();
+			const num = this.genHashNum(block.id);
+			// const conn = await db.getConnection(`${this.gtype} forSette ${block.height}`);
+			if (conn) {
+				const chk = await this.checkSettle(this.lastTerm.id, conn);
+				console.log("checkSettle", chk);
+				if (chk && chk[0].isSettled === 0) {
+					if (num) {
+						const ans = await SaveNums(this.lastTerm.id, this.GameID, num, conn);
+						console.log("TermInfo forSettle:", ans);
+					} else {
+						const ans = await CancelTerm(this.lastTerm.id, conn);
+						console.log("TermInfo CancelTerm:", ans);
 					}
 				}
+				// await conn.release();
 			}
 		}
 	}

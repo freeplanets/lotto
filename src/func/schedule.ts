@@ -7,12 +7,20 @@ import HashGameManager from "../components/class/GetHash/HashGameManager";
 import HashNum from "../components/class/GetHash/HashNum";
 import * as db from "./db";
 // 秒 分 時 日 月 星期
+let keeper: any;
 export function getHashResult(url?: string) {
-  schedule.scheduleJob("1 * * * * *", async () => {
+  schedule.scheduleJob("* * * * * *", async () => {
     const btcHash = new BTCHashResult(url);
-    const ans = await btcHash.get();
-    // console.log("getHashResult:", ans);
-    const data = StrFunc.toJSON(ans as string);
+    const height = await btcHash.getHeght();
+    console.log("getHashResult:", keeper);
+    // const data = StrFunc.toJSON(ans as string);
+    if (keeper !== height) {
+      console.log("data change");
+      const block = await btcHash.getBlock(height);
+      console.log("getHashResult block", block);
+    }
+    keeper = height;
+    /*
     if (Array.isArray(data)) {
       const conn = await db.getConnection("getHashResult");
       if (conn) {
@@ -20,14 +28,8 @@ export function getHashResult(url?: string) {
         await hgm.doit();
         await conn.release();
       }
-      /*
-      data.map((itm, idx) => {
-        const hash = itm.id;
-        const ha = new HashNum(hash, 49, 0, 6, false, true, true, true);
-        console.log("indx:", idx, "data:", itm, ha.NumLine);
-      });
-      */
     }
+    */
   });
 }
 export function scheduleTest() {

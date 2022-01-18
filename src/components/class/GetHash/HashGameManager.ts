@@ -1,9 +1,11 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../../../class/JTable";
-import { ErrCode } from "../../../DataSchema/ENum";
+import { ErrCode, TermAuto } from "../../../DataSchema/ENum";
 import { AnyObject, IKeyVal, IMsg } from "../../../DataSchema/if";
 // import { doQuery } from "../../../func/db";
 import TermInfo, { Term } from "./TermInfo";
+import BTCHashResult from "../../../components/class/GetHash/BTC";
+import * as db from "../../../func/db";
 
 interface HashData {
 	BlockID: number;
@@ -22,44 +24,79 @@ export default class HashGameManager {
 	private HashGame = ["BTCHash", "HashSix"];
 	private Term: TermInfo[] = [];
 	private GameIDs: number[] = [];
-	constructor(private conn: PoolConnection, private HashCodes: HashBlock[]) {}
-	public async doit() {
-		await this.getGame();
-		await this.getTerms();
-		this.Term.map((itm) => {
-			console.log("doit:", itm.status);
-		});
-		await this.anaHashCodes();
+	private heightKeeper:any = 0;
+	private btcR:BTCHashResult;
+	constructor(btcSourceUrl?:string) {
+		this.btcR = new BTCHashResult(btcSourceUrl)
 	}
-	public async anaHashCodes() {
-		const sData: HashData[] = [];
-		if (this.HashCodes) {
-			// const lastHash: HashData | null = await this.getLastHash();
-			// const hid = lastHash ? lastHash.BlockID : 0;
-			const n = this.HashCodes.length;
-			for (let i = 0, len = this.HashCodes.length; i < len; i += 1) {
-				const itm = this.HashCodes[i];
-				// if (itm.height > hid) {
-				if (itm.height % 5 === 0 ) { sData.push({BlockID: itm.height, HashValue: itm.id}); }
-				// }
-				await Promise.all(this.Term.map((term) => term.checkBlockID(itm)));
+	public async refreshGameData(conn:PoolConnection) {
+		this.Term = [];
+		this.GameIDs = [];
+		await Promise.all([
+			this.getGame(conn),
+			this.getTerms(conn)	
+		]);
+	}
+	public async check() {
+		const height = await this.btcR.getHeght();
+		if (height != this.heightKeeper) {
+			this.heightKeeper = height;
+			const conn = await db.getConnection(`HashGameManager check:`);
+			if (conn) {
+				const myHeight = Number(height);
+				const sw = myHeight % TermAuto.GAP;
+				switch (sw) {
+					case TermAuto.SAVE_DATA:
+						await this.saveData(conn, myHeight);
+						break;
+					case TermAuto.SETTLE_OLD:
+						await this.refreshGameData(conn);
+						await this.forSettle(myHeight, conn);
+						break;
+					case TermAuto.CREATE_NEW:
+						await this.refreshGameData(conn);
+						await this.forNew(myHeight, conn);
+				}
+				await conn.release();	
 			}
-			console.log("--- anaHashCodes:sData.length ---", sData.length);
-			if (sData.length > 0) {
-				await this.saveHash(sData);
-			}
+			// const hash = await this.btcR.getBlock(height);
 		}
 	}
-	private async saveHash(sData: HashData[]) {
+	private async forSettle(height:number, conn:PoolConnection) {
+		const oldHeight = height - TermAuto.SETTLE_OLD;
+		const hash = await this.btcR.getBlock(oldHeight);
+		await this.saveData(conn, oldHeight, hash);
+		const block:HashBlock = {
+			id: String(hash),
+			height: oldHeight
+		}
+		await Promise.all(this.Term.map((term)=>term.forSettle(block, conn)));
+	}
+	private async forNew(height:number, conn:PoolConnection) {
+		await Promise.all(this.Term.map((term)=>term.forNew(height, conn)))
+	}
+	private async saveData(conn:PoolConnection, height:any, hash?:any):Promise<void> {
+		if (!hash) {
+			hash = await this.btcR.getBlock(height);
+		}
+		const data:HashData[] = [
+			{
+				BlockID: Number(height),
+				HashValue: String(hash)
+			}
+		];
+		await this.saveHash(data, conn);
+	}
+	private async saveHash(sData: HashData[], conn:PoolConnection) {
 		console.log("saveHash", sData);
-		const jt: JTable<HashData> = new JTable(this.conn, "HashData");
+		const jt: JTable<HashData> = new JTable(conn, "HashData");
 		const ans = await jt.MultiUpdate(sData);
 		if (ans) {
 			console.log("HashGameMananger saveHash:", ans);
 		}
 	}
-	private async getGame(): Promise<void> {	// get unsettle terms
-		const jt = new JTable<AnyObject>(this.conn, "Games");
+	private async getGame(conn:PoolConnection): Promise<void> {	// get unsettle terms
+		const jt = new JTable<AnyObject>(conn, "Games");
 		const filters: IKeyVal[] = [{
 			Key: "GType",
 			Val: `'${this.HashGame.join("','")}'`,
@@ -76,13 +113,11 @@ export default class HashGameManager {
 				data.map((itm) => {
 					const fIdx = this.Term.findIndex((term) => term.GameID === itm.id);
 					if (fIdx === -1) {
-						const t: TermInfo = new TermInfo(itm.id, itm.GType, this.conn, this.HashCodes);
+						const t: TermInfo = new TermInfo(itm.id, itm.GType);
 						this.Term.push(t);
 						this.GameIDs.push(itm.id);
-						// this.Term.every()
 					}
 				});
-				// console.log("getGame", this.GameIDs);
 			} else {
 				console.log("getGame empty", msg);
 			}
@@ -90,8 +125,8 @@ export default class HashGameManager {
 			console.log("getGame error", msg);
 		}
 	}
-	private async getTerms(): Promise<void> {	// get unsettle terms
-		const jt = new JTable<AnyObject>(this.conn, "Terms");
+	private async getTerms(conn:PoolConnection): Promise<void> {	// get unsettle terms
+		const jt = new JTable<AnyObject>(conn, "Terms");
 		const filters: IKeyVal[] = [
 			{
 				Key: "GameID",
