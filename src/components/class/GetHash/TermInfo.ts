@@ -60,8 +60,8 @@ export default class TermInfo {
 		}
 	}
 	public async forSettle(block: HashBlock, conn: PoolConnection): Promise<void> {
-		console.log("TermInfo fotSettle", this.lastTerm.id, block.height);
-		if (this.lastTerm.id && this.lastTerm.id === block.height) {
+		console.log("TermInfo forSettle", this.lastTerm.TermID, block.height);
+		if (this.lastTerm.id && this.lastTerm.TermID === String(block.height)) {
 			const num = this.genHashNum(block.id);
 			// const conn = await db.getConnection(`${this.gtype} forSette ${block.height}`);
 			if (conn) {
