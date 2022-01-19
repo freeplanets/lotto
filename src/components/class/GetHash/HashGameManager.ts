@@ -32,7 +32,7 @@ export default class HashGameManager {
 	public async check() {
 		const height = await this.btcR.getHeght();
 		if (height !== this.heightKeeper) {
-			console.log('HashGameManager', this.heightKeeper, height);
+			console.log("HashGameManager", this.heightKeeper, height);
 			this.heightKeeper = height;
 			const conn = await db.getConnection(`HashGameManager check:`);
 			if (conn) {
@@ -69,7 +69,7 @@ export default class HashGameManager {
 			id: String(hash),
 			height: oldHeight
 		};
-		console.log('HashGameManager forSettle:', height, oldHeight);
+		console.log("HashGameManager forSettle:", height, oldHeight);
 		await Promise.all(this.Term.map((term) => term.forSettle(block, conn)));
 	}
 	private async forNew(height: number, conn: PoolConnection) {
