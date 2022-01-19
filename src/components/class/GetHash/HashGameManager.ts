@@ -1,11 +1,11 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../../../class/JTable";
+import BTCHashResult from "../../../components/class/GetHash/BTC";
 import { ErrCode, TermAuto } from "../../../DataSchema/ENum";
 import { AnyObject, IKeyVal, IMsg } from "../../../DataSchema/if";
+import * as db from "../../../func/db";
 // import { doQuery } from "../../../func/db";
 import TermInfo, { Term } from "./TermInfo";
-import BTCHashResult from "../../../components/class/GetHash/BTC";
-import * as db from "../../../func/db";
 
 interface HashData {
 	BlockID: number;
@@ -24,22 +24,14 @@ export default class HashGameManager {
 	private HashGame = ["BTCHash", "HashSix"];
 	private Term: TermInfo[] = [];
 	private GameIDs: number[] = [];
-	private heightKeeper:any = 0;
-	private btcR:BTCHashResult;
-	constructor(btcSourceUrl?:string) {
-		this.btcR = new BTCHashResult(btcSourceUrl)
-	}
-	public async refreshGameData(conn:PoolConnection) {
-		this.Term = [];
-		this.GameIDs = [];
-		await Promise.all([
-			this.getGame(conn),
-			this.getTerms(conn)	
-		]);
+	private heightKeeper: any = 0;
+	private btcR: BTCHashResult;
+	constructor(btcSourceUrl?: string) {
+		this.btcR = new BTCHashResult(btcSourceUrl);
 	}
 	public async check() {
 		const height = await this.btcR.getHeght();
-		if (height != this.heightKeeper) {
+		if (height !== this.heightKeeper) {
 			this.heightKeeper = height;
 			const conn = await db.getConnection(`HashGameManager check:`);
 			if (conn) {
@@ -57,29 +49,35 @@ export default class HashGameManager {
 						await this.refreshGameData(conn);
 						await this.forNew(myHeight, conn);
 				}
-				await conn.release();	
+				await conn.release();
 			}
 			// const hash = await this.btcR.getBlock(height);
 		}
 	}
-	private async forSettle(height:number, conn:PoolConnection) {
+	private async refreshGameData(conn: PoolConnection) {
+		this.Term = [];
+		this.GameIDs = [];
+		await	this.getGame(conn);
+		await this.getTerms(conn);
+	}
+	private async forSettle(height: number, conn: PoolConnection) {
 		const oldHeight = height - TermAuto.SETTLE_OLD;
 		const hash = await this.btcR.getBlock(oldHeight);
 		await this.saveData(conn, oldHeight, hash);
-		const block:HashBlock = {
+		const block: HashBlock = {
 			id: String(hash),
 			height: oldHeight
-		}
-		await Promise.all(this.Term.map((term)=>term.forSettle(block, conn)));
+		};
+		await Promise.all(this.Term.map((term) => term.forSettle(block, conn)));
 	}
-	private async forNew(height:number, conn:PoolConnection) {
-		await Promise.all(this.Term.map((term)=>term.forNew(height, conn)))
+	private async forNew(height: number, conn: PoolConnection) {
+		await Promise.all(this.Term.map((term) => term.forNew(height, conn)));
 	}
-	private async saveData(conn:PoolConnection, height:any, hash?:any):Promise<void> {
+	private async saveData(conn: PoolConnection, height: any, hash?: any): Promise<void> {
 		if (!hash) {
 			hash = await this.btcR.getBlock(height);
 		}
-		const data:HashData[] = [
+		const data: HashData[] = [
 			{
 				BlockID: Number(height),
 				HashValue: String(hash)
@@ -87,7 +85,7 @@ export default class HashGameManager {
 		];
 		await this.saveHash(data, conn);
 	}
-	private async saveHash(sData: HashData[], conn:PoolConnection) {
+	private async saveHash(sData: HashData[], conn: PoolConnection) {
 		console.log("saveHash", sData);
 		const jt: JTable<HashData> = new JTable(conn, "HashData");
 		const ans = await jt.MultiUpdate(sData);
@@ -95,7 +93,7 @@ export default class HashGameManager {
 			console.log("HashGameMananger saveHash:", ans);
 		}
 	}
-	private async getGame(conn:PoolConnection): Promise<void> {	// get unsettle terms
+	private async getGame(conn: PoolConnection): Promise<void> {	// get unsettle terms
 		const jt = new JTable<AnyObject>(conn, "Games");
 		const filters: IKeyVal[] = [{
 			Key: "GType",
@@ -125,7 +123,7 @@ export default class HashGameManager {
 			console.log("getGame error", msg);
 		}
 	}
-	private async getTerms(conn:PoolConnection): Promise<void> {	// get unsettle terms
+	private async getTerms(conn: PoolConnection): Promise<void> {	// get unsettle terms
 		const jt = new JTable<AnyObject>(conn, "Terms");
 		const filters: IKeyVal[] = [
 			{

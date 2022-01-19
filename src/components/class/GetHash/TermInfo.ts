@@ -39,7 +39,7 @@ export default class TermInfo {
 			this.setTerm(this.lastTerm, term);
 		}
 	}
-	public async forNew(height:number, conn:PoolConnection): Promise<void> {
+	public async forNew(height: number, conn: PoolConnection): Promise<void> {
 		console.log("forNew", this.nextTermID, this.GameID, this.gtype, height);
 		/*
 		if (this.nextTermID) {
@@ -59,7 +59,7 @@ export default class TermInfo {
 			// await conn.release();
 		}
 	}
-	public async forSettle(block: HashBlock, conn:PoolConnection): Promise<void> {
+	public async forSettle(block: HashBlock, conn: PoolConnection): Promise<void> {
 		if (this.lastTerm.id) {
 			const num = this.genHashNum(block.id);
 			// const conn = await db.getConnection(`${this.gtype} forSette ${block.height}`);
@@ -112,7 +112,7 @@ export default class TermInfo {
 				ModifyID: 0
 			};
 			const msg = await createTerms(this.gtype, term, conn);
-			console.log("createNextTerm end", this.nextTermID, this.curTerm.TermID, this.GameID, this.gtype, msg);
+			// console.log("createNextTerm end", this.nextTermID, this.curTerm.TermID, this.GameID, this.gtype, msg);
 		} else {
 			console.log("createNextTerm do nothing");
 		}

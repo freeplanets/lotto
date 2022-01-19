@@ -210,7 +210,7 @@ async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], 
   values${data.join(",")}
   on duplicate key update Odds=values(Odds),MaxOdds=values(MaxOdds),isStop=values(isStop)
 `;
-  console.log("updateCurOdds", sql);
+  // console.log("updateCurOdds", sql);
   await conn.query(sql).then((row) => {
       msg.ErrCon = row;
   }).catch((err) => {

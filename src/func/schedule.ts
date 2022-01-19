@@ -7,9 +7,13 @@ import HashGameManager from "../components/class/GetHash/HashGameManager";
 import HashNum from "../components/class/GetHash/HashNum";
 import * as db from "./db";
 // 秒 分 時 日 月 星期
-let keeper: any;
+// let keeper: any;
+const HGM: HashGameManager = new HashGameManager();
+
 export function getHashResult(url?: string) {
   schedule.scheduleJob("* * * * * *", async () => {
+    await HGM.check();
+    /*
     const btcHash = new BTCHashResult(url);
     const height = await btcHash.getHeght();
     console.log("getHashResult:", keeper);
@@ -20,15 +24,6 @@ export function getHashResult(url?: string) {
       console.log("getHashResult block", block);
     }
     keeper = height;
-    /*
-    if (Array.isArray(data)) {
-      const conn = await db.getConnection("getHashResult");
-      if (conn) {
-        const hgm = new HashGameManager(conn, data);
-        await hgm.doit();
-        await conn.release();
-      }
-    }
     */
   });
 }
