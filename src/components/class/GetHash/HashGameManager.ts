@@ -31,24 +31,23 @@ export default class HashGameManager {
 	}
 	public async check() {
 		const height = await this.btcR.getHeght();
-		if (height !== this.heightKeeper) {
+		if (height &&  height > this.heightKeeper) {
 			console.log("HashGameManager", this.heightKeeper, height);
 			this.heightKeeper = height;
 			const conn = await db.getConnection(`HashGameManager check:`);
-			if (conn) {
-				const myHeight = Number(height);
-				const sw = myHeight % TermAuto.GAP;
+			if (conn && height) {
+				const sw = height % TermAuto.GAP;
 				switch (sw) {
 					case TermAuto.SAVE_DATA:
-						await this.saveData(conn, myHeight);
+						await this.saveData(conn, height);
 						break;
 					case TermAuto.SETTLE_OLD:
 						await this.refreshGameData(conn);
-						await this.forSettle(myHeight, conn);
+						await this.forSettle(height, conn);
 						break;
 					case TermAuto.CREATE_NEW:
 						await this.refreshGameData(conn);
-						await this.forNew(myHeight, conn);
+						await this.forNew(height, conn);
 				}
 				await conn.release();
 			}
@@ -64,13 +63,15 @@ export default class HashGameManager {
 	private async forSettle(height: number, conn: PoolConnection) {
 		const oldHeight = height - TermAuto.SETTLE_OLD;
 		const hash = await this.btcR.getBlock(oldHeight);
-		await this.saveData(conn, oldHeight, hash);
-		const block: HashBlock = {
-			id: String(hash),
-			height: oldHeight
-		};
-		console.log("HashGameManager forSettle:", height, oldHeight);
-		await Promise.all(this.Term.map((term) => term.forSettle(block, conn)));
+		if (hash) {
+			await this.saveData(conn, oldHeight, hash);
+			const block: HashBlock = {
+				id: hash,
+				height: oldHeight
+			};
+			console.log("HashGameManager forSettle:", height, oldHeight);
+			await Promise.all(this.Term.map((term) => term.forSettle(block, conn)));
+		}
 	}
 	private async forNew(height: number, conn: PoolConnection) {
 		await Promise.all(this.Term.map((term) => term.forNew(height, conn)));

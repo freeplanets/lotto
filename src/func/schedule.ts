@@ -1,7 +1,6 @@
 import mariadb from "mariadb";
 import schedule from "node-schedule";
 import DateFunc from "../components/class/Functions/MyDate";
-import StrFunc from "../components/class/Functions/MyStr";
 import BTCHashResult from "../components/class/GetHash/BTC";
 import HashGameManager from "../components/class/GetHash/HashGameManager";
 import HashNum from "../components/class/GetHash/HashNum";
