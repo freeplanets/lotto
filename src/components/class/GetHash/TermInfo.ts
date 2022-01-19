@@ -65,7 +65,7 @@ export default class TermInfo {
 			// const conn = await db.getConnection(`${this.gtype} forSette ${block.height}`);
 			if (conn) {
 				const chk = await this.checkSettle(this.lastTerm.id, conn);
-				console.log("checkSettle", chk);
+				console.log("checkSettle", chk, block);
 				if (chk && chk[0].isSettled === 0) {
 					if (num) {
 						const ans = await SaveNums(this.lastTerm.id, this.GameID, num, conn);
