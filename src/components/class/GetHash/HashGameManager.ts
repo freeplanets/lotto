@@ -30,7 +30,7 @@ export default class HashGameManager {
 		this.btcR = new BTCHashResult(btcSourceUrl);
 	}
 	public async check() {
-		const height = await this.btcR.getHeght();
+		const height = Number(await this.btcR.getHeght());
 		if (height &&  height > this.heightKeeper) {
 			console.log("HashGameManager", this.heightKeeper, height);
 			this.heightKeeper = height;
@@ -62,7 +62,7 @@ export default class HashGameManager {
 	}
 	private async forSettle(height: number, conn: PoolConnection) {
 		const oldHeight = height - TermAuto.SETTLE_OLD;
-		const hash = await this.btcR.getBlock(oldHeight);
+		const hash = String(await this.btcR.getBlock(oldHeight));
 		if (hash) {
 			await this.saveData(conn, oldHeight, hash);
 			const block: HashBlock = {
