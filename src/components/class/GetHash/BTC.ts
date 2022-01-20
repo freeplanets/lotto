@@ -31,7 +31,7 @@ export default class BTC {
 		return new Promise((resolve, reject) => {
 		http.get(`http://${url}`, (res: IncomingMessage) => {
 				// console.log(`STATUS: ${res.statusCode}`);
-				console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+				// console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 				if (res.statusCode === 200) {
 					let result = "";
 					res.setEncoding("utf8");
