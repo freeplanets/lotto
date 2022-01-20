@@ -4,7 +4,7 @@ import StrFunc from "../../../components/class/Functions/MyStr";
 
 export default class BTC {
 	// constructor(private sourceUrl =  "blockstream.info/api") {}
-	constructor(private sourceUrl =  "localhost:8332") {}
+	constructor(private sourceUrl =  "192.168.4.112:8332") {}
 	public async getHeght() {
 		// const url = `${this.sourceUrl}/blocks/tip/height`;
 		// return this.get(url);
