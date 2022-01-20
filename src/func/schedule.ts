@@ -1,14 +1,25 @@
 import mariadb from "mariadb";
 import schedule from "node-schedule";
 import DateFunc from "../components/class/Functions/MyDate";
-import BTCHashResult from "../components/class/GetHash/BTC";
+// import HashNum from "../components/class/GetHash/HashNum";
+// import BTCHashResult from "../components/class/GetHash/BTC";
 import HashGameManager from "../components/class/GetHash/HashGameManager";
-import HashNum from "../components/class/GetHash/HashNum";
 import * as db from "./db";
 // 秒 分 時 日 月 星期
 // let keeper: any;
 const HGM: HashGameManager = new HashGameManager();
-
+/*
+export async function getBTCHash(url?: string) {
+  const btc = new BTCHashResult(url);
+  const height = await btc.getHeght();
+  console.log("getBTCHash:", height);
+  if (height) {
+      console.log("getBTCHash json:", height);
+      const h = await btc.getBlock(height);
+      console.log("getBTCHash hash", h);
+  }
+}
+*/
 export function getHashResult(url?: string) {
   schedule.scheduleJob("* * * * * *", async () => {
     await HGM.check();

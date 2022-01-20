@@ -22,6 +22,7 @@ if (process.env.WORKSTATUS !== "localhost") {
     schedule.getHashResult();
 } else {
     console.log("No Schedule");
+    // schedule.getBTCHash("mis.uuss.net:8332");
 }
 const app = express();
 /*

@@ -15,12 +15,12 @@ class MyDate {
   };
 	public toDbDateString(time?: string | number, lang: string = "zh-TW") {
 		const d = this.getDate(time);
-		const ds = typeof time === 'string' ? time.split(' ') : [];
+		const ds = typeof time === "string" ? time.split(" ") : [];
 		const opt = { ...this.dOpt };
 		delete opt.hour;
 		delete opt.minute;
 		delete opt.second;
-		const tmpD = d.toLocaleDateString(lang, opt).replace(/\//g, '-');
+		const tmpD = d.toLocaleDateString(lang, opt).replace(/\//g, "-");
 		// console.log('this.toDbDateString:', tmpD);
 		return ds[1] ? `${tmpD} ${ds[1]}` : tmpD;
 	}

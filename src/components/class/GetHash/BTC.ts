@@ -1,21 +1,37 @@
-import { IncomingMessage } from "http";
-import https from "https";
+import http, { IncomingMessage } from "http";
+import StrFunc from "../../../components/class/Functions/MyStr";
+// import https from "https";
 
 export default class BTC {
-	constructor(private sourceUrl =  "blockstream.info/api") {}
-	public getHeght() {
-		const url = `${this.sourceUrl}/blocks/tip/height`;
-		return this.get(url);
+	// constructor(private sourceUrl =  "blockstream.info/api") {}
+	constructor(private sourceUrl =  "localhost:8332") {}
+	public async getHeght() {
+		// const url = `${this.sourceUrl}/blocks/tip/height`;
+		// return this.get(url);
+		const url = `${this.sourceUrl}/`;
+		const ans: any = await this.get(url);
+		if (ans) {
+			const json = StrFunc.toJSON(ans);
+			if (json.chain.height) { return json.chain.height as number; }
+		}
+		return 0;
 	}
-	public getBlock(height: any) {
-		const url = `${this.sourceUrl}/block-height/${height}`;
-		return this.get(url);
+	public async getBlock(height: any) {
+		// const url = `${this.sourceUrl}/block-height/${height}`;
+		// return this.get(url);
+		const url = `${this.sourceUrl}/block/${height}`;
+		const ans: any = await this.get(url);
+		if (ans) {
+			const json = StrFunc.toJSON(ans);
+			if (json.hash) { return json.hash as string; }
+		}
+		return "";
 	}
 	private async get(url: string) {
 		return new Promise((resolve, reject) => {
-		https.get(`https://${url}`, (res: IncomingMessage) => {
+		http.get(`http://${url}`, (res: IncomingMessage) => {
 				// console.log(`STATUS: ${res.statusCode}`);
-				// console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+				console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 				if (res.statusCode === 200) {
 					let result = "";
 					res.setEncoding("utf8");
