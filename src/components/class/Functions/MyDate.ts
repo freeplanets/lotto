@@ -14,15 +14,11 @@ class MyDate {
     // timeZone: 'Asia/Taipei',
   };
 	public toDbDateString(time?: string | number, lang: string = "zh-TW") {
-		const d = this.getDate(time);
-		const ds = typeof time === "string" ? time.split(" ") : [];
-		const opt = { ...this.dOpt };
-		delete opt.hour;
-		delete opt.minute;
-		delete opt.second;
-		const tmpD = d.toLocaleDateString(lang, opt).replace(/\//g, "-");
-		// console.log('this.toDbDateString:', tmpD);
-		return ds[1] ? `${tmpD} ${ds[1]}` : tmpD;
+		const dt = this.getDate(time);
+		const y = dt.getFullYear();
+		const m = this.addZeroUnderTen(dt.getMonth() + 1);
+		const d = this.addZeroUnderTen(dt.getDate());
+		return `${y}-${m}-${d}`;
 	}
 	public toLocalString(time?: string | number, lang?: string, opt?: Intl.DateTimeFormatOptions) {
 		const d = this.getDate(time);
