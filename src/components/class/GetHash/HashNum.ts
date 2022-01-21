@@ -49,7 +49,7 @@ export default class HashNum {
   public Pop() {
     // let n=this.dgt;
     const tmp: string[] = [];
-    while (this.aHash.length > 0 && tmp.length < this.dgt) {
+    while (this.aHash.length > 0 && tmp.length <= this.dgt) {
       const p = this.aHash.pop();
       if (p) { tmp.push(p); }
       if (this.RepetOne) { tmp.push(this.aHash[this.aHash.length - 1]); }
