@@ -40,14 +40,16 @@ export default class HashGameManager {
 				switch (sw) {
 					case TermAuto.SAVE_DATA:
 						await this.saveData(conn, height);
+						await this.refreshGameData(conn);
+						await this.createNext(height, conn);
 						break;
 					case TermAuto.SETTLE_OLD:
 						await this.refreshGameData(conn);
 						await this.forSettle(height, conn);
 						break;
-					case TermAuto.CREATE_NEW:
+					case TermAuto.CLOSE_LAST:
 						await this.refreshGameData(conn);
-						await this.forNew(height, conn);
+						await this.closeLast(height, conn);
 				}
 				await conn.release();
 			}
@@ -73,8 +75,11 @@ export default class HashGameManager {
 			await Promise.all(this.Term.map((term) => term.forSettle(block, conn)));
 		}
 	}
-	private async forNew(height: number, conn: PoolConnection) {
-		await Promise.all(this.Term.map((term) => term.forNew(height, conn)));
+	private async closeLast(height: number, conn: PoolConnection) {
+		await Promise.all(this.Term.map((term) => term.closeLast(height, conn)));
+	}
+	private async createNext(height: number, conn: PoolConnection) {
+		await Promise.all(this.Term.map((term) => term.createNextTerm(height + 5, conn)));
 	}
 	private async saveData(conn: PoolConnection, height: number, hash?: any): Promise<void> {
 		if (!hash) {

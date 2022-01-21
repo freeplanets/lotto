@@ -27,7 +27,7 @@ export default class TermInfo {
 	}
 	private curTerm: Term = { id: 0, GameID: 0, TermID: "0" };
 	private lastTerm: Term = { id: 0, GameID: 0, TermID: "0" };
-	private nextTermID = 0;	// 應開下期ID
+	// private nextTermID = 0;	// 應開下期ID
 	constructor(private gameid: number, private gtype: string) {}
 	public addTerm(term: Term) {
 		if (!this.curTerm.id) {
@@ -39,8 +39,8 @@ export default class TermInfo {
 			this.setTerm(this.lastTerm, term);
 		}
 	}
-	public async forNew(height: number, conn: PoolConnection): Promise<void> {
-		console.log("forNew", this.nextTermID, this.GameID, this.gtype, height);
+	public async closeLast(height: number, conn: PoolConnection): Promise<void> {
+		console.log("closeLast", this.GameID, this.gtype, height);
 		/*
 		if (this.nextTermID) {
 			return;
@@ -54,8 +54,8 @@ export default class TermInfo {
 					await this.closeCurrentTerm(conn);
 				}
 			}
-			this.nextTermID = height + 6;
-			await this.createNextTerm(conn);
+			// this.nextTermID = height + 5;
+			// await this.createNextTerm(conn);
 			// await conn.release();
 		}
 	}
@@ -80,6 +80,26 @@ export default class TermInfo {
 			}
 		}
 	}
+	public async createNextTerm(nextHeight: number, conn: PoolConnection): Promise<any> {
+		console.log("createNextTerm", nextHeight, parseInt(this.curTerm.TermID, 10), this.GameID, this.gtype);
+		if (nextHeight && (this.curTerm.TermID && nextHeight > parseInt(this.curTerm.TermID, 10))) {
+			console.log("createNextTerm start");
+			const term: ITerms = {
+				id:  0,
+				GameID: this.GameID,
+				TermID: `${nextHeight}`,
+				PDate: FuncDate.toDbDateString(FuncDate.getDate().getTime()),
+				PTime: "23:59",
+				StopTime: "23:59",
+				StopTimeS: "",
+				ModifyID: 0
+			};
+			const msg = await createTerms(this.gtype, term, conn);
+			// console.log("createNextTerm end", this.nextTermID, this.curTerm.TermID, this.GameID, this.gtype, msg);
+		} else {
+			console.log("createNextTerm do nothing");
+		}
+	}
 	private async closeCurrentTerm(conn: PoolConnection): Promise<any> {
 		console.log("closeCurrentTerm");
 		const chk = await this.checkStop(this.curTerm.id, this.curTerm.GameID, conn);
@@ -97,26 +117,6 @@ export default class TermInfo {
 	private async checkSettle(tid: number, conn: PoolConnection) {
 		const sql = `select isSettled from Terms where id=${tid}`;
 		return await doQuery(sql, conn);
-	}
-	private async createNextTerm(conn: PoolConnection): Promise<any> {
-		console.log("createNextTerm", this.nextTermID, parseInt(this.curTerm.TermID, 10), this.GameID, this.gtype);
-		if (this.nextTermID && (this.curTerm.TermID && this.nextTermID > parseInt(this.curTerm.TermID, 10))) {
-			console.log("createNextTerm start");
-			const term: ITerms = {
-				id:  0,
-				GameID: this.GameID,
-				TermID: `${this.nextTermID}`,
-				PDate: FuncDate.toDbDateString(FuncDate.getDate().getTime()),
-				PTime: "23:59",
-				StopTime: "23:59",
-				StopTimeS: "",
-				ModifyID: 0
-			};
-			const msg = await createTerms(this.gtype, term, conn);
-			// console.log("createNextTerm end", this.nextTermID, this.curTerm.TermID, this.GameID, this.gtype, msg);
-		} else {
-			console.log("createNextTerm do nothing");
-		}
 	}
 	private setTerm(df: Term, add: Term) {
 		df.id = add.id;
