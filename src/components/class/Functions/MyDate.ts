@@ -13,12 +13,28 @@ class MyDate {
     second: "2-digit",
     // timeZone: 'Asia/Taipei',
   };
+	/*
 	public toDbDateString(time?: string | number, lang: string = "zh-TW") {
 		const dt = this.getDate(time);
 		const y = dt.getFullYear();
 		const m = this.addZeroUnderTen(dt.getMonth() + 1);
 		const d = this.addZeroUnderTen(dt.getDate());
 		return `${y}-${m}-${d}`;
+	}
+	*/
+	public toDbDateString(time?: string | number, lang = "zh-TW") {
+		const d = this.getDate(time);
+		const ds = typeof time === "string" ? time.split(" ") : [];
+		const opt = { ...this.dOpt };
+		opt.timeZone = "Asia/Taipei";
+		delete opt.hour;
+		delete opt.minute;
+		delete opt.second;
+		let tmpD = d.toLocaleDateString(lang, opt).replace(/\//g, "-");
+		console.log("toDbDateString:", tmpD);
+		tmpD = this.checkDateFormat(tmpD);
+		console.log("toDbDateString checked:", tmpD);
+		return ds[1] ? `${tmpD} ${ds[1]}` : tmpD;
 	}
 	public toLocalString(time?: string | number, lang?: string, opt?: Intl.DateTimeFormatOptions) {
 		const d = this.getDate(time);
@@ -72,6 +88,13 @@ class MyDate {
 			time = Date.parse(time);
 		}
 		return new Date(time);
+	}
+	private checkDateFormat(d: string) {
+		const dd = d.split("-");
+		if (Number(dd[2]) > 100) {
+			d = `${dd[2]}-${dd[0]}-${dd[1]}`;
+		}
+		return d;
 	}
 	private addZeroUnderTen(v: number) {
 		return v < 10 ? `0${v}` : `${v}`;
