@@ -29,7 +29,7 @@ export default class BTC {
 	}
 	private async get(url: string) {
 		return new Promise((resolve, reject) => {
-		http.get(`http://${url}`, (res: IncomingMessage) => {
+			http.get(`http://${url}`, (res: IncomingMessage) => {
 				// console.log(`STATUS: ${res.statusCode}`);
 				// console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 				if (res.statusCode === 200) {
@@ -45,7 +45,8 @@ export default class BTC {
 				} else {
 					reject({code: res.statusCode, error: res.statusMessage});
 				}
-
+			}).on("abort", () => {
+				reject({code: 8, error: "connect abort"});
 			}).on("error", (e) => {
 				reject({code: 9, error: e});
 				// console.error(`problem with request: ${e.message}`);
