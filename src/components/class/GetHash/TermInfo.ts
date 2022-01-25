@@ -50,7 +50,7 @@ export default class TermInfo {
 		if (conn) {
 			if (this.curTerm.id) {	// 已有彩期
 				console.log("closeCurrentTerm", height, this.curTerm.TermID);
-				if (height - parseInt(this.curTerm.TermID, 10) === 1) {
+				if (parseInt(this.curTerm.TermID, 10) - height === 1) {
 					await this.closeCurrentTerm(conn);
 				}
 			}
