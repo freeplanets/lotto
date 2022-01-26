@@ -207,6 +207,7 @@ export interface ICurOddsData {
     Num: number;
     Odds: number;
     tolS: number;
+    isStop?: number;
 }
 /**
  *  obj['aaa']=123;

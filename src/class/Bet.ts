@@ -1,7 +1,7 @@
 import mariadb from "mariadb";
 import { ErrCode } from "../DataSchema/ENum";
 import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
-    IBetTable, ICurOddsData, IDayReport, IMsg, INumAvg, INumData, IStrKeyNumer} from "../DataSchema/if";
+    IBetTable, ICurOddsData, IMsg, INumAvg, INumData, IStrKeyNumer} from "../DataSchema/if";
 import {IGame, ITerms} from "../DataSchema/user";
 import {getUserCredit, ModifyCredit} from "../func/Credit";
 // import JDate from '../class/JDate';
@@ -27,6 +27,7 @@ interface IOddInfo {
     Odds: number;
     tolS: number;
     BaseOdds: number;
+    isStop?: number;
 }
 const GameTypes = {
     MarkSix : "MarkSix",
@@ -112,6 +113,10 @@ export class Bet implements IBet {
             dta.push(n);
         });
         const ans: ICurOddsData[] = await this.getOddsData(GType, arrNum);
+        if (this.hasNumStoped(ans)) {
+            msg.ErrNo = ErrCode.NUM_STOPED;
+            return msg;
+        }
         if (ans.length !== num.length) {
             msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
             return msg;
@@ -334,6 +339,10 @@ export class Bet implements IBet {
             tmpNums.push(iNumD);
         });
         const ans: ICurOddsData[] = await this.getOddsData(GType, arrNum);
+        if (this.hasNumStoped(ans)) {
+            msg.ErrNo = ErrCode.NUM_STOPED;
+            return msg;
+        }
         // console.log("Parlay getOddsData:", ans);
         if (tmpNums.length !== ans.length) {
             msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
@@ -655,6 +664,10 @@ export class Bet implements IBet {
         });
         */
         const ans: ICurOddsData[] = await this.getOddsData(GType, Nums, BetType);
+        if (this.hasNumStoped(ans)) {
+            msg.ErrNo = ErrCode.NUM_STOPED;
+            return msg;
+        }
         if (setsN.length !== ans.length) {
             msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
             return msg;
@@ -843,7 +856,7 @@ export class Bet implements IBet {
     private async getOddsData(GType: string, nums: INum|string, BT?: number) {
         // console.log("getOddsData", GType, nums);
         let chk45: boolean = false;
-        let sql: string = `select c.BetType,c.SubType,UNIX_TIMESTAMP(c.OID) OID,c.Num,Odds+Rate Odds,tolS,Odds BaseOdds from CurOddsInfo c left join PayRate p
+        let sql: string = `select c.BetType,c.SubType,UNIX_TIMESTAMP(c.OID) OID,c.Num,Odds+Rate Odds,tolS,Odds BaseOdds,isStop from CurOddsInfo c left join PayRate p
         on c.GameID=p.GameID and c.BetType=p.BetType and c.SubType = p.SubType where
         c.tid= ${this.tid} and c.GameID = ${this.GameID} and p.PayClassID= ${this.PayClassID} and `;
         if (typeof(nums) === "string") {
@@ -898,7 +911,7 @@ export class Bet implements IBet {
             console.log("getOddsData", err);
             ans = false;
         });
-        // console.log("getOddsData ans:", ans);
+        console.log("getOddsData ans:", ans);
         return ans;
     }
     private async getNumAvgle(BetTypes: number[]|number): Promise<INumAvg[]|undefined> {
@@ -1002,6 +1015,9 @@ export class Bet implements IBet {
             console.log("saveNewOddsData error:", error);
             return false;
         });
+    }
+    private hasNumStoped(odds: ICurOddsData[]): boolean {
+        return odds.some((odd: ICurOddsData) => odd.isStop === 1);
     }
     /*
     private async calDayReport(dt:IBetTable[]){
