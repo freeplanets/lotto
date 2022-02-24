@@ -329,6 +329,34 @@ const SGPools = {
       28: 1, // { title: '合數單雙',sctitle: [ , '1獎', '2獎', '3獎'],shortT: '合',subtitle: [ '單', '雙' ] },
       29: 1, // { title: '合數大小',sctitle: [ , '1獎', '2獎', '3獎'],shortT: '合',subtitle: [ '大', '小' ] },
 };
+const VNNorth = {
+      1: 1,   // 特別號
+      2: 1,   // 27碼
+      3: 2,   // 2星
+      4: 3,   // 3星
+      5: 4,   // 4星
+      8: 1,   // 50組
+      9: 1,   // 25組
+      10: 1,  // 合數尾
+      11: 1,  // 生肖
+      13: 1,  // 除三餘數
+      15: 4,  // 27碼-4不出
+      16: 5,  // 27碼-5不出
+      17: 6,  // 27碼-6不出
+      18: 7,  // 27碼-7不出
+      19: 8,  // 27碼-8不出
+      20: 1,  // 2D-頭
+      21: 1,  // 3D-頭
+      22: 1,  // 3D-尾
+      23: 1,  // 3D-23組
+      24: 1,  // 頭獎尾
+      25: 1,  // 頭獎頭
+      26: 1,  // 財神尾
+      27: 1,  // 財神頭
+      28: 1,  // 特碼頭
+      29: 1,  // 27碼頭
+};
+  
 interface IBetParam {
       [key: string]: object;
 }
@@ -340,4 +368,5 @@ BetParam.Cars = Cars;
 BetParam.BTCHash = BTCHash;
 BetParam.HashSix = HashSix;
 BetParam.SGPools = SGPools;
+BetParam.VNNorth = VNNorth;
 export default BetParam;
