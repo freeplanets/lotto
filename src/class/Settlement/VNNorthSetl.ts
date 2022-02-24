@@ -68,7 +68,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: VNNums, conn?:
 		  if (Array.isArray(nums)) {
 			sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join("','")}') and isCancled=0`;
 		} else {
-			sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num '${nums}' and isCancled=0`;
+			sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num = '${nums}' and isCancled=0`;
 		}
     sqls.common.push(sql);
   }

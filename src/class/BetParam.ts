@@ -356,7 +356,7 @@ const VNNorth = {
       28: 1,  // 特碼頭
       29: 1,  // 27碼頭
 };
-  
+
 interface IBetParam {
       [key: string]: object;
 }
