@@ -19,6 +19,7 @@ import { HashSixSetl} from "./Settlement/HashSixSetl";
 import { MarkSixSetl} from "./Settlement/MarkSixSetl";
 import {SGPoolsSetl} from "./Settlement/SGPoolsSetl";
 import {Speed3Setl} from "./Settlement/Speed3Setl";
+import {VNNorthSetl} from "./Settlement/VNNorthSetl";
 
 // 重結 isSettled =3 轉成 status = 4 提供平台視別
 export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection, isSettled?: number, PLog?: IParamLog[]) {
@@ -213,6 +214,9 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
             break;
         case "SGPools":
             ans = SGPoolsSetl(tid, GameID, imsra, rtn, conn);
+            break;
+        case "VNNorth":
+            ans = VNNorthSetl(tid, GameID, imsra, rtn, conn);
             break;
         default:
             ans = MarkSixSetl(tid, GameID, imsra, rtn, conn);

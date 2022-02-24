@@ -7,6 +7,7 @@ import myPool from "./NewPool";
 dotenv.config();
 // console.log("dotenv:", process.env);
 export const port = process.env.SERVER_PORT;  // default port to listen
+export const JWT_KEY = process.env.SITE_NAME ? process.env.SITE_NAME : "thisisjwtkey";
 /*
 {
 host: process.env.DBHOST,

@@ -1,5 +1,7 @@
 import MSNum, {IMarkSixNums} from "../MSNum";
 import XFunc from "../XFunc";
+import { NumProcess } from "./if";
+
 const SevenOE: number[] = [];  // "單/雙"數量
 const SevenBS: number[] = [];  // "大/小"數量
 SevenOE["00"] = 0;
@@ -123,7 +125,7 @@ export interface IMSResult {
  *   總和中位數 175
  *
  */
-export class CMarkSixMum {
+export class CMarkSixMum implements NumProcess {
   private imsr: IMSResult = {
       Nums: [],
       RegularNums: [],

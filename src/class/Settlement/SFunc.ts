@@ -166,15 +166,15 @@ export function chkSame3OrPair(n: string[]) {
   return ta.length;
 }
 
-/*
-function f(t: string[], a: string[], n: number) {
-  if (n === 0) {
-    return r.push(t);
+export function getNumTailOrHead(nums: string, digit = 2, getHead = false): string {
+  let ans = "";
+  if (getHead) {
+    ans = nums.substring(0, digit);
+  } else {
+    ans = nums.substring(nums.length - digit, nums.length);
   }
-  for (let i = 0, l = a.length; i <= l - n; i++) {
-    f(t.concat(a[i]), a.slice(i + 1), n - 1);
-  }
+  return ans;
 }
-*/
-// Happy
-//
+export function getNumTailOrHeadInt(nums: string, digit = 2, getHead = false): number {
+  return parseInt(getNumTailOrHead(nums, digit, getHead), 10);
+}

@@ -1,4 +1,5 @@
 import express, {Request, Response, Router } from "express";
+import jwt from "jsonwebtoken";
 import mariadb from "mariadb";
 // import BetParam from "src/class/BetParam";
 // import {setPayRateData,setPayRate,isPayClassUsed,chkTermIsSettled,CreateOddsData,getGameList,getBtList} from '../API/ApiFunc';
@@ -14,13 +15,12 @@ import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
-import DateFunc from "../components/class/Functions/MyDate";
 import { ErrCode } from "../DataSchema/ENum";
-import {AnyObject, HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
+import { HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
     IGameDataCaption , IGameItem , IGameResult, IHashAna, IHasID, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import { getUserCredit } from "../func/Credit";
-import {doQuery, getConnection, IAxParams} from "../func/db";
+import {doQuery, getConnection, IAxParams, JWT_KEY } from "../func/db";
 
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
@@ -38,6 +38,8 @@ interface IPClass {
 interface ILoginInfo {
     id: number;
     Account: string;
+    uid: string;    // 唯一值 unigue key for all sites
+    exp?: number;    // 資料到期截止時間
     sid?: string;
     Levels?: number;
     Types?: number;
@@ -66,6 +68,7 @@ app.get("/login", async (req, res: Response) => {
                 const info: ILoginInfo = {
                     id: user.id,
                     Account: user.Account,
+                    uid: `${JWT_KEY}@${user.Account}@${user.id}`,
                     Levels: user.Levels,
                     Types: user.Types,
                     isTwoPassAsked: user.isTwoPassAsked,
@@ -106,7 +109,12 @@ app.get("/login", async (req, res: Response) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.setHeader("auth", `${logkey}`);
+    if (msg.data) {
+        const jsign = jwt.sign(msg.data as ILoginInfo, JWT_KEY, {expiresIn: "30 minutes"});
+        res.setHeader("auth", `${JWT_KEY}`);
+        res.setHeader("Authorization", jsign);
+        res.setHeader("Access-Control-Expose-Headers", "Authorization");
+    }
     res.send(JSON.stringify(msg));
 });
 app.get("/logout", async (req, res) => {

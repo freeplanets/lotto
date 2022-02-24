@@ -1,3 +1,5 @@
+import { AnyObject } from "../../DataSchema/if";
+
 export interface INumSet {
   Num: number;
   OddEven: number;
@@ -44,4 +46,8 @@ export interface IHRGNums {
   SumOE: number;         // 合數單雙
   TailBS: number;        // 尾數大小
   DragonTiger: number;
+}
+
+export interface NumProcess {
+  Nums: AnyObject;
 }
