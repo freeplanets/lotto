@@ -70,11 +70,19 @@ export default class KeyValFilter extends AFilter {
       let ftr = "";
       switch (typeof filter[key]) {
           case "number":
-              ftr = `${key} = ${filter[key]}`;
-              break;
+            ftr = `${key} = ${filter[key]}`;
+            break;
           case "boolean":
-              ftr = `${key}`;
-              break;
+            ftr = `${key}`;
+            break;
+          case "object":
+            let fkey = '';
+            if (typeof(filter[key][0])==='number') {
+              fkey = filter[key].join(',');
+            } else {
+              fkey = `'${filter[key].join('","')}'`;
+            }
+            ftr = `${key} in (${fkey})`;
           default:
               ftr = `${key} = '${filter[key]}'`;
       }

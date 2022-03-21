@@ -16,7 +16,7 @@ export interface IFromCenter {
   lottoid?: string;  // 遊戲代號 '37',
   drawtime?: string; // 開獎時間 '2020-07-02 14:50:00',
   setdate?: string;  // 立帳時期 '2020-07-02',
-  result?: string;  // '04,35,02,21,34,01',
+  result: string;  // '04,35,02,21,34,01',
   result2?: string; // '40',
   gettime?: string; // '2020-07-02 14:31:11',
   memo?: string; // 'macau.mark6',
@@ -79,6 +79,12 @@ export default class CenterCall {
       const term: ITerms|undefined = await jt.getOne(filter);
       if (term) {
           if (!term.isCanceled) {
+            if (param.result2) {  // 台灣賓果多送特碼
+              const aryNum = param.result.split(',');
+              if (aryNum[aryNum.length -1] === param.result2) {
+                param.result2 = '';
+              }
+            }
             const num: string = param.result + (param.result2 ? "," + param.result2 : "");
             const ans = await this.doSettle(term.id, term.GameID, num, conn, term.isSettled);
             if (!ans) {

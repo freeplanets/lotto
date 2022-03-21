@@ -3,7 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, {Request, Response} from "express";
 import mariadb from "mariadb";
-import { IMsg} from "./DataSchema/if";
+import { ErrCode } from "./DataSchema/ENum";
+import { IMsg } from "./DataSchema/if";
 import {doQuery, getConnection, IAxParams, port} from "./func/db";
 import {PreCheck} from "./func/middleware";
 import * as schedule from "./func/schedule";
@@ -39,8 +40,9 @@ app.use(cors(crosOption));
 app.use(PreCheck);
 
 app.get("/", async (req: Request, res: Response) => {
-
-       res.send("ok");
+    // console.log("root");
+    const msg: IMsg = { ErrNo: ErrCode.PASS, ErrCon: "ok" };
+    res.send(JSON.stringify(msg));
     });
 app.get("/login", async (req, res) => {
         // console.log(req.query);

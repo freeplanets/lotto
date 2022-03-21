@@ -49,14 +49,14 @@ class MyDate {
 		delete opt.year;
 		return d.toLocaleString(lang, opt);
 	}
-	public dayDiff(d: number): string {
-		const ts = this.dayDiffTS(d);
+	public dayDiff(days: number): string {
+		const ts = this.dayDiffTS(days);
 		return this.getDate(ts).toLocaleDateString();
 	}
-	public dayDiffTS(d: number): number {
+	public dayDiffTS(days: number): number {
 		const dt = this.getDate();
 		const dts = dt.getTime();
-		const ts = dts - d * 60 * 60 * 24 * 1000;
+		const ts = dts - days * 60 * 60 * 24 * 1000;
 		return ts;
 	}
 	public howMinutesAgo(time: string | number) {
@@ -95,9 +95,6 @@ class MyDate {
 			d = `${dd[2]}-${dd[0]}-${dd[1]}`;
 		}
 		return d;
-	}
-	private addZeroUnderTen(v: number) {
-		return v < 10 ? `0${v}` : `${v}`;
 	}
 }
 export default new MyDate();

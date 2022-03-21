@@ -28,7 +28,8 @@ async function webFunc(req: Request, res: Response) {
       openbet: "",
       lastresultissue: "",
       op: "",
-      Method: ""
+      Method: "",
+      result: "",
     };
     Object.keys(param).map((key) => {
       params[key] = param[key] as string;

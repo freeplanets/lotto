@@ -366,7 +366,7 @@ export interface IKeyVal {
     Key2?: string;
     Val2?: string | number;
     CondOr?: string;
-    [key: string]: string | number | undefined;
+    [key: string]: any;
 }
 
 export interface IChaseNum {

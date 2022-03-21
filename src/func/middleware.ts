@@ -1,8 +1,11 @@
 import {Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import mariadb from "mariadb";
+import DateFunc from "../components/class/Functions/MyDate";
 import { ErrCode } from "../DataSchema/ENum";
-import {IDbAns, IMsg} from "../DataSchema/if";
+import {AnyObject, IDbAns, IMsg} from "../DataSchema/if";
 import * as db from "../func/db";
+import { ILoginInfo } from "../router/AdminApi";
 const staytime: number = 3000000;   // sec
 
 export const PreCheck = async (req: Request, res: Response, next) => {
@@ -20,12 +23,20 @@ export const PreCheck = async (req: Request, res: Response, next) => {
     const UserID: number|undefined = param.UserID;
     const sid: string|undefined = param.sid;
     // const UpId: number|undefined = param.UpId;
-    if (!UserID || !sid) {
-      msg.ErrNo = ErrCode.MISS_PARAMETER;
-      msg.ErrCon = "Missing parameter!!";
-      res.send(JSON.stringify(msg));
+    // console.log("PreCheck header:", req.headers);
+    // console.log("chk point", sid);
+    if (!req.headers.authorization) {
+        // if (!UserID || !sid) {
+      if (param.NoCheck) {
+        next();
+      } else {
+        msg.ErrNo = ErrCode.MISS_PARAMETER;
+        msg.ErrCon = "Missing parameter!!";
+        res.send(JSON.stringify(msg));
+      }
     } else {
-      await LoginChk(UserID, sid).then((msg1) => {
+      const authkey = req.headers.authkey ? req.headers.authkey as string : "";
+      await AuthChk(res, req.headers.authorization, authkey).then((msg1) => {
         if (msg1.ErrNo !== 0 ) { res.send(JSON.stringify(msg1)); } else {
           // console.log("next1", msg1);
           next();
@@ -66,8 +77,26 @@ const addslashes = (str) => {
       return str;
   }
 };
-
-const LoginChk = async (UserID: number, sid: string, UpId?: number): Promise<IMsg> => {
+const AuthChk = async (res: Response, auth: string, authkey = "") => {
+  const msg: IMsg = { ErrNo: ErrCode.NO_LOGIN };
+  const info = jwt.verify(auth, db.JWT_KEY);
+  console.log("authchk:", typeof(info));
+  if (info && typeof(info) === "object") {
+    console.log(DateFunc.toLocalString(info.iat ? info.iat * 1000 : info.iat));
+    console.log(DateFunc.toLocalString(info.exp ? info.exp * 1000 : info.exp));
+    if (authkey === db.AuthKey) {
+      console.log("do authkey:", authkey, db.AuthKey);
+      const jsign = jwt.sign(info, db.JWT_KEY, { expiresIn: db.AuthExpire });
+      const { id , sid } = info as ILoginInfo;
+      res.setHeader("Authorization", jsign);
+      res.setHeader("Access-Control-Expose-Headers", "Authorization");
+      if (sid) { return LoginChk(id, sid); }
+    }
+    msg.ErrNo = ErrCode.PASS;
+  }
+  return msg;
+};
+const LoginChk = async (UserID: number, sid: string): Promise<IMsg> => {
   return new Promise(async (resolve) => {
     const msg: IMsg = {ErrNo: 0};
     await db.getConnection().then(async (conn) => {

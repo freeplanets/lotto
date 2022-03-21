@@ -453,7 +453,7 @@ async function getGameDataCaption(req, res) {
 }
 async function register(params, res: Response) {
     // const params = req.query;
-    console.log("agentApi/1 :", params);
+    // console.log("agentApi/1 :", params);
     const msg: IMsg = {ErrNo: 0};
     const data: IAnsData = {code: 0};
     const conn = await getConnection();
@@ -482,7 +482,7 @@ async function register(params, res: Response) {
             }
         } else {
             param = decParam(eds.Decrypted(params.param));
-            // console.log("agentApi/1 param:", param);
+            console.log("agentApi/1 param:", param);
         }
         const ans: boolean = await addUser(params.agentId, Agent.PayClassID, param, conn);
         // console.log("after addUser:", ans);

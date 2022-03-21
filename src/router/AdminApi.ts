@@ -20,7 +20,7 @@ import { HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport,
     IGameDataCaption , IGameItem , IGameResult, IHashAna, IHasID, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import { getUserCredit } from "../func/Credit";
-import {doQuery, getConnection, IAxParams, JWT_KEY } from "../func/db";
+import { AuthExpire, AuthKey, AuthLimit, doQuery, getConnection, IAxParams, JWT_KEY } from "../func/db";
 
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
@@ -35,7 +35,7 @@ interface IPClass {
     GameID: number;
     PayClassID: number;
 }
-interface ILoginInfo {
+export interface ILoginInfo {
     id: number;
     Account: string;
     uid: string;    // 唯一值 unigue key for all sites
@@ -110,10 +110,11 @@ app.get("/login", async (req, res: Response) => {
         msg.ErrCon = "Get connection error!!";
     }
     if (msg.data) {
-        const jsign = jwt.sign(msg.data as ILoginInfo, JWT_KEY, {expiresIn: "30 minutes"});
-        res.setHeader("auth", `${JWT_KEY}`);
+        const jsign = jwt.sign(msg.data as ILoginInfo, JWT_KEY, {expiresIn: AuthExpire});
+        res.setHeader("AuthKey", AuthKey);
         res.setHeader("Authorization", jsign);
-        res.setHeader("Access-Control-Expose-Headers", "Authorization");
+        res.setHeader("AuthLimit", AuthLimit);
+        res.setHeader("Access-Control-Expose-Headers", "Authorization, AuthKey, AuthLimit");
     }
     res.send(JSON.stringify(msg));
 });
