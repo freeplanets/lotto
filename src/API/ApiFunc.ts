@@ -1,4 +1,5 @@
 import mariadb, {PoolConnection} from "mariadb";
+import { ErrCode } from "../DataSchema/ENum";
 // import {getUsers} from "../API/MemberApi";
 import JTable from "../class/JTable";
 import {IChaseNum, ICommonParams, IDbAns, IMsg, IParamLog} from "../DataSchema/if";
@@ -86,6 +87,21 @@ export async function chkTermIsSettled(GameID: string|number, conn: mariadb.Pool
   });
   return ans;
 }
+export async function DeleteOddsData(GameID: string|number, GType: string, tid: number, conn: mariadb.PoolConnection): Promise<IMsg> {
+    return new Promise<IMsg>((resolve)=>{
+        const sql = `delete from CurOddsInfo where GameID = ? and tid < ? `;
+        const params = [GameID, tid];    
+        const msg:IMsg = { ErrNo: ErrCode.PASS };
+        conn.query(sql, params).then((res)=>{
+            msg.debug = res;
+            resolve(msg);
+        }).catch((err)=>{
+            msg.ErrNo = ErrCode.DB_QUERY_ERROR;
+            msg.error = err;;
+            resolve(msg);
+        });
+    });
+}
 export async function CreateOddsData(GameID: string|number, GType: string, tid: number, conn: mariadb.PoolConnection): Promise<IMsg> {
   let sql: string = "";
   sql = "select * from CurOddsInfo where tid = ? and GameID= ? limit 0,1";
@@ -100,7 +116,7 @@ export async function CreateOddsData(GameID: string|number, GType: string, tid: 
   if (isAutoOpen) {
       stop = 0;
   }
-  await conn.query(sql, params).then((row) => {
+  conn.query(sql, params).then((row) => {
       if (row.affectedRows > 0) { isEmpty = true; }
   }).catch((err) => {
       console.log(err);
@@ -529,6 +545,8 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
             const dbans = ans as IDbAns;
             const tid = dbans.insertId;
             msg = await CreateOddsData(term.GameID, GType, tid, conn);
+            await DeleteOddsData(term.GameID, GType, tid, conn);
+            // delete last OddsData
         } else {
             msg.ErrNo = 9;
             msg.error = ans;
