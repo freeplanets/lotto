@@ -76,9 +76,9 @@ export default class KeyValFilter extends AFilter {
             ftr = `${key}`;
             break;
           case "object":
-            let fkey = '';
-            if (typeof(filter[key][0])==='number') {
-              fkey = filter[key].join(',');
+            let fkey = "";
+            if (typeof(filter[key][0]) === "number") {
+              fkey = filter[key].join(",");
             } else {
               fkey = `'${filter[key].join('","')}'`;
             }

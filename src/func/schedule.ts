@@ -51,17 +51,17 @@ export function DelPriceTickDataBefortLast3Days() {
     // const d: string = dateAddZero(new Date().toLocaleDateString("zh-TW", {timeZone: "Asia/Taipei"}));
     doLeftPriceTickData(3);
     console.log("scheduleTest:", DateFunc.toLocalString());
-  });  
-} 
-async function doLeftPriceTickData(days:number) {
+  });
+}
+async function doLeftPriceTickData(days: number) {
   const conn: mariadb.PoolConnection|undefined = await db.getConnection();
   if (conn) {
     const ts = DateFunc.dayDiffTS(days);
-    let sql = `delete from PriceTick where ticktime < ${ts}`;
-    db.doQuery(sql, conn).then((res) => {
-      console.log('doLeftPriceTickData:', res);
-    });
-  } 
+    const sql = `delete from PriceTick where ticktime < ${ts}`;
+    const ans = await db.doQuery(sql, conn);
+    console.log("doLeftPriceTickData:", ans);
+    await conn.release();
+  }
 }
 async function doDayTotal(d: string) {
   const conn: mariadb.PoolConnection|undefined = await db.getConnection();

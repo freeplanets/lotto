@@ -80,9 +80,9 @@ export default class CenterCall {
       if (term) {
           if (!term.isCanceled) {
             if (param.result2) {  // 台灣賓果多送特碼
-              const aryNum = param.result.split(',');
-              if (aryNum[aryNum.length -1] === param.result2) {
-                param.result2 = '';
+              const aryNum = param.result.split(",");
+              if (aryNum[aryNum.length - 1] === param.result2) {
+                param.result2 = "";
               }
             }
             const num: string = param.result + (param.result2 ? "," + param.result2 : "");
