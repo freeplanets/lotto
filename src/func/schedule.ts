@@ -1,5 +1,6 @@
 import mariadb from "mariadb";
 import schedule from "node-schedule";
+import MyDate from "../components/class/Functions/MyDate";
 import DateFunc from "../components/class/Functions/MyDate";
 // import HashNum from "../components/class/GetHash/HashNum";
 // import BTCHashResult from "../components/class/GetHash/BTC";
@@ -44,6 +45,23 @@ export function scheduleTest() {
     doDayTotal(d);
     console.log("scheduleTest:", DateFunc.toLocalString());
   });
+}
+export function DelPriceTickDataBefortLast3Days() {
+  schedule.scheduleJob("1 0 0 * * *", () => {
+    // const d: string = dateAddZero(new Date().toLocaleDateString("zh-TW", {timeZone: "Asia/Taipei"}));
+    doLeftPriceTickData(3);
+    console.log("scheduleTest:", DateFunc.toLocalString());
+  });  
+} 
+async function doLeftPriceTickData(days:number) {
+  const conn: mariadb.PoolConnection|undefined = await db.getConnection();
+  if (conn) {
+    const ts = DateFunc.dayDiffTS(days);
+    let sql = `delete from PriceTick where ticktime < ${ts}`;
+    db.doQuery(sql, conn).then((res) => {
+      console.log('doLeftPriceTickData:', res);
+    });
+  } 
 }
 async function doDayTotal(d: string) {
   const conn: mariadb.PoolConnection|undefined = await db.getConnection();
@@ -139,6 +157,7 @@ export function datetime(v: string|number, style?: string) {
   }
   return dt.toLocaleString("zh-TW", {timeZone: "Asia/Taipei", hour12: false});
 }
+
 function dateAddZero(d: string): string {
   const sep: string = d.indexOf("-") > -1 ? "-" : "/";
   const dArr: string[] = d.split(sep);

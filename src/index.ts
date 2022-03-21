@@ -21,6 +21,7 @@ dotenv.config();
 if (process.env.WORKSTATUS !== "localhost") {
     console.log("Schedule Run");
     schedule.getHashResult();
+    schedule.DelPriceTickDataBefortLast3Days();
 } else {
     console.log("No Schedule");
     // schedule.getBTCHash("mis.uuss.net:8332");
