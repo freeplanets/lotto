@@ -1,7 +1,7 @@
 import mariadb, {PoolConnection} from "mariadb";
-import { ErrCode } from "../DataSchema/ENum";
 // import {getUsers} from "../API/MemberApi";
 import JTable from "../class/JTable";
+import { ErrCode } from "../DataSchema/ENum";
 import {IChaseNum, ICommonParams, IDbAns, IMsg, IParamLog} from "../DataSchema/if";
 import {IGame, IPayClassParam, IPayRateItm, ITerms, IUserPartial} from "../DataSchema/user";
 import { BeginTrans, Commit, doQuery, RollBack} from "../func/db";
@@ -88,16 +88,16 @@ export async function chkTermIsSettled(GameID: string|number, conn: mariadb.Pool
   return ans;
 }
 export async function DeleteOddsData(GameID: string|number, GType: string, tid: number, conn: mariadb.PoolConnection): Promise<IMsg> {
-    return new Promise<IMsg>((resolve)=>{
+    return new Promise<IMsg>((resolve) => {
         const sql = `delete from CurOddsInfo where GameID = ? and tid < ? `;
-        const params = [GameID, tid];    
-        const msg:IMsg = { ErrNo: ErrCode.PASS };
-        conn.query(sql, params).then((res)=>{
+        const params = [GameID, tid];
+        const msg: IMsg = { ErrNo: ErrCode.PASS };
+        conn.query(sql, params).then((res) => {
             msg.debug = res;
             resolve(msg);
-        }).catch((err)=>{
+        }).catch((err) => {
             msg.ErrNo = ErrCode.DB_QUERY_ERROR;
-            msg.error = err;;
+            msg.error = err;
             resolve(msg);
         });
     });
