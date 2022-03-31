@@ -233,7 +233,7 @@ export class Bet implements IBet {
             });
             const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
             const rlt1 = await jtd.MultiInsert(BetDetail);
-            console.log("AnaNum Save Detail:", rlt1);
+            // console.log("AnaNum Save Detail:", rlt1);
             if (rlt1.ErrNo === ErrCode.PASS && rlt1.affectedRows > 0) {
                 if (Chker) {
                     // console.log("do Chker updateTotals");
@@ -423,7 +423,7 @@ export class Bet implements IBet {
         // wait this.conn.beginTransaction();
         await this.BeginTrans();
         const rlt = await jt.Insert(bh);
-        // console.log("Parlay SNB:", SNB);
+        // console.log("Parlay SNB:", SNB, rlt, numsets);
         if (rlt && rlt.warningStatus === 0) {
             const ts = new Date().getTime();
             const ansmc = await ModifyCredit(this.UserID, "", -1, bh.Total * -1, ts + "ts" + this.UserID, this.conn);
@@ -476,8 +476,8 @@ export class Bet implements IBet {
                             if (NumOdd[300 + nn]) { odds3 = NumOdd[300 + nn]; }
                             oddsg1.push(NumOdd[100 + nn]);
                             // 三中二額外處理
-                            if (GType === GameTypes.MarkSix && (BetType === 8 || BetType === 72)) {
-                                const tmp: IExProc = {
+                            // if (GType === GameTypes.MarkSix && (BetType === 8 || BetType === 72)) {
+                            const tmp: IExProc = {
                                     id: 0,
                                     betid: rlt ? rlt.insertId : 0,
                                     tid: this.tid,
@@ -489,8 +489,8 @@ export class Bet implements IBet {
                                     Opened: 0,
                                     UseAvgOdds
                                 };
-                                exproc.push(tmp);
-                            }
+                            exproc.push(tmp);
+                            // }
                         }
                     }
                 });
@@ -558,9 +558,11 @@ export class Bet implements IBet {
                 } else {
                     console.log("no checker", Chker);
                 }
+                // console.log("exproc", exproc);
                 if (exproc.length > 0) {
                     const exjtd: JTable<IExProc> = new JTable(this.conn, "BetTableEx");
                     const exrlt = await exjtd.MultiInsert(exproc);
+                    // console.log("exrlt", exrlt);
                     if (!exrlt) {
                         // await this.conn.rollback();
                         await this.RollBack();
@@ -911,7 +913,7 @@ export class Bet implements IBet {
             console.log("getOddsData", err);
             ans = false;
         });
-        console.log("getOddsData ans:", ans);
+        // console.log("getOddsData ans:", ans);
         return ans;
     }
     private async getNumAvgle(BetTypes: number[]|number): Promise<INumAvg[]|undefined> {

@@ -1,9 +1,9 @@
 import {ISetl} from "../../DataSchema/if";
 const SettleNums: ISetl[] = [
   {
-    BetTypes: 1,              // 單碼
+    BetTypes: 1,              // 正碼
     NumTarget: "Nums",
-    Position: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+    Position: -1,
     OpenAll: 1
   },
   {
@@ -49,6 +49,89 @@ const SettleNums: ISetl[] = [
     BetTypes: 8,              // 五行 和值 金(210~695) 0,木（696～763） 1,水（764～855） 2,火（856～923） 3,士（924～1410） 4
     NumTarget: "FiveElements",
     OpenAll: 1
-  }
+  },
+  {
+    BetTypes: 9,              // 特碼
+    NumTarget: "Nums",
+    Position: [19],
+    OpenAll: 1
+  },
+  {
+    BetTypes: 10,           // 2星
+    NumTarget: "Nums",
+    Position: -1,
+    OpenAll: 2,
+    OpenLess: 1,
+    UseExTable: true
+  },
+  {
+    BetTypes: 11,           // 3星
+    NumTarget: "Nums",
+    Position: -1,
+    OpenAll: 3,
+    OpenLess: 2,
+    UseExTable: true
+  },
+  {
+    BetTypes: 12,           // 4星
+    NumTarget: "Nums",
+    Position: -1,
+    OpenAll: 4,
+    OpenLess: 3,
+    UseExTable: true
+  },
+  {
+    BetTypes: 13,
+    NumTarget: "OddEven",
+    Position: -1,
+    OpenAll: 1,
+  },
+  {
+    BetTypes: 14,
+    NumTarget: "BigSmall",
+    Position: -1,
+    OpenAll: 1,
+  },
+  {
+    BetTypes: 15,
+    NumTarget: "TailOddEven",
+    Position: -1,
+    OpenAll: 1,
+  },
+  {
+    BetTypes: 16,
+    NumTarget: "TailBigSmall",
+    Position: -1,
+    OpenAll: 1,
+  },
+  {
+    BetTypes: 17,
+    NumTarget: "SpTail",
+    OpenAll: 1,
+  },
+  {
+    BetTypes: 18,
+    NumTarget: "Tail_1_5",
+    Position: -1,
+    OpenAll: 1,
+  },
+  {
+    BetTypes: 19,
+    NumTarget: "Tail_6_10",
+    Position: -1,
+    OpenAll: 1,
+  },
+  {
+    BetTypes: 20,
+    NumTarget: "Tail_11_15",
+    Position: -1,
+    OpenAll: 1,
+  },
+  {
+    BetTypes: 21,
+    NumTarget: "Tail_16_20",
+    Position: -1,
+    OpenAll: 1,
+  },
 ];
 export default SettleNums;

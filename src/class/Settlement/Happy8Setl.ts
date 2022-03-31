@@ -43,8 +43,25 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IHappy8Result,
   if (itm.Position !== undefined) {
     const nums = imsr[itm.NumTarget];
     if (typeof(itm.Position) === "number") {
+      if (Array.isArray(nums)) {
+        if (itm.OpenLess) {
+          // 連碼多派 例：三中二
+          sql = `update BetTableEx set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in (${nums.join(",")})`;
+          sqls.pre.push(sql);
+
+          sql = `update BetTable b,
+          (SELECT betid,tGroup,count(*) OpNums,CASE UseAvgOdds WHEN 1 then SUM(ODDS)/count(*) when 0 then MIN(Odds) end Odds FROM BetTableEx
+          where GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and Opened=1 group by betid,tGroup HAVING OpNums > 1) t set b.OpNums=t.OpNums,b.Odds=t.Odds,b.Payouts=b.Amt*t.Odds
+          where b.betid=t.betid and b.tGroup=t.tGroup and b.GameID=${GameID} and tid=${tid} and BetType=${itm.BetTypes} and b.isCancled=0`;
+          sqls.pre.push(sql);
+        } else {
+          sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in ('${nums.join("','")}') and isCancled=0`;
+          sqls.common.push(sql);
+        }
+      } else {
         sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num ='${nums}' and isCancled=0`;
         sqls.common.push(sql);
+      }
     } else {
       if (itm.PType === "EACH") {
         itm.Position.map((idx) => {
@@ -66,7 +83,14 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IHappy8Result,
     }
     sqls.common.push(sql);
   }
-  sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
-  sqls.common.push(sql);
+  if (itm.OpenLess) {
+    sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenLess}`;
+    sqls.common.push(sql);
+    sql = `update BetTable set WinLose=Payouts1-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
+    sqls.common.push(sql);
+  } else {
+    sql = `update BetTable set WinLose=Payouts-Amt where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and OpNums=${itm.OpenAll}`;
+    sqls.common.push(sql);
+  }
   return sqls;
 }

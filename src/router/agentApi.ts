@@ -6,6 +6,7 @@ import DataAccess from "../components/class/DataBase/DataAccess";
 import { ErrCode } from "../DataSchema/ENum";
 import { IDbAns, IGameAccessParams, IHasID, IMsg } from "../DataSchema/if";
 import { CryptoOp, IUser } from "../DataSchema/user";
+import { AddAuthHeader } from "../func/ccfunc";
 import { ModifyCredit } from "../func/Credit";
 import { getConnection } from "../func/db";
 
@@ -134,6 +135,9 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
                 msg.wsServer = process.env.WS_SERVER;
                 msg.chatServer = process.env.WS_CHATSERVER;
                 msg.chatSite = process.env.SITE_NAME;
+                user.uid = user.Account;
+                user.meta = { nickname: user.Nickname };
+                res = AddAuthHeader(user, res);
             }
         }
     } else {

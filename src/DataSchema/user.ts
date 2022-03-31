@@ -1,3 +1,5 @@
+import { AnyObject } from "./if";
+
 export interface CryptoOp {
     ItemID: number;
     LeverLimit: number;
@@ -8,6 +10,8 @@ export interface CryptoOp {
 export interface IUser {
     TableName?: "User";
     id: number;
+    uid?: string;
+    meta?: AnyObject;
     CLevel: string;
     Account: string;
     Password?: string;

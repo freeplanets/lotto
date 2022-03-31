@@ -1,3 +1,5 @@
+import { Response } from "express";
+import jwt from "jsonwebtoken";
 import { PoolConnection } from "mariadb";
 import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
@@ -8,7 +10,8 @@ import ReceiverManager from "../components/class/Order/ReceiverManager";
 import MemberReport from "../components/class/Report/Member";
 import wsclient from "../components/webSC";
 import { ErrCode, StopType } from "../DataSchema/ENum";
-import { AskTable, ChatMsg, HasUID, IHasID, IKeyVal, IMsg, Items, Lever, NoDelete, PriceTick, WebParams, WsMsg } from "../DataSchema/if";
+import { AnyObject, AskTable, ChatMsg, HasUID, IHasID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
+import { AuthExpire, AuthKey, AuthLimit, JWT_KEY } from "../func/db";
 import { GetPostFunction } from "./ExpressAccess";
 
 interface IMyFunction<T> extends GetPostFunction {
@@ -49,7 +52,7 @@ export const save: IMyFunction<WebParams> = async (param: WebParams, conn: PoolC
 };
 export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {ErrNo: 0};
-  // console.log("savedata", param);
+  console.log("savedata", param);
   if (param.TableName && param.TableData) {
     const jt = new JTable(conn, param.TableName);
     if (typeof param.TableData === "string") {
@@ -74,7 +77,7 @@ export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: P
         });
       } else {
         // console.log("saveData", param.TableDatas);
-        if (param.TableDatas.id) {
+        if (param.TableDatas.id || param.Filter) {
           msg = await jt.Update(param.TableDatas);
         } else {
           msg = await jt.Insert(param.TableDatas);
@@ -370,4 +373,12 @@ export const sendMessage = async (param: WebParams, conn: PoolConnection) => {
 };
 export const getEmergencyLog = async (conn: PoolConnection) => {
   const sql = "Select e.*, u.Account from EmergencyClose e left join User u on e.ModifyID = u.id order by e.ModifyTime desc limit 0,10";
+};
+export const AddAuthHeader = (obj: AnyObject, res: Response): Response => {
+  const jsign = jwt.sign(obj, JWT_KEY, {expiresIn: AuthExpire});
+  res.setHeader("AuthKey", AuthKey);
+  res.setHeader("Authorization", jsign);
+  res.setHeader("AuthLimit", AuthLimit);
+  res.setHeader("Access-Control-Expose-Headers", "Authorization, AuthKey, AuthLimit");
+  return res;
 };

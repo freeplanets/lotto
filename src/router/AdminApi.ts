@@ -16,9 +16,10 @@ import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
 import { ErrCode } from "../DataSchema/ENum";
-import { HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
+import { AnyObject, HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
     IGameDataCaption , IGameItem , IGameResult, IHashAna, IHasID, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
+import { AddAuthHeader } from "../func/ccfunc";
 import { getUserCredit } from "../func/Credit";
 import { AuthExpire, AuthKey, AuthLimit, doQuery, getConnection, IAxParams, JWT_KEY } from "../func/db";
 
@@ -39,6 +40,7 @@ export interface ILoginInfo {
     id: number;
     Account: string;
     uid: string;    // 唯一值 unigue key for all sites
+    meta?: AnyObject;
     exp?: number;    // 資料到期截止時間
     sid?: string;
     Levels?: number;
@@ -110,11 +112,17 @@ app.get("/login", async (req, res: Response) => {
         msg.ErrCon = "Get connection error!!";
     }
     if (msg.data) {
+        /*
         const jsign = jwt.sign(msg.data as ILoginInfo, JWT_KEY, {expiresIn: AuthExpire});
         res.setHeader("AuthKey", AuthKey);
         res.setHeader("Authorization", jsign);
         res.setHeader("AuthLimit", AuthLimit);
         res.setHeader("Access-Control-Expose-Headers", "Authorization, AuthKey, AuthLimit");
+        */
+        const user = msg.data as ILoginInfo;
+        user.uid = String(user.id);
+        user.meta = { nickname: user.Account };
+        res = AddAuthHeader(user, res);
     }
     res.send(JSON.stringify(msg));
 });
@@ -1107,7 +1115,7 @@ app.post("/createBetItems", async (req, res) => {
   const data: IBetItem[] = JSON.parse(param.data.replace(/\\/g, ""));
   const val: string[] = [];
   data.map((itm) => {
-      const tmp: string = `(${GType},${itm.BetType},'${itm.Num}',${ModifyID})`;
+      const tmp: string = `('${GType}',${itm.BetType},'${itm.Num}',${ModifyID})`;
       // console.log(tmp);
       val.push(tmp);
   });
@@ -1694,7 +1702,7 @@ app.get("/setOdds", async (req, res) => {
       const param = req.query;
       // console.log("setOdds param", param);
       if (param.Step) {
-        const tid = parseInt(param.id as string, 10);
+        const tid = parseInt(param.tid as string, 10);
         const GameID = parseInt(param.GameID as string, 10);
         const BT = parseInt(param.BT as string, 10);
         const Num = parseInt(param.Num as string, 10);
@@ -1706,7 +1714,7 @@ app.get("/setOdds", async (req, res) => {
               let odds: number = 0;
               let addOdds: number = 0;
               const Add: number = parseInt(param.Add as string, 10);
-              const Step: number = parseInt(param.Step as string, 10);
+              const Step: number = parseFloat(param.Step as string);
               if (param.Add) {
                 odds = fOdds.Odds + Add * Step;
               } else {
@@ -1714,7 +1722,7 @@ app.get("/setOdds", async (req, res) => {
                 addOdds = addOdds - (addOdds % fOdds.Steps);
                 odds = fOdds.Odds - addOdds;
               }
-              console.log("before setOdds", odds, param.Add, param.Step);
+              console.log("before setOdds", odds, param.Add, Step, param.Step, fOdds);
               if (odds > fOdds.MaxOdds) {
                   odds = fOdds.MaxOdds;
               }

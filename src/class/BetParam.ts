@@ -329,6 +329,29 @@ const SGPools = {
       28: 1, // { title: '合數單雙',sctitle: [ , '1獎', '2獎', '3獎'],shortT: '合',subtitle: [ '單', '雙' ] },
       29: 1, // { title: '合數大小',sctitle: [ , '1獎', '2獎', '3獎'],shortT: '合',subtitle: [ '大', '小' ] },
 };
+const Happy8 = {
+      1: 1, // { title: '正碼' },
+      2: 1, // { title: '總和大小'},
+      3: 1, // { title: '總和單雙'},
+      4: 1, // { title: '總和810'},
+      5: 1, // { title: '總和過關'},
+      6: 1, // { title: '前後和'},
+      7: 1, // { title: '單雙和'},
+      8: 1, // { title: '五行'},
+      9: 1, // {title: '特碼'},
+      10: 2, // {title: '2星'},
+      11: 3, // {title: '3星'},
+      12: 4, // {title: '4星'},
+      13: 1, // {title: '單雙', shortT: '', subtitle:['單','雙']},
+      14: 1, // {title: '大小', shortT: '', subtitle:['大','小']},
+      15: 1, // {title: '尾數單雙', shortT: '', subtitle:['尾單','尾雙']},
+      16: 1, // {title: '尾數大小', shortT: '', subtitle:['尾大','尾小']},
+      17: 1, // {title: '特碼尾數'},
+      18: 1, // {title: '1-5球尾數'},
+      19: 1, // {title: '6-10球尾數'},
+      20: 1, // {title: '11-15球尾數'},
+      21: 1, // {title: '16-20球尾數'},
+};
 const VNNorth = {
       1: 1,   // 特別號
       2: 1,   // 27碼
@@ -369,4 +392,5 @@ BetParam.BTCHash = BTCHash;
 BetParam.HashSix = HashSix;
 BetParam.SGPools = SGPools;
 BetParam.VNNorth = VNNorth;
+BetParam.Happy8 = Happy8;
 export default BetParam;

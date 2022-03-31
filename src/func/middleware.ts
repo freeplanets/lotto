@@ -80,10 +80,10 @@ const addslashes = (str) => {
 const AuthChk = async (res: Response, auth: string, authkey = "") => {
   const msg: IMsg = { ErrNo: ErrCode.NO_LOGIN };
   const info = jwt.verify(auth, db.JWT_KEY);
-  console.log("authchk:", typeof(info));
+  // console.log("authchk:", typeof(info));
   if (info && typeof(info) === "object") {
-    console.log(DateFunc.toLocalString(info.iat ? info.iat * 1000 : info.iat));
-    console.log(DateFunc.toLocalString(info.exp ? info.exp * 1000 : info.exp));
+    // console.log(DateFunc.toLocalString(info.iat ? info.iat * 1000 : info.iat));
+    // console.log(DateFunc.toLocalString(info.exp ? info.exp * 1000 : info.exp));
     if (authkey === db.AuthKey) {
       console.log("do authkey:", authkey, db.AuthKey);
       const jsign = jwt.sign(info, db.JWT_KEY, { expiresIn: db.AuthExpire });
