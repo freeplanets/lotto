@@ -28,6 +28,7 @@ export function Happy8Setl(tid: number, GameID: number, num: string, rtn: any, c
       }
   });
   ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  // console.log("Happy8Setl:", ans);
   return ans;
 }
 
@@ -43,7 +44,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IHappy8Result,
   if (itm.Position !== undefined) {
     const nums = imsr[itm.NumTarget];
     if (typeof(itm.Position) === "number") {
-      if (Array.isArray(nums)) {
+      if (itm.Position < 0) {
         if (itm.OpenLess) {
           // 連碼多派 例：三中二
           sql = `update BetTableEx set Opened=1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num in (${nums.join(",")})`;
@@ -59,7 +60,7 @@ function CreateSql(tid: number, GameID: number, itm: ISetl, imsr: IHappy8Result,
           sqls.common.push(sql);
         }
       } else {
-        sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num ='${nums}' and isCancled=0`;
+        sql = `update BetTable set OpNums=OpNums+1 where tid=${tid} and GameID=${GameID} and BetType=${itm.BetTypes} and Num ='${nums[itm.Position]}' and isCancled=0`;
         sqls.common.push(sql);
       }
     } else {

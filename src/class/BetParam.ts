@@ -379,7 +379,17 @@ const VNNorth = {
       28: 1,  // 特碼頭
       29: 1,  // 27碼頭
 };
-
+const KENO = {
+      1: 2,
+      2: 3,
+      3: 4,
+      4: 5,
+      5: 6,
+      6: 7,
+      7: 8,
+      8: 9,
+      9: 10,
+};
 interface IBetParam {
       [key: string]: object;
 }
@@ -393,4 +403,5 @@ BetParam.HashSix = HashSix;
 BetParam.SGPools = SGPools;
 BetParam.VNNorth = VNNorth;
 BetParam.Happy8 = Happy8;
+BetParam.KENO = KENO;
 export default BetParam;

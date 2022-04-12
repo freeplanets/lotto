@@ -53,7 +53,7 @@ const SettleNums: ISetl[] = [
   {
     BetTypes: 9,              // 特碼
     NumTarget: "Nums",
-    Position: [19],
+    Position: 19,
     OpenAll: 1
   },
   {

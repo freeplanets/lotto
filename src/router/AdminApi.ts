@@ -1053,7 +1053,7 @@ app.get("/getTerms", async (req, res) => {
       sql = sql + " and PDate=? ";
       pa.push(param.SDate as string);
   }
-  sql = sql + "order by t.id desc limit 0,10";
+  sql = sql + "order by t.id desc limit 0,20";
   // console.log("getTerms", sql, pa);
   const tans = await doQuery(sql, conn, pa);
   msg.data = tans;
