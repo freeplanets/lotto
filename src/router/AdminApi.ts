@@ -405,7 +405,9 @@ app.get("/getGames", async (req, res) => {
   const msg: IMsg = {ErrNo: 0};
   if (conn) {
       const param = req.query;
-      const sql = `select id,name,GType,OpenNums from Games where ${parseInt(param.showall as string, 10) ? 1 : "GType != ''"} order by id`;
+      const sql = `select id,name,GType,OpenNums from Games
+        where ${parseInt(param.showall as string, 10) ? 1 : "GType != ''"}
+        order by ${parseInt(param.order as string, 10) ? "MbrIfOrder" : "id"}`;
       // console.log("getGames:", param, sql);
       const ans = await doQuery(sql, conn);
       if (ans) {
@@ -1423,9 +1425,14 @@ app.post("/member/mwagerjn", async (req, res) => {
   const GameID = param.LottoID;
   const PayClassID = param.PayClassID;
   // const btrans = await conn.beginTransaction();
+  let ans;
   // console.log("Begin:", btrans);
   const snb: Bet = new Bet(UserID, Account, UpId, tid, GameID, PayClassID, conn);
-  const ans: IMsg = await snb.Parlay(parseInt(param.wgtype, 10), param.OddsID, param.JoinNumber, parseInt(param.StakeMoney, 10));
+  if (parseInt(GameID, 10) === 36) {
+    ans = await snb.Keno(parseInt(param.wgtype, 10), param.JoinNumber, parseInt(param.StakeMoney, 10));
+  } else {
+    ans = await snb.Parlay(parseInt(param.wgtype, 10), param.OddsID, param.JoinNumber, parseInt(param.StakeMoney, 10));
+  }
   // if (ans.warningStatus === 0) {
       /*
   if (ans.ErrNo === 0) {

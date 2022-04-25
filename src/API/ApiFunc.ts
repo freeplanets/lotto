@@ -238,7 +238,7 @@ async function updateCurOdds(tid: number, GameID: string|number, Bts: number[], 
 }
 
 export async function getGameList(conn: mariadb.PoolConnection) {
-  const sql: string = "select id,name,GType from Games where 1";
+  const sql: string = "select id,name,GType from Games where GType != '' order by MbrIfOrder";
   let ans;
   await conn.query(sql).then((rows) => {
      ans = rows;

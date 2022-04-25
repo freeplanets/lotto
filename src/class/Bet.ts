@@ -1,7 +1,8 @@
-import mariadb from "mariadb";
+import mariadb, { PoolConnection } from "mariadb";
+import MyMath from "../components/class/Functions/MyMath";
 import { ErrCode } from "../DataSchema/ENum";
 import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
-    IBetTable, ICurOddsData, IMsg, INumAvg, INumData, IStrKeyNumer} from "../DataSchema/if";
+    IBetTable, ICurOddsData, IMsg, INumAvg, INumData, IStrKeyNumer, KenoDataProcQue} from "../DataSchema/if";
 import {IGame, ITerms} from "../DataSchema/user";
 import {getUserCredit, ModifyCredit} from "../func/Credit";
 // import JDate from '../class/JDate';
@@ -9,6 +10,7 @@ import BetParam from "./BetParam";
 import {C} from "./Func";
 import JTable from "./JTable";
 import {OpChk} from "./OpChk";
+
 interface INum {
     [key: number]: any;
 }
@@ -255,6 +257,10 @@ export class Bet implements IBet {
                     console.log("no checker", Chker);
                 }
                 msg.data = rlt1;
+                if (rlt1.insertId) {
+                    const qq = await this.createQue(rlt1.insertId);
+                    console.log("create que", qq);
+                }
                 // await this.conn.commit();
                 await this.Commit();
                 return msg;
@@ -831,6 +837,160 @@ export class Bet implements IBet {
         return msg;
 
     }
+    // Amt  每注金額 取代 總額
+    public async Keno(BetType: number, Nums: string, Amt: number): Promise<IMsg> {
+        const msg: IMsg = {
+            ErrNo: ErrCode.PASS
+        };
+        this.TermInfo = await this.getTermInfo(this.tid, this.conn);
+        if (this.TermInfo) {
+            if (this.TermInfo.isSettled) {
+                msg.ErrNo = ErrCode.NUM_STOPED;
+                msg.ErrCon = "Terms End!!";
+                return msg;
+            }
+        } else {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Terms data error!!";
+            return msg;
+        }
+        this.GameInfo = await this.getGameInfo(this.GameID, this.conn);
+        if (!this.GameInfo) {
+            msg.ErrNo = 9;
+            msg.ErrCon = "Game data error!!";
+            return msg;
+        }
+        const GType = this.GameInfo.GType;
+        let Chker: OpChk | undefined;
+        const BNum: number = BetParam[GType][BetType];
+        const setsN = Nums.split("|");
+        const SNB: IBetContent = {
+            Content: []
+        };
+        console.log("KENO:", BNum, setsN, setsN.length); // 每注號數，大於為連碼，小於則錯誤回傳號數不足
+        if (BNum > 0 && setsN.length < BNum) {
+            msg.ErrNo = ErrCode.NOT_ENOUGH_NUM;
+            msg.ErrCon = "Not enough num";
+            return msg;
+        }
+        // 檢查是否有號碼停押
+        const ans: ICurOddsData[] = await this.getOddsData(GType, setsN.join(","), BetType);
+        if (this.hasNumStoped(ans)) {
+            msg.ErrNo = ErrCode.NUM_STOPED;
+            return msg;
+        }
+        console.log("KENO after num conut check!", ans);
+        if (setsN.length !== ans.length) {
+            msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
+            return msg;
+        }
+        const navg: INumAvg[]|undefined = await this.getNumAvgle(BetType);
+        const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetType);
+        if (opParams) {
+            Chker = new OpChk(this.GameInfo, this.tid, this.UserID, opParams, false, navg);
+        }
+        const totalSet = MyMath.Combinatorics(setsN.length, BNum);
+        const Total = totalSet * totalSet;
+        const rdOdds: number = 0;
+        for (let i = 0, n = setsN.length; i < n; i++) {
+            const iNum = parseInt(setsN[i], 10);
+            const itm: INumData = {
+                Num: iNum,
+                OddsID: 0,
+                Odds: 0,
+                Amt: 0,
+            };
+            SNB.Content.push(itm);
+        }
+        // });
+        SNB.BetType = BetType;
+        const jt: JTable<IBetHeader> = new JTable(this.conn, "BetHeader");
+        const bh: IBetHeader = {
+            id: 0,
+            UpId: this.UpId,
+            UserID: this.UserID,
+            tid: this.tid,
+            GameID: this.GameID,
+            BetContent: JSON.stringify(SNB),
+            Total
+        };
+        const balance = await getUserCredit(this.UserID, this.conn);
+        if (bh.Total > balance) {
+            msg.ErrNo = ErrCode.NO_CREDIT;
+            msg.ErrCon = "Insufficient credit";
+            return msg;
+        }
+        // await this.conn.beginTransaction();
+        await this.BeginTrans();
+        const rlt = await jt.Insert(bh);
+        console.log("Keno:", SNB, rlt);
+        if (rlt && rlt.warningStatus === 0) {
+            const ts = new Date().getTime();
+            const ansmc = await ModifyCredit(this.UserID, "", -1, bh.Total * -1, ts + "ts" + this.UserID, this.conn);
+            if (ansmc) {
+                msg.balance = ansmc.balance;
+            } else {
+                msg.ErrNo = 9;
+                msg.ErrCon = "System Busy!!";
+                // await this.conn.rollback();
+                await this.RollBack();
+                return msg;
+            }
+            const BetDetail: IBetTable[] = [];
+            const nums: string[] = [];
+            const exproc: IExProc[] = [];
+            SNB.Content.map((set, idx) => {
+                let tmpOdds: number = 0;
+                if (set.Odds) { tmpOdds = set.Odds as number; }
+                const tmp: IExProc = {
+                    id: 0,
+                    betid: rlt ? rlt.insertId : 0,
+                    tid: this.tid,
+                    GameID: this.GameID,
+                    BetType,
+                    tGroup: idx,
+                    Num: set.Num as number,
+                    Odds: tmpOdds,
+                    Opened: 0,
+                    UseAvgOdds: 0,
+                };
+                exproc.push(tmp);
+            });
+                // const avgOdds: number = (isPASS ? odds : this.AvgOrMin(oddsg, UseAvgOdds));
+            const bd: IBetTable = {
+                    id: 0,
+                    betid: rlt ? rlt.insertId : 0,
+                    tid: this.tid,
+                    UserID: this.UserID,
+                    Account: this.Account,
+                    UpId: this.UpId,
+                    GameID: this.GameID,
+                    BetType,
+                    Num: "x" + setsN.join("x") + "x",
+                    Odds: rdOdds,
+                    Payouts: parseFloat((Amt * rdOdds).toFixed(2)),
+                    Amt: Total,
+                    validAmt: Total,
+                    OpSP: setsN.length, // 總號數
+                    OpPASS: BNum,   // 每組號數
+                };
+            nums.push(bd.Num);
+            BetDetail.push(bd);
+            const jtd: JTable<IBetTable> = new JTable(this.conn, "BetTable");
+            const rlt1 = await jtd.MultiInsert(BetDetail);
+            console.log("Keno Save Detail:", rlt1);
+            msg.data = rlt1;
+            // await this.conn.commit();
+            await this.Commit();
+            return msg;
+        }
+        // await this.conn.rollback();
+        await this.RollBack();
+        msg.ErrNo = 9;
+        msg.ErrCon = "System busy!!";
+        msg.header = rlt;
+        return msg;
+    }
     public async BeginTrans() {
         console.log("BeginTrans");
         await this.conn.query("SET AUTOCOMMIT=0;");
@@ -845,6 +1005,16 @@ export class Bet implements IBet {
         console.log("Commit");
         await this.conn.commit();
         await this.conn.query("SET AUTOCOMMIT=1;");
+    }
+    private createQue(id: number) {
+        return new Promise<IMsg>((resolve) => {
+            const jtd: JTable<KenoDataProcQue> = new JTable(this.conn, "KenoDataProcQue");
+            const data: KenoDataProcQue = {
+                id,
+                procStatus: 0,
+            };
+            resolve(jtd.Insert(data));
+        });
     }
     private async getGameInfo(GameID: number, conn: mariadb.PoolConnection) {
         const jt: JTable<IGame> = new JTable(conn, "Games");

@@ -173,6 +173,7 @@ export interface IBetTable {
     Odds1?: number;
     Odds2?: number;
     Odds3?: number;
+    OpSP?: number;
     OpPASS?: number;
     Amt: number;
     validAmt: number;
@@ -646,4 +647,8 @@ export interface GameType extends AnyObject {
     StartNum: number;
     EndNum: number;
     SameNum: number;
+}
+export interface KenoDataProcQue {
+    id: number;
+    procStatus: number;
 }

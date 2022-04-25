@@ -65,7 +65,6 @@ agentApi.get("/1", async (req: Request, res: Response) => {
     if (Agent.DfKey) {
         const eds = new EDS(Agent.DfKey);
         const param = decParam(eds.Decrypted(params.param));
-        console.log("agentApi/1 param:", param);
         const ans: boolean = await addUser(params.agentId, Agent.PayClassID, param, conn);
         // console.log("after addUser:", ans);
         if (ans) {
@@ -486,7 +485,7 @@ async function register(params, res: Response) {
             }
         } else {
             param = decParam(eds.Decrypted(params.param));
-            console.log("agentApi/1 param:", param);
+            // console.log("agentApi/1 param:", param);
         }
         const ans: boolean = await addUser(params.agentId, Agent.PayClassID, param, conn);
         // console.log("after addUser:", ans);
