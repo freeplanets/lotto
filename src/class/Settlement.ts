@@ -8,7 +8,7 @@ import { doQuery } from "../func/db";
 import CancelTermF from "./DBFunction/CancelTerm";
 import CurOddsInfo from "./DBFunction/CurOddsInfo";
 import DayReport from "./DBFunction/DayReport";
-import NumPack from "./NumPack/Pack";
+// import NumPack from "./NumPack/Pack";
 import {AlwaysSetl} from "./Settlement/AlwaysSetl";
 import {BTCHashSetl} from "./Settlement/BTCHashSetl";
 import {CarsSetl} from "./Settlement/CarsSetl";
@@ -29,7 +29,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     // const g = await getGame(GameID, conn);
     const g = await getGTypeByGameID(GameID, conn);
     if (g) {
-        num = new NumPack(num, g).Nums; // 賓果時時彩，賓果賽車，用台灣賓果的號碼產生
+        // num = new NumPack(num, g).Nums; // 賓果時時彩，賓果賽車，用台灣賓果的號碼產生
         // console.log("before checkNum");
         msg = await checkNum(g, num, conn);
         // console.log("after checkNum", msg);
