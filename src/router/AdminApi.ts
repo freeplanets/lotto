@@ -21,7 +21,7 @@ import { AnyObject, HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, 
 import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial} from "../DataSchema/user";
 import { AddAuthHeader } from "../func/ccfunc";
 import { getUserCredit } from "../func/Credit";
-import { AuthExpire, AuthKey, AuthLimit, doQuery, getConnection, IAxParams, JWT_KEY } from "../func/db";
+import { doQuery, getConnection, IAxParams, JWT_KEY } from "../func/db";
 
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
@@ -1418,17 +1418,17 @@ app.post("/member/mwagerjn", async (req, res) => {
   }
   const param = req.body;
   console.log("/api/member/mwagerjn", param);
-  const UserID = param.UserID;
-  const Account = param.Account;
-  const UpId = param.UpId;
-  const tid = param.LNoID;
-  const GameID = param.LottoID;
-  const PayClassID = param.PayClassID;
+  const UserID = Number(param.UserID);
+  const Account = String(param.Account);
+  const UpId = Number(param.UpId);
+  const tid = Number(param.LNoID);
+  const GameID = Number(param.LottoID);
+  const PayClassID = Number(param.PayClassID);
   // const btrans = await conn.beginTransaction();
   let ans;
   // console.log("Begin:", btrans);
   const snb: Bet = new Bet(UserID, Account, UpId, tid, GameID, PayClassID, conn);
-  if (parseInt(GameID, 10) === 36) {
+  if (GameID === 36) {
     ans = await snb.Keno(parseInt(param.wgtype, 10), param.JoinNumber, parseInt(param.StakeMoney, 10));
   } else {
     ans = await snb.Parlay(parseInt(param.wgtype, 10), param.OddsID, param.JoinNumber, parseInt(param.StakeMoney, 10));

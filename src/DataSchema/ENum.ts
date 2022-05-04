@@ -24,6 +24,7 @@ export enum ErrCode {
   NO_SAME_NUMBER = 22,
   UNEXPECT_NUMBER = 23,
   DEAL_IS_CLOSED = 24,
+  GAME_CLOSED = 25,
 }
 export enum FuncKey {
 	SET_CHANNEL = "SetChannel",

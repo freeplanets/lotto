@@ -1,4 +1,5 @@
 import mariadb, { PoolConnection } from "mariadb";
+import MyDate from "../components/class/Functions/MyDate";
 import MyMath from "../components/class/Functions/MyMath";
 import { ErrCode } from "../DataSchema/ENum";
 import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
@@ -10,6 +11,7 @@ import BetParam from "./BetParam";
 import {C} from "./Func";
 import JTable from "./JTable";
 import {OpChk} from "./OpChk";
+import SpOrNormal from "./SpOrNormal";
 
 interface INum {
     [key: number]: any;
@@ -114,6 +116,16 @@ export class Bet implements IBet {
             }
             dta.push(n);
         });
+        if (this.TermInfo) {
+            const PDate = this.TermInfo.PDate;
+            const StopT = this.TermInfo.StopTime;
+            const StopTS = this.TermInfo.StopTimeS;
+            const chkTimePass = BetTypes.every((bt) => this.chkBetTime(GType, bt, PDate, StopT, StopTS));
+            if (!chkTimePass) {
+                msg.ErrNo = ErrCode.GAME_CLOSED;
+                return msg;
+            }
+        }
         const ans: ICurOddsData[] = await this.getOddsData(GType, arrNum);
         if (this.hasNumStoped(ans)) {
             msg.ErrNo = ErrCode.NUM_STOPED;
@@ -305,6 +317,11 @@ export class Bet implements IBet {
         */
         const UseAvgOdds = this.GameInfo.UseAvgOdds;
         const GType = this.GameInfo.GType;
+        const chkTimePass = this.chkBetTime(GType, BetType, this.TermInfo.PDate, this.TermInfo.StopTime, this.TermInfo.StopTimeS);
+        if (!chkTimePass) {
+            msg.ErrNo = ErrCode.GAME_CLOSED;
+            return msg;
+        }
         const BetTypes: number[] = [BetType];
         let Chker: OpChk | undefined;
         const Odd: string[] = Odds.split(",");
@@ -630,6 +647,11 @@ export class Bet implements IBet {
         const UseAvgOdds = this.GameInfo.UseAvgOdds;
         const GType = this.GameInfo.GType;
         // const BetTypes: number[] = [BetType];
+        const chkTimePass = this.chkBetTime(GType, BetType, this.TermInfo.PDate, this.TermInfo.StopTime, this.TermInfo.StopTimeS);
+        if (!chkTimePass) {
+            msg.ErrNo = ErrCode.GAME_CLOSED;
+            return msg;
+        }
         let Chker: OpChk | undefined;
         const OddsID: number = parseInt(Odds, 10);
         // const arrNum: INum = {};
@@ -861,13 +883,18 @@ export class Bet implements IBet {
             return msg;
         }
         const GType = this.GameInfo.GType;
+        const chkTimePass = this.chkBetTime(GType, BetType, this.TermInfo.PDate, this.TermInfo.StopTime, this.TermInfo.StopTimeS);
+        if (!chkTimePass) {
+            msg.ErrNo = ErrCode.GAME_CLOSED;
+            return msg;
+        }
         let Chker: OpChk | undefined;
         const BNum: number = BetParam[GType][BetType];
         const setsN = Nums.split("|");
         const SNB: IBetContent = {
             Content: []
         };
-        console.log("KENO:", BNum, setsN, setsN.length); // 每注號數，大於為連碼，小於則錯誤回傳號數不足
+        console.log("KENO:", BNum, setsN, setsN.length, MyDate.toLocalString()); // 每注號數，大於為連碼，小於則錯誤回傳號數不足
         if (BNum > 0 && setsN.length < BNum) {
             msg.ErrNo = ErrCode.NOT_ENOUGH_NUM;
             msg.ErrCon = "Not enough num";
@@ -879,7 +906,6 @@ export class Bet implements IBet {
             msg.ErrNo = ErrCode.NUM_STOPED;
             return msg;
         }
-        console.log("KENO after num conut check!", ans);
         if (setsN.length !== ans.length) {
             msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
             return msg;
@@ -890,7 +916,7 @@ export class Bet implements IBet {
             Chker = new OpChk(this.GameInfo, this.tid, this.UserID, opParams, false, navg);
         }
         const totalSet = MyMath.Combinatorics(setsN.length, BNum);
-        const Total = totalSet * totalSet;
+        const Total = Amt * totalSet;
         const rdOdds: number = 0;
         for (let i = 0, n = setsN.length; i < n; i++) {
             const iNum = parseInt(setsN[i], 10);
@@ -1190,6 +1216,20 @@ export class Bet implements IBet {
     }
     private hasNumStoped(odds: ICurOddsData[]): boolean {
         return odds.some((odd: ICurOddsData) => odd.isStop === 1);
+    }
+    private chkBetTime(GType: string, BetType: number, PDate: string, NormalTime: string, SPTime: string) {
+        if (SpOrNormal[GType]) {
+            if (SpOrNormal[GType][BetType]) {
+                return this.chkTime(PDate, SPTime);
+            } else {
+                return this.chkTime(PDate, NormalTime);
+            }
+        }
+        return true;
+    }
+    private chkTime(PDate: string, time: string) {
+        const endTS = MyDate.getTime(`${PDate} ${time}`);
+        return MyDate.getTime() - endTS > 0 ? true : false;
     }
     /*
     private async calDayReport(dt:IBetTable[]){

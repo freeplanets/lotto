@@ -203,7 +203,13 @@ export async function getGameType(GType: string, conn: mariadb.PoolConnection) {
     const jt: JTable<GameType> = new JTable(conn, "GameType");
     return await jt.getOne({GType});
 }
-
+export async function getGTypeByGameID(GameID: number, conn: mariadb.PoolConnection): Promise<GameType | undefined> {
+    const sql = `select t.GType,t.OpenNums,t.OpenSP,t.StartNum,t.EndNum,t.SameNum from
+        Games g left join GameType t on g.GType = t.GType where g.id = ?`;
+    const ans = await doQuery(sql, conn, [GameID]);
+    if (ans) { return ans[0] as GameType; }
+    return;
+}
 export async function getTermDateNotSettled(GameID: number, conn: mariadb.PoolConnection) {
     const sql: string = "select PDate from Terms where isSettled=0 and isCanceled=0 and GameID=? order by id desc limit 0,1";
     const ans = await doQuery(sql, conn, [GameID]);

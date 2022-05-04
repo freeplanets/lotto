@@ -1,13 +1,14 @@
 import mariadb from "mariadb";
-import {saveParamLog} from "../API/ApiFunc";
-import {getGame, getGameType} from "../API/MemberApi";
+import { saveParamLog } from "../API/ApiFunc";
+import { getGTypeByGameID } from "../API/MemberApi";
 import { ErrCode } from "../DataSchema/ENum";
 import { GameType, IMsg, IParamLog, ISqlProc} from "../DataSchema/if";
-import {doQuery} from "../func/db";
+import { doQuery } from "../func/db";
 // const SettleMethods=MarkSixST['MarkSix'];
 import CancelTermF from "./DBFunction/CancelTerm";
 import CurOddsInfo from "./DBFunction/CurOddsInfo";
 import DayReport from "./DBFunction/DayReport";
+import NumPack from "./NumPack/Pack";
 import {AlwaysSetl} from "./Settlement/AlwaysSetl";
 import {BTCHashSetl} from "./Settlement/BTCHashSetl";
 import {CarsSetl} from "./Settlement/CarsSetl";
@@ -25,13 +26,15 @@ import {VNNorthSetl} from "./Settlement/VNNorthSetl";
 export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection, isSettled?: number, PLog?: IParamLog[]) {
     let GType: string|undefined;
     let msg: IMsg = { ErrNo: ErrCode.PASS };
-    const g = await getGame(GameID, conn);
+    // const g = await getGame(GameID, conn);
+    const g = await getGTypeByGameID(GameID, conn);
     if (g) {
-        GType = g.GType;
+        num = new NumPack(num, g).Nums; // 賓果時時彩，賓果賽車，用台灣賓果的號碼產生
         // console.log("before checkNum");
-        msg = await checkNum(GType, num, conn);
+        msg = await checkNum(g, num, conn);
         // console.log("after checkNum", msg);
         if (msg.ErrNo !== ErrCode.PASS ) { return msg; }
+        GType = g.GType;
     } else {
         msg.ErrNo = ErrCode.DB_QUERY_ERROR;
         return msg;
@@ -241,27 +244,25 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
     return ans;
 }
 
-async function checkNum(GType: string, num: string, conn: mariadb.PoolConnection) {
-    const ans: GameType | undefined = await getGameType(GType, conn);
+async function checkNum(g: GameType, num: string, conn: mariadb.PoolConnection) {
+    // const ans: GameType | undefined = await getGameType(GType, conn);
     // console.log("checkNum", ans);
     const msg: IMsg = { ErrNo: ErrCode.PASS };
-    if (ans) {
-        const arr = num.split(",");
-        if (arr.length < ans.OpenNums) {
-            msg.ErrNo = ErrCode.NOT_ENOUGH_NUM;
+    const arr = num.split(",");
+    if (arr.length < g.OpenNums) {
+        msg.ErrNo = ErrCode.NOT_ENOUGH_NUM;
+    } else {
+        const newV = arr.map((v) => parseInt(v, 10));
+        let pass = checkSameNum(newV, g.SameNum);
+        if (pass) {
+            pass = newV.every((v) => {
+                return checkNumBG(v, g.StartNum, g.EndNum);
+                });
+            if (!pass) {
+                msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
+                }
         } else {
-            const newV = arr.map((v) => parseInt(v, 10));
-            let pass = checkSameNum(newV, ans.SameNum);
-            if (pass) {
-                pass = newV.every((v) => {
-                    return checkNumBG(v, ans.StartNum, ans.EndNum);
-                 });
-                if (!pass) {
-                    msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
-                 }
-            } else {
-                msg.ErrNo = ErrCode.NO_SAME_NUMBER;
-            }
+            msg.ErrNo = ErrCode.NO_SAME_NUMBER;
         }
     }
     return msg;
