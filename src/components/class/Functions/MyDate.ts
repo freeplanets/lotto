@@ -31,9 +31,9 @@ class MyDate {
 		delete opt.minute;
 		delete opt.second;
 		let tmpD = d.toLocaleDateString(lang, opt).replace(/\//g, "-");
-		console.log("toDbDateString:", tmpD);
+		// console.log("toDbDateString:", tmpD);
 		tmpD = this.checkDateFormat(tmpD);
-		console.log("toDbDateString checked:", tmpD);
+		// console.log("toDbDateString checked:", tmpD);
 		return ds[1] ? `${tmpD} ${ds[1]}` : tmpD;
 	}
 	public toLocalString(time?: string | number, lang?: string, opt?: Intl.DateTimeFormatOptions) {

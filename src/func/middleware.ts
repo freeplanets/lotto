@@ -42,7 +42,7 @@ export const PreCheck = async (req: Request, res: Response, next) => {
           next();
         }
       }).catch((err) => {
-        msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
+        msg.ErrNo = ErrCode.NO_LOGIN;
         msg.debug = err;
         res.send(JSON.stringify(msg));
       });

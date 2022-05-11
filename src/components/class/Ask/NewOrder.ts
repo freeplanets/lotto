@@ -10,7 +10,7 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     msg.UserID = ask.UserID;
     // await this.conn.beginTransaction();
     await this.BeginTrans();
-    console.log("NewOrder doit:", JSON.stringify(ask));
+    // console.log("NewOrder doit:", JSON.stringify(ask));
     if (ask.BuyType === 0) {
       if (ask.LeverCredit) {
         ask.Fee = ask.Fee ? ask.LeverCredit * ask.Fee : 0;
