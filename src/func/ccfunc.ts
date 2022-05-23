@@ -52,7 +52,7 @@ export const save: IMyFunction<WebParams> = async (param: WebParams, conn: PoolC
 };
 export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {ErrNo: 0};
-  console.log("savedata", param);
+  // console.log("savedata", param);
   if (param.TableName && param.TableData) {
     const jt = new JTable(conn, param.TableName);
     if (typeof param.TableData === "string") {
@@ -63,10 +63,13 @@ export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: P
         msg.ErrCon = "TableData parse error!!";
         return msg;
       }
+    } else if (Array.isArray(param.TableData)) {
+      param.TableDatas = (param.TableData as string[]).map((itm) => typeof(itm) === "string" ? JSON.parse(itm) : itm );
     }
+    // console.log("savedata after chk:", param);
     if (param.TableDatas) {
       if (Array.isArray(param.TableDatas)) {
-        // console.log("saveData", param.TableDatas.length, param.TableDatas);
+        // console.log("saveData isArray", param.TableDatas.length, param.TableDatas);
         // msg = await jt.MultiInsert(param.TableDatas);
         param.TableDatas.forEach(async (itm) => {
           if (itm.id) {
@@ -77,8 +80,10 @@ export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: P
         });
       } else {
         // console.log("saveData", param.TableDatas);
-        if (param.TableDatas.id || param.Filter) {
+        if (param.TableDatas.id) {
           msg = await jt.Update(param.TableDatas);
+        } else if (param.Filter) {
+          msg = await jt.Updates(param.TableDatas, param.Filter);
         } else {
           msg = await jt.Insert(param.TableDatas);
         }
@@ -97,7 +102,7 @@ export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: P
 export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {};
   if (param.TableName) {
-    // console.log("getdata:", param);
+    console.log("getdata:", param);
     let filters: string | IKeyVal | IKeyVal[] | undefined;
     if (Array.isArray(param.Filter)) {
       filters = param.Filter.map((itm) => {
@@ -132,6 +137,7 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
       default:
         const jt: JTable<IHasID> = new JTable(conn, param.TableName);
         msg = await jt.Lists(filters, param.Fields, param.orderField);
+        console.log("getData msg", msg);
     }
   } else {
     msg.ErrNo = ErrCode.MISS_PARAMETER;

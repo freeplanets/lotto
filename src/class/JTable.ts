@@ -92,9 +92,9 @@ export default class JTable<T extends AnyObject> {
             sql = `${sql} order by ${orderField}`;
         }
         let mb: T[] | undefined;
-        // if (this.TableName === "DayReport") {
-        // console.log("JTable List sql", sql, keys);
-        // }
+        if (this.TableName === "MsgServiceRoom") {
+            console.log("JTable List sql", sql, keys);
+        }
         await this.conn.query(sql).then((row) => {
             mb = row;
         }).catch((err) => {
@@ -220,6 +220,7 @@ export default class JTable<T extends AnyObject> {
         }
         if (fields) {
             const sql = `update ${this.TableName} set ${fields} ${filters}`;
+            // if (this.TableName === "MsgServiceRoom") { console.log(sql); }
             msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
             msg.ErrCon = sql;
             msg = await Query(sql, this.conn);

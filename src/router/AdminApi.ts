@@ -120,7 +120,7 @@ app.get("/login", async (req, res: Response) => {
         res.setHeader("Access-Control-Expose-Headers", "Authorization, AuthKey, AuthLimit");
         */
         const user = msg.data as ILoginInfo;
-        user.uid = String(user.id);
+        user.uid = user.Account;
         user.meta = { nickname: user.Account };
         res = AddAuthHeader(user, res);
     }

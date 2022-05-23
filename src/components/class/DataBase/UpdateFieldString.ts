@@ -13,12 +13,19 @@ export default class UpdateFieldString {
 	private gField(field: IKeyVal) {
 		let ans = "";
 		if (field.Key) {
-			const Val = typeof field.Val !== "number" ?  `'${field.Val}'` : `${field.Val}`;
-			ans = `${field.Key}=${Val}`;
+			if (field.Key === "id") {
+				ans = "";
+			} else {
+				const Val = typeof field.Val !== "number" ?  `'${field.Val}'` : `${field.Val}`;
+				ans = `${field.Key}=${Val}`;
+			}
 		} else {
-			const fields = Object.keys(field).map((key) => {
-				return this.gField({Key: key, Val: field[key]});
+			const fields: string[] = [];
+			Object.keys(field).forEach((key) => {
+				const tmp = this.gField({Key: key, Val: field[key]});
+				if (tmp) { fields.push(tmp); }
 			});
+			// console.log("gField:", fields);
 			ans = fields.join(",");
 		}
 		return ans;
