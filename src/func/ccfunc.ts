@@ -102,7 +102,7 @@ export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: P
 export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {};
   if (param.TableName) {
-    console.log("getdata:", param);
+    // console.log("getdata:", param);
     let filters: string | IKeyVal | IKeyVal[] | undefined;
     if (Array.isArray(param.Filter)) {
       filters = param.Filter.map((itm) => {
@@ -137,7 +137,7 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
       default:
         const jt: JTable<IHasID> = new JTable(conn, param.TableName);
         msg = await jt.Lists(filters, param.Fields, param.orderField);
-        console.log("getData msg", msg);
+        // console.log("getData msg", msg);
     }
   } else {
     msg.ErrNo = ErrCode.MISS_PARAMETER;

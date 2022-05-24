@@ -92,7 +92,8 @@ app.get("/login", async (req, res: Response) => {
                     info.sid = logkey ;
                     msg.data = info;
                     msg.wsServer = process.env.WS_SERVER;
-                    msg.chatServer = process.env.WS_CHATSERVER;
+                    // msg.chatServer = process.env.WS_CHATSERVER;
+                    msg.chatServer = "6ojrsmeztg.execute-api.ap-southeast-1.amazonaws.com/dev";
                     msg.chatSite = process.env.SITE_NAME;
                 } else {
                     msg.ErrNo = 9;
