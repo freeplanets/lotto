@@ -196,7 +196,7 @@ export default class JTable<T extends AnyObject> {
         const sql = `
             insert IGNORE into ${this.TableName}(${fields.join(",")}) values(${vals.join(",")})
         `;
-        // console.log("JTable Insert:", sql, params);
+        // if (this.TableName === "SerLobby") { console.log("JTable Insert:", sql, params); }
         let ans: IMsg = { ErrNo: ErrCode.PASS };
         await this.conn.query(sql, params).then((rows) => {
             ans = rows;
@@ -218,9 +218,10 @@ export default class JTable<T extends AnyObject> {
         if (extfilter) {
            filters =  `where ${new FilterFactory(extfilter).getFilter()}`;
         }
+        // if (this.TableName === "SerLobby") { console.log("fields:", fields, updates); }
         if (fields) {
             const sql = `update ${this.TableName} set ${fields} ${filters}`;
-            // if (this.TableName === "MsgServiceRoom") { console.log(sql); }
+            // if (this.TableName === "SerLobby") { console.log(sql); }
             msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
             msg.ErrCon = sql;
             msg = await Query(sql, this.conn);
