@@ -541,11 +541,11 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
     } else {
         ans = await jt.Insert(term);
         if (ans) {
-            console.log("CreateTerm:", term.GameID, ans);
+            console.log("CreateTerm:", term.GameID, ans.insertId);
             const dbans = ans as IDbAns;
             const tid = dbans.insertId;
             msg = await CreateOddsData(term.GameID, GType, tid, conn);
-            console.log("CreateOddsData:", term.GameID, msg);
+            // console.log("CreateOddsData:", term.GameID, msg);
             await DeleteOddsData(term.GameID, GType, tid, conn);
             // delete last OddsData
         } else {
@@ -555,6 +555,7 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
     }
     if (msg.ErrNo === ErrCode.PASS) {
         await Commit(conn);
+        console.log("createTerms after commit GameID:", term.GameID );
         // await conn.commit();
     } else {
         console.log("CreateOddsData rollback", msg);
