@@ -19,9 +19,9 @@ async function webFunc(req: Request, res: Response) {
     // console.log("body", req.body);
     param = req.body;
   }
+  console.log("webFunc", JSON.stringify(param));
   const conn: PoolConnection|undefined = await getConnection();
   if (conn) {
-    // console.log("webFunc", param);
     const params: IFromCenter = {
       issueno: "",
       lrid: "",
