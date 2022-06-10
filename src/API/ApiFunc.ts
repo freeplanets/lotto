@@ -520,7 +520,7 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
     await BeginTrans(conn);
     const jt: JTable<ITerms> = new JTable(conn, "Terms");
     let ans;
-    let msg: IMsg = {ErrNo: 0};
+    let msg: IMsg = {ErrNo: ErrCode.PASS};
     if (term.id) {
         ans = jt.Update(term);
         if (ans) {
@@ -541,18 +541,18 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
     } else {
         ans = await jt.Insert(term);
         if (ans) {
-            console.log("CreateTerm:", ans);
+            console.log("CreateTerm:", term.GameID, ans);
             const dbans = ans as IDbAns;
             const tid = dbans.insertId;
             msg = await CreateOddsData(term.GameID, GType, tid, conn);
             await DeleteOddsData(term.GameID, GType, tid, conn);
             // delete last OddsData
         } else {
-            msg.ErrNo = 9;
+            msg.ErrNo = ErrCode.DB_QUERY_ERROR;
             msg.error = ans;
         }
     }
-    if (msg.ErrNo === 0) {
+    if (msg.ErrNo === ErrCode.PASS) {
         await Commit(conn);
         // await conn.commit();
     } else {

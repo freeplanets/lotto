@@ -133,7 +133,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
                 if (needBreak) { return; }
                 const ans = await doQuery(itm, conn);
                 if (!ans) {
-                    console.log("err rollback 0");
+                    console.log("err rollback 0", itm);
                     needBreak = true;
                     // await conn.rollback();
                     // await conn.query("SET AUTOCOMMIT=1;");
@@ -149,7 +149,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
             // console.log("sqls.common:", itm);
             const ans = await doQuery(itm, conn);
             if (!ans) {
-                console.log("err rollback 1");
+                console.log("err rollback 1", itm);
                 needBreak = true;
                 // await conn.rollback();
                 // await conn.query("SET AUTOCOMMIT=1;");
@@ -171,13 +171,13 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
             await new DayReport(conn).Cal(tid);
             await new CurOddsInfo(conn).Save(tid, GameID);
         } else {
-            console.log("err rollback 2");
+            console.log("err rollback 2", sql);
             await conn.rollback();
             msg.ErrNo = ErrCode.DB_QUERY_ERROR;
             msg.ErrCon = sql;
         }
     } else {
-        console.log("err rollback 3");
+        console.log("err rollback 3", msg);
         await conn.rollback();
     }
     await conn.query("SET AUTOCOMMIT=1;");
