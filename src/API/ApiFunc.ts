@@ -545,9 +545,11 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
             const dbans = ans as IDbAns;
             const tid = dbans.insertId;
             msg = await CreateOddsData(term.GameID, GType, tid, conn);
+            console.log("CreateOddsData:", term.GameID, msg);
             await DeleteOddsData(term.GameID, GType, tid, conn);
             if (msg.ErrNo === ErrCode.PASS) { // create odds redo once
                 msg = await CreateOddsData(term.GameID, GType, tid, conn);
+                console.log("CreateOddsData once:", term.GameID, msg);
             }
             // delete last OddsData
         } else {
