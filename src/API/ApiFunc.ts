@@ -547,10 +547,6 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
             msg = await CreateOddsData(term.GameID, GType, tid, conn);
             console.log("CreateOddsData:", term.GameID, msg);
             await DeleteOddsData(term.GameID, GType, tid, conn);
-            if (msg.ErrNo === ErrCode.PASS) { // create odds redo once
-                msg = await CreateOddsData(term.GameID, GType, tid, conn);
-                console.log("CreateOddsData once:", term.GameID, msg);
-            }
             // delete last OddsData
         } else {
             msg.ErrNo = ErrCode.DB_QUERY_ERROR;
