@@ -129,7 +129,7 @@ export async function CreateOddsData(GameID: string|number, GType: string, tid: 
           SELECT ${tid} tid,b.GameID,d.BetType,d.SubType,d.Num,b.DfRate Odds,TopRate MaxOdds,${stop} isStop,b.Steps,b.PerStep
       FROM dfOddsItems d, BasePayRate b where b.GameID= ${GameID} and d.GType='${GType}' and d.BetType = b.BetType and d.SubType = b.SubType
       `;
-      console.log("CreateOddsData dfOddsItems chk:", sql);
+      console.log("CreateOddsData dfOddsItems chk:", tid, GameID);
       await conn.query(sql).then((row) => {
           msg.ErrCon = JSON.stringify(row);
       }).catch((err) => {
@@ -546,6 +546,9 @@ export async function createTerms(GType: string, term: ITerms, conn: PoolConnect
             const tid = dbans.insertId;
             msg = await CreateOddsData(term.GameID, GType, tid, conn);
             await DeleteOddsData(term.GameID, GType, tid, conn);
+            if (msg.ErrNo === ErrCode.PASS) { // create odds redo once
+                msg = await CreateOddsData(term.GameID, GType, tid, conn);
+            }
             // delete last OddsData
         } else {
             msg.ErrNo = ErrCode.DB_QUERY_ERROR;
