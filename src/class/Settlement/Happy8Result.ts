@@ -55,8 +55,9 @@ export class Happy8Result {
     const anums = nums.split(",");
     let Total: number = 0;
     anums.map((snum) => {
-      this.NumSet.Nums.push(snum);
-      Total = Total + this.parseToInt(snum);
+      const num = this.parseToInt(snum);
+      this.NumSet.Nums.push(`${num}`);
+      Total = Total + num;
     });
     this.NumSet.Sum = new Happy8Sum(Total, this.tieNum).Nums;
     this.NumSet.Counter = this.getCounter(anums);

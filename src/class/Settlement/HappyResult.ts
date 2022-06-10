@@ -46,7 +46,7 @@ export class HappyResult {
       const TPre = (idx + 1) * 10;
       const iNum = parseInt(snum, 10);
       this.NumSet.RGNums.push(HPre + iNum);
-      this.NumSet.Nums.push(snum);
+      this.NumSet.Nums.push(`${iNum}`);
       this.NumSet.OddEven.push(TPre + this.XF.getOddEven(iNum));
       this.NumSet.BigSmall.push(TPre + this.XF.getBigSmall(iNum, this.midNum));
       this.NumSet.SumOE.push(TPre + this.XF.getTotalOE(snum));
