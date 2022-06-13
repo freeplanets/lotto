@@ -46,7 +46,7 @@ export default class CCManager extends EventEmitter {
 						msg.ErrNo = 9;
 						msg.error = `op:${param.op} has no funcion ,${JSON.stringify(param)}`;
 					}
-					console.log("op done", param.lottoid, JSON.stringify(msg));
+					console.log("op done", param.lottoid, this.list.length, JSON.stringify(param), JSON.stringify(msg));
 				}
 			}
 			await this.doProcess();
