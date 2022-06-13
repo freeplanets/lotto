@@ -1,17 +1,18 @@
 import express, { Request, Response, Router } from "express";
 import https from "https";
-import {PoolConnection} from "mariadb";
+// import {PoolConnection} from "mariadb";
 import querystring from "querystring";
-import CenterCall, {IFromCenter} from "../class/CenterCall";
+// import {getConnection} from "../func/db";
+import CCManager from "../class/CenterCall/CCManager";
+// import CenterCall, {IFromCenter} from "../class/CenterCall/CenterCall";
 import {IMsg} from "../DataSchema/if";
-import {getConnection} from "../func/db";
 
 const app: Router = express.Router();
 app.get("/doit", webFunc);
 app.post("/doit", webFunc);
 async function webFunc(req: Request, res: Response) {
   let param: any;
-  let msg: IMsg = {ErrNo: 0, error: ""};
+  const msg: IMsg = {ErrNo: 0, error: ""};
   if (req.query.op) {
     // console.log("query", req.query);
     param = req.query;
@@ -20,6 +21,10 @@ async function webFunc(req: Request, res: Response) {
     param = req.body;
   }
   console.log("webFunc", JSON.stringify(param));
+  const ccm = CCManager.getInstance();
+  ccm.Add(param);
+  res.send(`${JSON.stringify(param)} accepted!!`);
+  /*
   const conn: PoolConnection|undefined = await getConnection();
   if (conn) {
     const params: IFromCenter = {
@@ -57,6 +62,7 @@ async function webFunc(req: Request, res: Response) {
     delete msg.ErrCon;
   }
   res.send(JSON.stringify(msg));
+  */
 }
 
 async function sendMsg(msg: string) {

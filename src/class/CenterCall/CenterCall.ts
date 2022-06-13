@@ -1,10 +1,10 @@
 import {PoolConnection} from "mariadb";
-import {createTerms} from "../API/ApiFunc";
-import JDate from "../class/JDate";
-import {IMsg} from "../DataSchema/if";
-import {IBroadCasts, IGame, ITerms} from "../DataSchema/user";
-import JTable from "./JTable";
-import {CancelTerm, SaveNums} from "./Settlement";
+import {createTerms} from "../../API/ApiFunc";
+import {IMsg} from "../../DataSchema/if";
+import {IBroadCasts, IGame, ITerms} from "../../DataSchema/user";
+import JDate from "../JDate";
+import JTable from "../JTable";
+import {CancelTerm, SaveNums} from "../Settlement";
 
 export interface IFromCenter {
   issueno: string;  // 彩期編號 '20200702089',
