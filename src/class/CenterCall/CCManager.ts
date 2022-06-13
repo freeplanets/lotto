@@ -23,7 +23,7 @@ export default class CCManager extends EventEmitter {
 	private inProcess = false;
 	public init() {
 		this.on("Add", async (param) => {
-			this.list.push(param);
+			this.list.splice(0, 0, param);
 			if (!this.inProcess) { await this.doProcess(); }
 		});
 	}
@@ -33,7 +33,7 @@ export default class CCManager extends EventEmitter {
 	private async doProcess() {
 		let msg: IMsg = {};
 		this.inProcess = true;
-		console.log("do process start:", this.inProcess);
+		// console.log("do process start:", this.inProcess);
 		if (!this.conn) {
 			this.conn = await getConnection("CCManager");
 		}
@@ -54,7 +54,7 @@ export default class CCManager extends EventEmitter {
 		}
 		this.inProcess = false;
 		await this.conn?.release();
-		console.log("do process end:", this.inProcess);
+		// console.log("do process end:", this.inProcess);
 	}
 }
 
