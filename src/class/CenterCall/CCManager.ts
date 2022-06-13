@@ -10,7 +10,7 @@ export default class CCManager extends EventEmitter {
 	}
 	public static getInstance() {
 		if (!this.ccm) {
-			console.log('CCM instance create!!');
+			console.log("CCM instance create!!");
 			this.ccm = new CCManager();
 			this.ccm.init();
 		}
@@ -24,7 +24,14 @@ export default class CCManager extends EventEmitter {
 	public init() {
 		this.on("Add", async (param) => {
 			this.list.splice(0, 0, param);
-			if (!this.inProcess) { await this.doProcess(); }
+			// if (!this.inProcess) { await this.doProcess(); }
+			this.emit("doProcess");
+		});
+		this.on("doProcess", async () => {
+			if (!this.inProcess && this.list.length > 0) {
+				this.inProcess = true;
+				await this.doProcess();
+			}
 		});
 	}
 	public async Add(param: IFromCenter) {
@@ -32,7 +39,6 @@ export default class CCManager extends EventEmitter {
 	}
 	private async doProcess() {
 		let msg: IMsg = {};
-		this.inProcess = true;
 		// console.log("do process start:", this.inProcess);
 		if (!this.conn) {
 			this.conn = await getConnection("CCManager");
@@ -50,10 +56,10 @@ export default class CCManager extends EventEmitter {
 				}
 				console.log("op done:", param.lottoid, param.op, this.list.length, JSON.stringify(msg));
 			}
-			await this.doProcess();
+			this.inProcess = false;
+			this.emit("doProcess");
 		}
-		this.inProcess = false;
-		await this.conn?.release();
+		// await this.conn?.release();
 		// console.log("do process end:", this.inProcess);
 	}
 }
