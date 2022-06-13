@@ -6,6 +6,7 @@ import CCManager from "../class/CenterCall/CCManager";
 // import CenterCall, {IFromCenter} from "../class/CenterCall/CenterCall";
 // import {IMsg} from "../DataSchema/if";
 // import {getConnection} from "../func/db";
+CCManager.getInstance();
 
 const app: Router = express.Router();
 app.get("/doit", webFunc);

@@ -10,6 +10,7 @@ export default class CCManager extends EventEmitter {
 	}
 	public static getInstance() {
 		if (!this.ccm) {
+			console.log('CCM instance create!!');
 			this.ccm = new CCManager();
 			this.ccm.init();
 		}
