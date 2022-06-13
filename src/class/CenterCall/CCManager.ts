@@ -22,8 +22,12 @@ export default class CCManager extends EventEmitter {
 	private conn: PoolConnection | undefined;
 	private inProcess = false;
 	public init() {
-		this.on("Add", async (param) => {
-			this.list.splice(0, 0, param);
+		this.on("Add", async (param: IFromCenter) => {
+			if (param.lottoid === "30") {
+				this.list.push(param);
+			} else {
+				this.list.splice(0, 0, param);
+			}
 			// if (!this.inProcess) { await this.doProcess(); }
 			this.emit("doProcess");
 		});
