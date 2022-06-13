@@ -11,6 +11,7 @@ export default class CCManager extends EventEmitter {
 	public static getInstance() {
 		if (!this.ccm) {
 			this.ccm = new CCManager();
+			this.ccm.init();
 		}
 		return this.ccm;
 	}
@@ -19,19 +20,19 @@ export default class CCManager extends EventEmitter {
 	private CC: CenterCall | undefined;
 	private conn: PoolConnection | undefined;
 	private inProcess = false;
-	constructor() {
-		super();
-		this.on("Add", (data) => {
-			this.list.push(data);
-			if (!this.inProcess) { this.doProcess(); }
+	public init() {
+		this.on("Add", async (param) => {
+			this.list.push(param);
+			if (!this.inProcess) { await this.doProcess(); }
 		});
 	}
-	public Add(param: IFromCenter) {
+	public async Add(param: IFromCenter) {
 		this.emit("Add", param);
 	}
 	private async doProcess() {
 		let msg: IMsg = {};
 		this.inProcess = true;
+		console.log("do process start:", this.inProcess);
 		if (!this.conn) {
 			this.conn = await getConnection("CCManager");
 		}
@@ -41,18 +42,20 @@ export default class CCManager extends EventEmitter {
 			if (this.CC) {
 				if (param.op) {
 					if (typeof(this.CC[param.op]) === "function") {
+						console.log("do process:", param.lottoid, param.op, JSON.stringify(param));
 						msg = await this.CC[param.op]();
 					} else {
 						msg.ErrNo = 9;
 						msg.error = `op:${param.op} has no funcion ,${JSON.stringify(param)}`;
 					}
-					console.log("op done", param.lottoid, this.list.length, JSON.stringify(param), JSON.stringify(msg));
+					console.log("op done:", param.lottoid, param.op, this.list.length, JSON.stringify(msg));
 				}
 			}
 			await this.doProcess();
 		}
 		this.inProcess = false;
 		await this.conn?.release();
+		console.log("do process end:", this.inProcess);
 	}
 }
 
