@@ -12,7 +12,7 @@ export default class MsgMan extends AMsgMan {
 	public UserConnected(id: string): Promise<IMsg> {
 		return new Promise<IMsg>(async (resolve) => {
 			const msg = this.saver.UserConnected(id);
-			resolve({ErrNo: 0});
+			resolve(msg);
 		});
 	}
 	public UserClosed(id: string): Promise<IMsg> {

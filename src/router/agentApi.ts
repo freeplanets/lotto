@@ -30,6 +30,7 @@ const memberUrl: string = defaultUrl;
 const memberCCUrl: string = defaultCCUrl;
 const staytime: number = 3000;   // sec
 const agentApi: Router = express.Router();
+const defaultLang = "zh-cn";
 /**
  * Api for CryptoCur
  */
@@ -137,6 +138,8 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
                 msg.chatSite = process.env.SITE_NAME;
                 user.uid = user.Account;
                 user.meta = { nickname: user.Nickname };
+                user.identity = 0;
+                user.site = process.env.SITE_NAME;
                 res = AddAuthHeader(user, res);
             }
         }
@@ -504,7 +507,7 @@ async function register(params, res: Response) {
                     }
                     let url = memberUrl;
                     if (param.gameType === "cc") { url = memberCCUrl; }
-                    data.fullUrl = `${url}?userCode=${usr.Account}&token=${skey}&lang=${param.lang}`;
+                    data.fullUrl = `${url}?userCode=${usr.Account}&token=${skey}&lang=${param.lang || defaultUrl}`;
                     data.token = skey;
                     msg.data = data;
                 }
@@ -622,7 +625,7 @@ async function getAskTable(req, res) {
     const UpidFilter = Array.isArray(params.agentId) ? `UpId in (${params.join(",")})` : `UpId = ${params.agentId}`;
     console.log("getAskTable param:", JSON.stringify(param));
     const sql = `select AskTable.id,Member.Account userCode,ItemID,ItemType,AskType,BuyType,Qty,Price,
-        Amount,Fee,UNIX_TIMESTAMP(AskTable.CreateTime) CreateTime,UNIX_TIMESTAMP(AskTable.ModifyTime) ModifyTime,
+        Amount*Lever Amount,Fee,UNIX_TIMESTAMP(AskTable.CreateTime) CreateTime,UNIX_TIMESTAMP(AskTable.ModifyTime) ModifyTime,
         AskTable.DealTime DealTime
         from AskTable left join Member on AskTable.UserID = Member.id where AskTable.${UpidFilter} and
         AskTable.DealTime between ${startTime} and ${endTime}

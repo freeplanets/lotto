@@ -38,7 +38,7 @@ export default class ExpressPeerServerFactory {
 		});
 		eps.on("connection", async (client: IClient) => {
 			const cid = client.getId();
-			const msg = this.msgman.UserConnected(cid);
+			const msg = await this.msgman.UserConnected(cid);
 			console.log("peer connection", cid, client.getToken(), JSON.stringify(msg));
 			const sock = client.getSocket();
 			if (sock) {

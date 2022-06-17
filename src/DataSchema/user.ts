@@ -32,6 +32,8 @@ export interface IUser {
     ModifyTime: string;
     CDate?: Date;
     Params?: CryptoOp[];
+    identity?: number;
+    site?: string;
 }
 export interface IUserPartial {
     id: number;

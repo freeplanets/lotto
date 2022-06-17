@@ -36,7 +36,7 @@ interface IPClass {
     GameID: number;
     PayClassID: number;
 }
-export interface ILoginInfo {
+export interface ILoginInfo extends AnyObject {
     id: number;
     Account: string;
     uid: string;    // 唯一值 unigue key for all sites
@@ -123,6 +123,8 @@ app.get("/login", async (req, res: Response) => {
         const user = msg.data as ILoginInfo;
         user.uid = user.Account;
         user.meta = { nickname: user.Account };
+        user.site = process.env.SITE_NAME;
+        user.identity = 1;
         res = AddAuthHeader(user, res);
     }
     res.send(JSON.stringify(msg));
