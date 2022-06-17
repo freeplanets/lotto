@@ -23,8 +23,8 @@ interface IAnsData {
 let defaultUrl = "http://localhost:8082";
 let defaultCCUrl = "http://localhost:8081";
 if (process.env.NODE_ENV !== "development") {
-    defaultUrl = "http://lotocm.uuss.net";
-    defaultCCUrl = "http://crypto.uuss.net";
+    defaultUrl = "https://lotocm.uuss.net";
+    defaultCCUrl = "https://crypto.uuss.net";
 }
 const memberUrl: string = defaultUrl;
 const memberCCUrl: string = defaultCCUrl;
