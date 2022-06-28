@@ -234,8 +234,8 @@ async function CreditAC(params, res: Response, ac: number) {
     // console.log("CreditAC ModifyCredit:", msg);
     res.send(JSON.stringify(msg));
 }
-async function getAgent(id: string, conn: PoolConnection) {
-    const filter = Array.isArray(id) ? `id in (${id.join(",")})` : `id = ${id}` ;
+async function getAgent(id: string | string[], conn: PoolConnection) {
+    const filter = Array.isArray(id) ? `id in (${id.join(',')})` : `id = ${id}` ;
     const sql: string = `select * from User where ${filter}`;
     console.log("getAgent:", sql, id);
     const row = await conn.query(sql);
@@ -398,7 +398,7 @@ async function getTicketDetail(req, res) {
     const param = decParam(eds.Decrypted(params.param));
     console.log("getTicketDetail param:", param);
     const idcond = param.id ? ` and id > ${param.id} ` : "";
-    const UpidFilter = Array.isArray(params.agentId) ? `UpId in (${params.join(",")})` : `UpId = ${params.agentId}`;
+    const UpidFilter = Array.isArray(params.agentId) ? `UpId in (${params.agentId.join(",")})` : `UpId = ${params.agentId}`;
     const sql = `select id,betid,Account userCode,tid TermID,GameID,BetType,Num,Odds,Amt,validAmt,WinLose,
         UNIX_TIMESTAMP(CreateTime) CreateTime,UNIX_TIMESTAMP(ModifyTime) ModifyTime,case isCancled when 1 then 3 else isSettled+1 end as \`status\`
         from BetTable where ${UpidFilter} and isCancled=0 and
@@ -580,7 +580,7 @@ async function getLedgerLever(req, res) {
     const Agent: IUser = await getAgent(params.agentId, conn);
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
-    const UpidFilter = Array.isArray(params.agentId) ? `UpId in (${params.join(",")})` : `UpId = ${params.agentId}`;
+    const UpidFilter = Array.isArray(params.agentId) ? `UpId in (${params.agentId.join(",")})` : `UpId = ${params.agentId}`;
     console.log("getLedgerLever param:", JSON.stringify(param));
     const sql = `select LedgerLever.id,Member.Account userCode,ItemID,ItemType,BuyID,SellID,Qty,BuyPrice,SellPrice,(BuyFee + TFee) Fee,Lever,Qty*BuyPrice*Lever Amt,
         GainLose,(GainLose - BuyFee - TFee) WinLose,floor(BuyTime/1000) BuyTime,SellTime
@@ -623,7 +623,7 @@ async function getAskTable(req, res) {
     const param = decParam(eds.Decrypted(params.param));
     const startTime = param.startTime ? param.startTime : 0;
     const endTime = param.endTime ? param.endTime : 0;
-    const UpidFilter = Array.isArray(params.agentId) ? `UpId in (${params.join(",")})` : `UpId = ${params.agentId}`;
+    const UpidFilter = Array.isArray(params.agentId) ? `UpId in (${params.agentId.join(",")})` : `UpId = ${params.agentId}`;
     console.log("getAskTable param:", JSON.stringify(param));
     const sql = `select AskTable.id,Member.Account userCode,ItemID,ItemType,AskType,BuyType,Qty,Price,
         Amount*Lever Amount,Fee,UNIX_TIMESTAMP(AskTable.CreateTime) CreateTime,UNIX_TIMESTAMP(AskTable.ModifyTime) ModifyTime,
