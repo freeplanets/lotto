@@ -235,7 +235,7 @@ async function CreditAC(params, res: Response, ac: number) {
     res.send(JSON.stringify(msg));
 }
 async function getAgent(id: string, conn: PoolConnection) {
-    const filter = id.indexOf(",") === -1 ? `id = ${id}` : `id in (${id})`;
+    const filter = Array.isArray(id) ? `id in (${id.join(",")})` : `id = ${id}` ;
     const sql: string = `select * from User where ${filter}`;
     console.log("getAgent:", sql, id);
     const row = await conn.query(sql);
