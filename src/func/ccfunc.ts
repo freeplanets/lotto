@@ -65,6 +65,8 @@ export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: P
       }
     } else if (Array.isArray(param.TableData)) {
       param.TableDatas = (param.TableData as string[]).map((itm) => typeof(itm) === "string" ? JSON.parse(itm) : itm );
+    } else {
+      param.TableDatas = param.TableData;
     }
     // console.log("savedata after chk:", param);
     if (param.TableDatas) {

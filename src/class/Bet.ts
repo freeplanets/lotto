@@ -269,10 +269,12 @@ export class Bet implements IBet {
                     console.log("no checker", Chker);
                 }
                 msg.data = rlt1;
+                /*
                 if (rlt1.insertId) {
                     const qq = await this.createQue(rlt1.insertId);
                     console.log("create que", qq);
                 }
+                */
                 // await this.conn.commit();
                 await this.Commit();
                 return msg;

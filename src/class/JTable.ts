@@ -92,7 +92,7 @@ export default class JTable<T extends AnyObject> {
             sql = `${sql} order by ${orderField}`;
         }
         let mb: T[] | undefined;
-        if (this.TableName === "SerLobby") {
+        if (this.TableName === "SerChat") {
             console.log("JTable List sql", sql, keys);
         }
         await this.conn.query(sql).then((row) => {

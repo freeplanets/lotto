@@ -118,8 +118,8 @@ export default class KeyValFilter extends AFilter {
       let Cond = "=";
       if (filter.Cond) { Cond = filter.Cond; }
       const filters: string[] = [];
-      filters.push(this.hasKeyElementNoCondOr({Key: filter.Key, Val: filter.Key, Cond}));
-      filters.push(this.hasKeyElementNoCondOr({Key: filter.Key2, Val: filter.Key2, Cond}));
+      filters.push(this.hasKeyElementNoCondOr({Key: filter.Key, Val: filter.Val, Cond}));
+      filters.push(this.hasKeyElementNoCondOr({Key: filter.Key2, Val: filter.Val2, Cond}));
       ans = `(${filters.join(" or ")})`;
     }
     return ans;

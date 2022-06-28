@@ -1341,6 +1341,23 @@ app.get("/member/getOddsItems", async (req, res) => {
   await conn.release();
   res.send(JSON.stringify(ans));
 });
+app.get("/member/mybalance", async (req, res) => {
+    const msg: IMsg = { ErrNo: 0};
+    const conn = await getConnection();
+    if (!conn) {
+      msg.ErrNo = 9;
+      msg.ErrCon = "get connection error!!";
+      res.send(JSON.stringify(msg));
+      return;
+    }
+    const param = req.query;
+    // console.log("/api/member/getOddsItems", param);
+    const UserID = parseInt(`${param.UserID}`, 10);
+    msg.Balance = await getUserCredit(UserID, conn);
+
+    await conn.release();
+    res.send(JSON.stringify(msg));
+});
 app.post("/member/mwagermulti", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
   const conn = await getConnection();
@@ -1653,7 +1670,6 @@ app.get("/CurOddsInfo", async (req, res) => {
   } else {
       const param = req.query;
       let tid: number | undefined = 0;
-      // console.log("CurOddsInfo", param);
       if (!param.GameID) {
           msg.ErrNo = 9;
           msg.ErrCon = "GameID is missing!!";
@@ -1661,8 +1677,10 @@ app.get("/CurOddsInfo", async (req, res) => {
           res.send(JSON.stringify(msg));
       }
       if (!param.tid) {
-          tid = await afunc.getCurTermId(param.GameID as string, conn);
-          if (!tid) {
+        // if (param.GameID === "21") { console.log("before getCurTermId", param.tid); }
+        tid = await afunc.getCurTermId(param.GameID as string, conn);
+        // if (param.GameID === "21") { console.log("before getCurTermId", tid); }
+        if (!tid) {
               msg.ErrNo = 9;
               msg.ErrCon = "Get data error!!";
               await conn.release();
@@ -1679,18 +1697,9 @@ app.get("/CurOddsInfo", async (req, res) => {
       const ans = await afunc.getCurOddsInfo(tid as number, param.GameID as string, MaxOddsID, conn);
       if (ans) {
         msg.data = ans;
-        // console.log("CurOddsInfo MaxOdDsID:", typeof MaxOddsID, MaxOddsID);
-        /*
-        if (MaxOddsID === 0) {
-          const stp = await afunc.getOpStep(param.GameID, conn);
-          if (stp) {
-              msg.Steps = stp;
-          }
-        }
-        */
       } else {
-          msg.ErrNo = 9;
-          msg.ErrCon = "Get Odds error!";
+        msg.ErrNo = 9;
+        msg.ErrCon = "Get Odds error!";
       }
       await conn.release();
   }

@@ -44,7 +44,7 @@ export default class MsgToDB extends AMsgSaver {
 	}
 	private getJT<T>(tablename: string): Promise<JTable<T>> {
 		return new Promise<JTable<T>>(async (resolve) => {
-			if (!this.conn) { this.conn = await getConnection("MsgToDB"); }
+			if (!this.conn || !this.conn.isValid()) { this.conn = await getConnection("MsgToDB"); }
 			resolve(new JTable<T>(this.conn as PoolConnection, tablename));
 		});
 	}
