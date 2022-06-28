@@ -22,7 +22,7 @@ export async function getBTCHash(url?: string) {
 }
 */
 export function getHashResult(url?: string) {
-  schedule.scheduleJob("* * * * * *", async () => {
+  schedule.scheduleJob("1 * * * * *", async () => {
     await HGM.check();
     /*
     const btcHash = new BTCHashResult(url);
