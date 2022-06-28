@@ -237,9 +237,8 @@ async function CreditAC(params, res: Response, ac: number) {
 async function getAgent(id: string, conn: PoolConnection) {
     const filter = id.indexOf(",") === -1 ? `id = ${id}` : `id in (${id})`;
     const sql: string = `select * from User where ${filter}`;
-    // const row = await conn.query(sql, [id]);
+    console.log("getAgent:", sql, id);
     const row = await conn.query(sql);
-    // console.log("getAgent:", sql, id, row);
     return row[0];
 }
 function decParam(param: string): IGameAccessParams {
