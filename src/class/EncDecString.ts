@@ -7,6 +7,7 @@ export default class EncDecString {
         if (!tkey) {
             tkey = CryptoJS.MD5("keyforthepassword").toString();
         }
+        console.log("EncDecString", tkey);
         this.key = CryptoJS.enc.Utf8.parse(tkey);
         this.opt = {
             keySize: 128 / 8,

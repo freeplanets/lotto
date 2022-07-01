@@ -6,8 +6,8 @@
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
-    "prestart": "npm run build",
-    "start": "node .",
+    "preserve": "npm run build",
+    "serve": "node .",
     "wstest": "ts-node ./src/components/webSC.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

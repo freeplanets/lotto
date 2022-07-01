@@ -149,6 +149,7 @@ export interface IGameAccessParams {
     getKey?: string;
     gameType?: string; // cc: 數字貨幣, 其他： lottory
     id?: string;
+    key?: string; // for admin url
   }
 
 export interface IDbAns  {

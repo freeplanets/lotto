@@ -35,6 +35,11 @@ export interface IUser {
     identity?: number;
     site?: string;
 }
+export interface IAgent {
+    id: number;
+    DfKey: string;
+    PayClassID: number;
+}
 export interface IUserPartial {
     id: number;
     forcePWChange?: number;

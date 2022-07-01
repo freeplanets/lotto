@@ -22,6 +22,7 @@ import {IDBAns, IGame, IPayClassParam, IPayRateItm, ITerms, IUser, IUserPartial}
 import { AddAuthHeader } from "../func/ccfunc";
 import { getUserCredit } from "../func/Credit";
 import { doQuery, getConnection, IAxParams, JWT_KEY } from "../func/db";
+import { getUserLogin } from "./agentApi";
 
 const app: Router = express.Router();
 const eds = new EDS(process.env.NODE_ENV);
@@ -52,17 +53,37 @@ export interface ILoginInfo extends AnyObject {
     PayClass?: IPClass[];
 }
 app.get("/login", async (req, res: Response) => {
-    // console.log(req.query);
+    // console.log("AdminApi login param:", req.query);
     const conn: mariadb.PoolConnection|undefined =  await getConnection();
     const msg: IMsg = { ErrNo: 0};
     let logkey: string|undefined;
     if (conn) {
         const param = req.query;
+        let login: any = null;
+        if (param.token) {
+            const Account = param.userCode as string;
+            const token = param.token as string;
+            if (!Account || !token) {
+                msg.ErrNo = ErrCode.MISS_PARAMETER;
+                msg.ErrCon = "Miss Parameters!!";
+                await conn.release();
+                res.send(JSON.stringify(msg));
+                return;
+            }
+            login = await getUserLogin(Account, token, conn);
+        }
         let sql: string = "";
-        const Account: string = `${param.Account}`;
-        const Password: string = `${param.Password}`;
-        const params = [Account, Password];
-        sql = `Select * from User where Account= ? and Password=Password(?)`;
+        let params: any = [];
+        if (!login) {
+            const Account: string = `${param.Account}`;
+            const Password: string = `${param.Password}`;
+            params = [Account, Password];
+            sql = `Select * from User where Account= ? and Password=Password(?)`;
+        } else {
+            params = [login.uid];
+            sql = `Select * from User where id = ?`;
+        }
+        // console.log("AdminApi login", sql, params);
         const ans = await doQuery(sql, conn, params);
         if (ans) {
             if (ans.length > 0) {

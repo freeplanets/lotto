@@ -171,6 +171,11 @@ export default class JTable<T extends AnyObject> {
         const fields: string[] = [];
         const params: any[] = [];
         const vals: string[] = [];
+        if (this.TableName === "ClientKey") {
+            fields.push("MKey");
+            params.push(ED.KeyString);
+            vals.push("?");
+        }
         Object.keys(v).map((key) => {
             if (key === "id") { return; }
             if (key === "ModifyTime") { return; }
@@ -196,7 +201,7 @@ export default class JTable<T extends AnyObject> {
         const sql = `
             insert IGNORE into ${this.TableName}(${fields.join(",")}) values(${vals.join(",")})
         `;
-        // if (this.TableName === "SerLobby") { console.log("JTable Insert:", sql, params); }
+        if (this.TableName === "ClientKey") { console.log("JTable Insert:", sql, params); }
         let ans: IMsg = { ErrNo: ErrCode.PASS };
         await this.conn.query(sql, params).then((rows) => {
             ans = rows;
