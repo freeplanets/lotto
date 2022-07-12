@@ -36,6 +36,14 @@ class MyDate {
 		// console.log("toDbDateString checked:", tmpD);
 		return ds[1] ? `${tmpD} ${ds[1]}` : tmpD;
 	}
+	public toDbDateTimeString(time?: string | number, lang = "zh-TW") {
+		const d = this.getDate(time);
+		const ds = typeof time === "string" ? time.split(" ") : [];
+		const opt = { ...this.dOpt };
+		const tmpD = d.toLocaleDateString(lang, opt).replace(/\//g, "-");
+		console.log("this.toDbDateString:", tmpD);
+		return ds[1] ? `${tmpD} ${ds[1]}` : tmpD;
+	}
 	public toLocalString(time?: string | number, lang?: string, opt?: Intl.DateTimeFormatOptions) {
 		const d = this.getDate(time);
 		if (!lang) { lang = "zh-TW"; }

@@ -1,26 +1,19 @@
 import {Request, Response } from "express";
+import { IncomingHttpHeaders } from "http";
 import jwt from "jsonwebtoken";
 import mariadb from "mariadb";
-import DateFunc from "../components/class/Functions/MyDate";
 import { ErrCode } from "../DataSchema/ENum";
-import {AnyObject, IDbAns, IMsg} from "../DataSchema/if";
+import { IDbAns, IMsg} from "../DataSchema/if";
 import * as db from "../func/db";
 import { ILoginInfo } from "../router/AdminApi";
 const staytime: number = 3000000;   // sec
 
 export const PreCheck = async (req: Request, res: Response, next) => {
-  // console.log("CPreCheck:", req.path, req.method);
-  let param: any;
-  if (req.method === "GET") {
-    req.query = CheckParams(req.query);
-    param = req.query;
-  } else if (req.method === "POST") {
-    req.body = CheckParams(req.body);
-    param = req.body;
-  }
+  // console.log("CPreCheck:", req.body, req.query);
+  const param = CheckParams(req);
   if (req.path.indexOf("getSysInfo") < 0 && req.path.indexOf("login") < 0 && req.path.indexOf("logout") < 0
     && req.path.indexOf("agentApi") < 0 && req.path.indexOf("member") < 0 && req.path.indexOf("GameCenter") < 0
-    && req.path.indexOf("peers") < 0 && req.path.indexOf("peerjs") < 0) {
+    && req.path.indexOf("peers") < 0 && req.path.indexOf("peerjs") < 0 && req.path.indexOf("chat") < 0) {
     const msg: IMsg = {ErrNo: 0};
     const UserID: number|undefined = param.UserID;
     const sid: string|undefined = param.sid;
@@ -32,6 +25,7 @@ export const PreCheck = async (req: Request, res: Response, next) => {
       if (param.NoCheck) {
         next();
       } else {
+        console.log("miss param", param, req.body);
         msg.ErrNo = ErrCode.MISS_PARAMETER;
         msg.ErrCon = "Missing parameter!!";
         res.send(JSON.stringify(msg));
@@ -54,16 +48,27 @@ export const PreCheck = async (req: Request, res: Response, next) => {
     next();
   }
 };
-const CheckParams = (param) => {
-  Object.keys(param).map((key) => {
-    param[key] = ModifyParams(param[key]);
-  });
-  // console.log("CheckParams", param);
+const CheckParams = (req: Request) => {
+  let param: any;
+  const remoteIP = getRemoteIP(req);
+  // console.log("after remoteIP", remoteIP);
+  if (req.method === "GET") {
+    // req.query = CheckParams(req.query);
+    req.query.remoteIP = remoteIP;
+    param = ModifyParams(req.query);
+  } else if (req.method === "POST") {
+    // req.body = CheckParams(req.body);
+    req.body.remoteIP = remoteIP;
+    param = ModifyParams(req.body);
+  }
   return param;
 };
 
-const ModifyParams = (param) => {
-  return addslashes(param);
+const ModifyParams = (param: any) => {
+  Object.keys(param).map((key) => {
+    param[key] = addslashes(param[key]);
+  });
+  return param;
 };
 const addslashes = (str) => {
   try {
@@ -167,4 +172,11 @@ const setLoginStatus = (uid: number, sid: string, conn: mariadb.PoolConnection, 
         resolve(undefined);
       });
   });
+};
+const getRemoteIP = (req: Request) => {
+  // console.log("remoteip:", req.socket.remoteAddress, req.headers);
+  const headers: IncomingHttpHeaders = req.headers;
+  const forwarded = headers["x-forwarded-for"];
+  const forwardip = forwarded ? Array.isArray(forwarded) ? forwarded[0] : forwarded.split(",")[0] : null;
+  return forwardip ? forwardip : req.socket.remoteAddress;
 };

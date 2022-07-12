@@ -3,7 +3,7 @@ import AFilter from "./AFilter";
 
 /**
  * Cond 不同於 '=' 的條件， 如果是 'between' 必需有 Val2 值
- * 如果有 CondOr 則 Key Val 要有 Key1 Val1
+ * 如果有 CondOr 則 Key Val 要有 Key2 Val2
  */
 export default class KeyValFilter extends AFilter {
   public setFilter(filter: IKeyVal): string {

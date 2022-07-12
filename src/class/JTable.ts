@@ -92,9 +92,11 @@ export default class JTable<T extends AnyObject> {
             sql = `${sql} order by ${orderField}`;
         }
         let mb: T[] | undefined;
+        /*
         if (this.TableName === "SerChat") {
             console.log("JTable List sql", sql, keys);
         }
+        */
         await this.conn.query(sql).then((row) => {
             mb = row;
         }).catch((err) => {
@@ -283,7 +285,7 @@ export default class JTable<T extends AnyObject> {
     }
     public async MultiUpdate(data: T[], isAdd: boolean= false, onIdkey: boolean = false) {
         if (data.length === 0) { return false; }
-        // console.log("JTable MultiUpdate", data);
+        console.log("JTable MultiUpdate", data);
         const keys: string[] = [];
         const updates: string[] = [];
         const ff: string[] = [];
@@ -310,7 +312,7 @@ export default class JTable<T extends AnyObject> {
                 }
             }
         });
-        const values = data.map((dta: T) => keys.map((fn) => dta[fn]));
+        const values = data.map((dta: T) => keys.map((fn) => typeof(dta[fn]) === "object" ? JSON.stringify(dta[fn]) : dta[fn]));
         // console.log("JTable MultiUpdate values", values, keys);
         const sql = `insert into ${this.TableName}(${keys.join(",")}) values(${ff.join(",")})
             on duplicate key update ${updates.join(",")}`;
@@ -320,6 +322,7 @@ export default class JTable<T extends AnyObject> {
             // console.log("batch update:", res);
             ans1 = res;
         }).catch((err) => {
+            console.log("sql:", sql);
             console.log("JTable MultiUpdate error", err, values);
             ans1 = false;
         });

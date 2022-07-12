@@ -14,6 +14,7 @@ import * as schedule from "./func/schedule";
 import adminRouter from "./router/AdminApi";
 import agentApi from "./router/agentApi";
 import apiRouter from "./router/api";
+import chat from "./router/chat";
 import CryptoCur from "./router/CryptoCur";
 import GameCenter from "./router/FromCenter";
 
@@ -103,6 +104,7 @@ app.use("/api/cc", CryptoCur);
 app.use("/agentApi", agentApi);
 app.use("/GameCenter", GameCenter);
 app.use("/test", apiRouter);
+app.use("/api/chat", chat);
 // app.listen(port, () => {
 const server = app.listen(3000, "0.0.0.0", () => {
     console.log(`server started at http://localhost:${ port }`);

@@ -52,13 +52,13 @@ export interface ILoginInfo extends AnyObject {
     Progs?: IProgs[];
     PayClass?: IPClass[];
 }
-app.get("/login", async (req, res: Response) => {
+app.get("/login", async (req: Request, res: Response) => {
     // console.log("AdminApi login param:", req.query);
     const conn: mariadb.PoolConnection|undefined =  await getConnection();
     const msg: IMsg = { ErrNo: 0};
     let logkey: string|undefined;
     if (conn) {
-        const param = req.query;
+        const param: any = req.query;
         let login: any = null;
         if (param.token) {
             const Account = param.userCode as string;
@@ -108,7 +108,7 @@ app.get("/login", async (req, res: Response) => {
                 if (progs) {
                     info.Progs = progs as IProgs[];
                 }
-                logkey = await setLogin(user.id, user.Account, conn);
+                logkey = await setLogin(param.remoteIP, user.id, user.Account, conn);
                 if (logkey) {
                     info.sid = logkey ;
                     msg.data = info;
@@ -2317,13 +2317,14 @@ function getCondTSE(field: string, start?: string, end?: string): string|undefin
     return ` ${field} BETWEEN '${start} 00:00:00' and '${end} 23:59:59' `;
 }
 */
-async function setLogin(uid: number, Account: string, conn: mariadb.PoolConnection, UpId?: number): Promise<string|undefined> {
+async function setLogin(remoteIP: string, uid: number, Account: string, conn: mariadb.PoolConnection, UpId?: number): Promise<string|undefined> {
     const upid: number = UpId ? UpId : 0;
     let sql: string = `update LoginInfo set isActive=0 where uid=${uid} and AgentID=${upid}`;
     let ans = await doQuery(sql, conn);
     const logkey = eds.KeyString;
     if (ans) {
-        sql = `insert into LoginInfo(uid,Account,AgentID,logkey,isActive) value(${uid},'${Account}',${upid},'${logkey}',1)`;
+        sql = `insert into LoginInfo(uid,Account,AgentID,logkey,remoteIP)
+            value(${uid},'${Account}',${upid},'${logkey}','${remoteIP}')`;
         ans = await doQuery(sql, conn);
         if (ans) {
             return logkey;

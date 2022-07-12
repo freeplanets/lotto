@@ -12,7 +12,7 @@ export interface IUser {
     id: number;
     uid?: string;
     meta?: AnyObject;
-    CLevel: string;
+    CLevel?: string;
     Account: string;
     Password?: string;
     Nickname: string;
@@ -28,11 +28,12 @@ export interface IUser {
     isChkGA?: number;
     GACode?: string;
     Programs?: string;
-    CreateTime: string;
-    ModifyTime: string;
+    CreateTime?: string;
+    ModifyTime?: string;
     CDate?: Date;
     Params?: CryptoOp[];
     identity?: number;
+    SiteName?: string;
     site?: string;
 }
 export interface IAgent {

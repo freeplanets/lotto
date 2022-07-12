@@ -80,7 +80,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
         if (User) {
             const user: IUser = User;
             const da = new DataAccess(conn, true);
-            msg = await da.getOpParam(user.CLevel);
+            msg = await da.getOpParam(user.CLevel || "");
             if (msg.ErrNo === ErrCode.PASS) {
                 user.Params = msg.data as CryptoOp[];
                 msg.data = user;
@@ -119,6 +119,11 @@ agentApi.get("/9", async (req: Request, res: Response) => {
 // CryptoCur 下注明細
 agentApi.get("/10", async (req: Request, res: Response) => {
     await getAskTable(req, res);
+});
+// newsite
+agentApi.get("/11", async (req: Request, res: Response) => {
+    console.log("ac 11, newSite", req.query);
+    newSite(req.query, res, 11);
 });
 
 agentApi.get("/GCaption", async (req: Request, res: Response) => {
@@ -266,7 +271,7 @@ async function addUser(AgentId: string|number, PayClassID: number, param: IGameA
         return false;
     }
 }
-export async function addLoginInfo(uid: number, Account: string, AgentId: string | number, skey: string, conn: PoolConnection, isAdmin?: boolean) {
+export async function addLoginInfo(remoteIP: string, uid: number, Account: string, AgentId: string | number, skey: string, conn: PoolConnection, isAdmin?: boolean) {
     const act1 = await chkLoginAction(uid, conn, isAdmin);
     // console.log("after chkLoginAction", act1);
     if (act1) {
@@ -276,8 +281,8 @@ export async function addLoginInfo(uid: number, Account: string, AgentId: string
             return {logkey: act2.logkey};
         }
     }
-    const sql = `insert into LoginInfo(uid,Account,AgentID,logkey) values(
-        ${uid},'${Account}',${AgentId},'${skey}'
+    const sql = `insert into LoginInfo(uid,Account,AgentID,logkey, remoteIP) values(
+        ${uid},'${Account}',${AgentId},'${skey}','${remoteIP}'
     )`;
     const ans: IDbAns = await conn.query(sql);
     if (ans.affectedRows > 0) {
@@ -504,7 +509,7 @@ async function register(params, res: Response) {
             if (Ans) {
                 const usr = Ans as IUser;
                 let skey: string = eds.KeyString;
-                const ans1 = await addLoginInfo(usr.id, usr.Account, Agent.id, skey, conn);
+                const ans1 = await addLoginInfo(params.remoteIP , usr.id, usr.Account, Agent.id, skey, conn);
                 if (ans1) {
                     if (typeof(ans1) === "object") {
                         if (ans1.logkey) { skey = ans1.logkey; }
@@ -655,5 +660,59 @@ async function getAskTable(req, res) {
 function ModifyNickName(id: number, Nickname: string, conn: PoolConnection) {
     const jt: JTable<IHasID> = new JTable(conn, "Member");
     return jt.Update({id, Nickname});
+}
+async function newSite(params, res: Response, ac: number) {
+    // const params = req.query;
+    // const conn = await dbPool.getConnection();
+    console.log(`agentApi/${ac} param:`, params);
+    let msg: IMsg = {ErrNo: 0};
+    const conn = await getConnection();
+    if (!conn) {
+        msg.ErrNo = 9;
+        msg.ErrCon = "system busy!!";
+        res.send(JSON.stringify(msg));
+        return;
+    }
+    const data: IAnsData = {code: 0};
+    const justquery: boolean = ac === 2;
+    data.tradeType = (ac === 3 ? 1 : 2);
+    // const Agent: IUser = await getAgent(params.agentId, conn);
+    const Agent: IAgent | undefined = await getAgentNew(params.agentId, params.site, conn);
+    if (!Agent) {
+        msg = await createSiteUser(params.agentId, params.site, conn);
+        msg.code = msg.ErrNo;
+        if (msg.ErrNo !== ErrCode.PASS) {
+            console.log("createSiteUser error", msg);
+        }
+    }
+    await conn.release();
+    res.send(JSON.stringify(Agent));
+}
+/**
+ * tablename: User
+ * fields:
+ *      SiteName, Account, Password, Nickname, Types = 1, Levels = 0, DfKey = '',
+ *      UpId, PayClassID = 0, Balance = 0, forcePWChange = 0, isChkGA = 0, Programs = ''
+ */
+async function createSiteUser(agentId: string, site: string, conn: PoolConnection): Promise<IMsg> {
+    const user: IUser = {
+        TableName: "User",
+        id: 0,
+        SiteName: site,
+        Account: site,
+        Password: "",
+        Nickname: "",
+        Types: 1,
+        Levels: 0,
+        DfKey: "",
+        UpId: parseInt(agentId, 10),
+        PayClassID: 0,
+        Balance: 0,
+        forcePWChange: 0,
+        isChkGA: 0,
+        Programs: "",
+    };
+    const jt = new JTable<IUser>(conn, user.TableName || "User");
+    return await jt.Insert(user);
 }
 export default agentApi;
