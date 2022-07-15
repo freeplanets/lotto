@@ -161,6 +161,7 @@ app.get("/Verify", async (req: Request, res: Response) => {
 	const param = req.query;
 	if (param.url && param.token) {
 		msg = await axios.get(`${param.url}?token=${param.token}`);
+		console.log("Verify after", msg);
 	} else {
 		msg = { status: 1, errcode: ErrCode.MISS_PARAMETER };
 	}
