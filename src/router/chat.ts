@@ -1,9 +1,10 @@
+import axios from "axios";
 import busboy from "busboy";
 import { Request, Response, Router } from "express";
 import jwt from "jsonwebtoken";
 import { PoolConnection } from "mariadb";
-import os from "os";
-import path from "path";
+// import os from "os";
+// import path from "path";
 import JTable from "../class/JTable";
 import ChatToDB from "../components/class/Message/ChatToDB";
 import { SerChat } from "../components/class/Message/MsgDbIf";
@@ -26,7 +27,7 @@ app.get("/SorList", async (req: Request, res: Response) => {
 app.get("/ChatList", async (req: Request, res: Response) => {
 	let msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER };
 	const param = req.query;
-	// console.log(param);
+	console.log("ChatList", param);
 	if (param.uid) {
 		const mtd = new ChatToDB();
 		msg = await mtd.GetMessage(param.uid as string);
@@ -49,7 +50,8 @@ app.get("/getMessage", async (req: Request, res: Response) => {
 	const param: MsgParam = req.query as any;
 	if (param.site && param.passykey) {
 		const mtd = new ChatToDB();
-		msg = await mtd.GetSiteMessage(param.site, param.startDate, param.endDate);
+		const site = param.site;
+		msg = await mtd.GetSiteMessage(site, param.startDate, param.endDate);
 	} else {
 		msg.param = param;
 	}
@@ -84,7 +86,7 @@ app.get("/Image", async (req: Request, res: Response) => {
 	}
 });
 app.post("/SorGet", async (req: Request, res: Response) => {
-	console.log("SorGet invoked!!", os.tmpdir());
+	// console.log("SorGet invoked!!", os.tmpdir());
 	// console.log("files", req);
 	const bb = busboy({headers: req.headers, defParamCharset: "utf8"});
 	let msg: IMsg = { ErrNo: ErrCode.DB_QUERY_ERROR};
@@ -103,7 +105,7 @@ app.post("/SorGet", async (req: Request, res: Response) => {
 			encoding,
 			mimeType
 		);
-		const tmpfile = path.join(os.tmpdir(), filename);
+		// const tmpfile = path.join(os.tmpdir(), filename);
 		// console.log("dir:", tmpfile);
 		// file.pipe(fs.createWriteStream(tmpfile));
 		let imgdata: any = null;
@@ -154,6 +156,16 @@ app.post("/SorGet", async (req: Request, res: Response) => {
 	});
 	req.pipe(bb);
 });
+app.get("/Verify", async (req: Request, res: Response) => {
+	let msg: any;
+	const param = req.query;
+	if (param.url && param.token) {
+		msg = await axios.get(`${param.url}?token=${param.token}`);
+	} else {
+		msg = { status: 1, errcode: ErrCode.MISS_PARAMETER };
+	}
+	res.send(JSON.stringify(msg));
+});
 app.get("/CheckIn", (req: Request, res: Response) => {
 	checkin(req.query as any, res);
 });
@@ -172,6 +184,7 @@ interface ChkAns {
 function checkin(param: HasToken, res: Response) {
 	const msg: ChkAns = { status: 1, errcode: ErrCode.MISS_PARAMETER };
 	let token = param.token;
+	// console.log("checkin", param);
 	let ans: string | jwt.JwtPayload = "";
 	if (token) {
 		if (token.indexOf("#/") !== -1) { token = token.substring(0, token.length - 2); }
@@ -179,6 +192,7 @@ function checkin(param: HasToken, res: Response) {
 			ans = jwt.verify(token, JWT_KEY);
 			msg.extra = ans;
 			msg.status = 0;
+			msg.errcode = "";
 		} catch (err) {
 			msg.error = err;
 		}

@@ -45,6 +45,7 @@ public GetMessage(uid: string): Promise<IMsg> {
 				Val: DateF.toDbDateTimeString(DateF.dayDiffTS(1)),
 				Cond: ">",
 			});
+			console.log("GetMessage", filter);
 			this.msg = await jt.Lists(filter);
 			await conn.release();
 		}
