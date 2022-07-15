@@ -162,6 +162,7 @@ app.get("/Verify", async (req: Request, res: Response) => {
 	if (param.url && param.token) {
 		let token = param.token as string;
 		if (token.indexOf("#/") !== -1) { token = token.substring(0, token.length - 2); }
+		console.log("Verify start");
 		msg = await axios.get(`${param.url}?token=${token}`);
 		console.log("Verify after", msg);
 	} else {
