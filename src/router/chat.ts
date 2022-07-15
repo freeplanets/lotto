@@ -156,19 +156,30 @@ app.post("/SorGet", async (req: Request, res: Response) => {
 	});
 	req.pipe(bb);
 });
-app.get("/Verify", async (req: Request, res: Response) => {
-	let msg: any;
+app.get("/Verify", (req: Request, res: Response) => {
+	let msg: any = { status: 1, errcode: ErrCode.MISS_PARAMETER };
 	const param = req.query;
 	if (param.url && param.token) {
 		let token = param.token as string;
 		if (token.indexOf("#/") !== -1) { token = token.substring(0, token.length - 2); }
 		console.log("Verify start");
-		msg = await axios.get(`${param.url}?token=${token}`);
-		console.log("Verify after", msg);
+		axios.get(`${param.url}?token=${token}`).then((ans) => {
+			if (ans.data) {
+				msg = ans.data;
+			} else {
+				msg.errcode = ErrCode.NO_DATA_FOUND;
+			}
+			console.log("Verify after", msg);
+			res.send(JSON.stringify(msg));
+		}).catch((err) => {
+			msg.error = err;
+			msg.errcode = ErrCode.APISERVER_GONE_AWAY;
+			console.log("Verify err", msg);
+			res.send(JSON.stringify(msg));
+		});
 	} else {
-		msg = { status: 1, errcode: ErrCode.MISS_PARAMETER };
+		res.send(JSON.stringify(msg));
 	}
-	res.send(JSON.stringify(msg));
 });
 app.get("/CheckIn", (req: Request, res: Response) => {
 	checkin(req.query as any, res);
@@ -194,7 +205,7 @@ function checkin(param: HasToken, res: Response) {
 		if (token.indexOf("#/") !== -1) { token = token.substring(0, token.length - 2); }
 		try {
 			ans = jwt.verify(token, JWT_KEY);
-			msg.extra = ans;
+			// msg.extra = ans;
 			msg.status = 0;
 			msg.errcode = "";
 		} catch (err) {
