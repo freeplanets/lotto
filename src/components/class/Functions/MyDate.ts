@@ -77,7 +77,7 @@ class MyDate {
 		const d1 = dates[0];
 		const d2 = `${dates[1] ? dates[1] : dates[0]} 23:59:59.999`;
 		const keyV: IKeyVal = {
-			Key: `${key || "ModifyTime"}`,
+			Key: key || "ModifyTime",
 			Val: this.getTime(d1),
 			Val2: this.getTime(d2),
 			Cond: "between",

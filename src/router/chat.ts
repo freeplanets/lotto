@@ -1,16 +1,16 @@
 import busboy from "busboy";
 import { Request, Response, Router } from "express";
-import fs from "fs";
+import jwt from "jsonwebtoken";
 import { PoolConnection } from "mariadb";
 import os from "os";
 import path from "path";
-import { Blob } from "web-blob";
 import JTable from "../class/JTable";
-import ChatToDB, { ChatPic } from "../components/class/Message/ChatToDB";
+import ChatToDB from "../components/class/Message/ChatToDB";
 import { SerChat } from "../components/class/Message/MsgDbIf";
 import { ErrCode } from "../DataSchema/ENum";
 import { IDbAns, IMsg } from "../DataSchema/if";
 import { getConnection } from "../func/db";
+import { JWT_KEY } from "../func/db";
 
 const app: Router = Router();
 app.get("/SorList", async (req: Request, res: Response) => {
@@ -35,6 +35,23 @@ app.get("/ChatList", async (req: Request, res: Response) => {
 			await getImg(msg.data as SerChat[], mtd);
 		}
 		*/
+	}
+	res.send(JSON.stringify(msg));
+});
+interface MsgParam {
+	site: string;
+	passykey: string;
+	startDate: string;
+	endDate: string;
+}
+app.get("/getMessage", async (req: Request, res: Response) => {
+	let msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER, ErrCon: "Miss parameters!!"};
+	const param: MsgParam = req.query as any;
+	if (param.site && param.passykey) {
+		const mtd = new ChatToDB();
+		msg = await mtd.GetSiteMessage(param.site, param.startDate, param.endDate);
+	} else {
+		msg.param = param;
 	}
 	res.send(JSON.stringify(msg));
 });
@@ -137,6 +154,37 @@ app.post("/SorGet", async (req: Request, res: Response) => {
 	});
 	req.pipe(bb);
 });
+app.get("/CheckIn", (req: Request, res: Response) => {
+	checkin(req.query as any, res);
+});
+app.post("/CheckIn", (req: Request, res: Response) => {
+	checkin(req.body, res);
+});
+interface HasToken {
+	token: string;
+}
+interface ChkAns {
+	status: number;
+	errcode?: string | number;
+	error?: any;
+	extra?: any;
+}
+function checkin(param: HasToken, res: Response) {
+	const msg: ChkAns = { status: 1, errcode: ErrCode.MISS_PARAMETER };
+	let token = param.token;
+	let ans: string | jwt.JwtPayload = "";
+	if (token) {
+		if (token.indexOf("#/") !== -1) { token = token.substring(0, token.length - 2); }
+		try {
+			ans = jwt.verify(token, JWT_KEY);
+			msg.extra = ans;
+			msg.status = 0;
+		} catch (err) {
+			msg.error = err;
+		}
+	}
+	res.send(JSON.stringify(msg));
+}
 async function savefile(ctype: string, src: any, conn: PoolConnection): Promise<IDbAns|undefined> {
 	return new Promise(async (resolve) => {
 		let ans: IDbAns | undefined;

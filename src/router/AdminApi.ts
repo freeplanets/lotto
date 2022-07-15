@@ -15,6 +15,7 @@ import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
+import HasHash from "../components/class/GetHash/HasHash";
 import { ErrCode } from "../DataSchema/ENum";
 import { AnyObject, HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
     IGameDataCaption , IGameItem , IGameResult, IHashAna, IHasID, IMOdds, IMsg, IParamLog, IProbTable} from "../DataSchema/if";
@@ -1082,6 +1083,8 @@ app.get("/getTerms", async (req, res) => {
   sql = sql + "order by t.id desc limit 0,20";
   // console.log("getTerms", sql, pa);
   const tans = await doQuery(sql, conn, pa);
+  await new HasHash().check(tans, msg.Game.GType);
+  console.log("end HasHash");
   msg.data = tans;
   /*
   if (tans) {

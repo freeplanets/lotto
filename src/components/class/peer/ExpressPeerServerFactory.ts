@@ -1,19 +1,7 @@
-import { EventEmitter } from "events";
 import { ExpressPeerServer } from "peer";
-import WebSocketLib from "ws";
 import AMsgMan from "../Message/AMsgMan";
-
-type MyWebSocket = WebSocketLib & EventEmitter;
-
-interface IClient {
-  getId(): string;
-  getToken(): string;
-  getSocket(): MyWebSocket | null;
-  setSocket(socket: MyWebSocket | null): void;
-  getLastPing(): number;
-  setLastPing(lastPing: number): void;
-  send(data: any): void;
-}
+import { IClient } from "./ClientManager";
+import SManager from "./SiteManager";
 
 enum MessageType {
   OPEN = "OPEN",
@@ -28,6 +16,7 @@ enum MessageType {
 }
 
 export default class ExpressPeerServerFactory {
+	private CM = SManager;
 	constructor(private server: any, private msgman: AMsgMan) {}
 	public get() {
 		return this.create();
@@ -40,26 +29,26 @@ export default class ExpressPeerServerFactory {
 			const cid = client.getId();
 			const msg = await this.msgman.UserConnected(cid);
 			console.log("peer connection", cid, client.getToken(), JSON.stringify(msg));
+			client.send(`Welcome ${client.getId()}!`);
 			const sock = client.getSocket();
 			if (sock) {
 				sock.on("close", async () => {
 					const cmsg = await this.msgman.UserClosed(cid);
+					this.CM.Remove(cid);
 					console.log("user closed::", cid , JSON.stringify(cmsg));
 				});
-				/*
-				sock.on("message", (data: WebSocketLib.Data) => {
-					const msg = JSON.parse(data.toString());
-					if (msg.type !== MessageType.HEARTBEAT) {
-						console.log("useer Message", msg);
-					}
-				});
-				*/
 			}
-			client.send(`Welcome ${client.getId()}!`);
+			this.CM.Add(client);
 		});
 		/*
 		eps.on("id", (conn: any) => {
 			conn.send("thisisyourid");
+		});
+		*/
+		/*
+		eps.on("message", (client, message) => {
+			if (message.type === MessageType.HEARTBEAT) { return; }
+			console.log(client.getId(), "=>", message);
 		});
 		*/
 		eps.on("disconntion", (client: any) => {

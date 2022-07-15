@@ -25,7 +25,7 @@ export const PreCheck = async (req: Request, res: Response, next) => {
       if (param.NoCheck) {
         next();
       } else {
-        console.log("miss param", param, req.body);
+        // console.log("miss param", param, req.body);
         msg.ErrNo = ErrCode.MISS_PARAMETER;
         msg.ErrCon = "Missing parameter!!";
         res.send(JSON.stringify(msg));

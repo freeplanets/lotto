@@ -1,6 +1,7 @@
 import mariadb from "mariadb";
 import { saveParamLog } from "../API/ApiFunc";
 import { getGTypeByGameID } from "../API/MemberApi";
+import GenHashNum from "../components/class/GetHash/GenHashNum";
 import { ErrCode } from "../DataSchema/ENum";
 import { GameType, IMsg, IParamLog, ISqlProc} from "../DataSchema/if";
 import { doQuery } from "../func/db";
@@ -31,10 +32,11 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     if (g) {
         // num = new NumPack(num, g).Nums; // 賓果時時彩，賓果賽車，用台灣賓果的號碼產生
         // console.log("before checkNum");
+        GType = g.GType;
+        num = new GenHashNum().get(num, GType);
         msg = await checkNum(g, num, conn);
         // console.log("after checkNum", msg);
         if (msg.ErrNo !== ErrCode.PASS ) { return msg; }
-        GType = g.GType;
     } else {
         msg.ErrNo = ErrCode.DB_QUERY_ERROR;
         return msg;

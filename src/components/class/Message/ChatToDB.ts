@@ -19,7 +19,7 @@ export default class ChatToDB {
 				const jt = new JTable<SerLobby>(conn, MsgTable.SerLobby);
 				const filter = {
 					hostname,
-					isActive: 1,
+					// isActive: 1,
 				};
 				this.msg = await jt.Lists(filter);
 				await conn.release();
@@ -46,6 +46,26 @@ public GetMessage(uid: string): Promise<IMsg> {
 				Cond: ">",
 			});
 			this.msg = await jt.Lists(filter);
+			await conn.release();
+		}
+		resolve(this.msg);
+	});
+}
+public GetSiteMessage(site: string, startDate: string, endDate: string) {
+	return new Promise<IMsg>(async (resolve) => {
+		const conn = await getConnection();
+		if (conn) {
+			const jt = new JTable<SerChat>(conn, "SerChat");
+			const filters: IKeyVal[] = [];
+			filters.push({
+				Key: "sender",
+				Val: site,
+				Cond: "like",
+			});
+			const dStart = DateF.toDbDateString(startDate);
+			const dEnd = DateF.toDbDateString(endDate);
+			filters.push(DateF.createDateFilter(`${dStart}-${dEnd}`, "CreateTime"));
+			this.msg = await jt.Lists(filters);
 			await conn.release();
 		}
 		resolve(this.msg);
