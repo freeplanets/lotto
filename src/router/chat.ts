@@ -50,7 +50,7 @@ app.get("/getMessage", async (req: Request, res: Response) => {
 	const param: MsgParam = req.query as any;
 	if (param.site && param.passykey) {
 		const mtd = new ChatToDB();
-		const site = param.site;
+		const site = param.site.replace(/\W/g,'');
 		msg = await mtd.GetSiteMessage(site, param.startDate, param.endDate);
 	} else {
 		msg.param = param;
