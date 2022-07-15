@@ -204,9 +204,9 @@ function getAgentNew(agentId: string, site: string, conn: PoolConnection): Promi
         } else {
             sqlb = "u.UpId = ?";
         }
-        console.log("getAgentNew:", param);
+        // console.log("getAgentNew:", param);
         conn.query(`${sqlh} ${sqlb}`, param).then((res) => {
-            console.log("getAgent", res);
+            // console.log("getAgent", res);
             if (site) {
                 resolve(res[0]);
             } else {

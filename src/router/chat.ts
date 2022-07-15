@@ -160,7 +160,9 @@ app.get("/Verify", async (req: Request, res: Response) => {
 	let msg: any;
 	const param = req.query;
 	if (param.url && param.token) {
-		msg = await axios.get(`${param.url}?token=${param.token}`);
+		let token = param.token as string;
+		if (token.indexOf("#/") !== -1) { token = token.substring(0, token.length - 2); }
+		msg = await axios.get(`${param.url}?token=${token}`);
 		console.log("Verify after", msg);
 	} else {
 		msg = { status: 1, errcode: ErrCode.MISS_PARAMETER };
