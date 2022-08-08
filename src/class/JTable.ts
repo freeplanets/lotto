@@ -225,10 +225,10 @@ export default class JTable<T extends AnyObject> {
         if (extfilter) {
            filters =  `where ${new FilterFactory(extfilter).getFilter()}`;
         }
-        // if (this.TableName === "SerLobby") { console.log("fields:", fields, updates); }
+        // if (this.TableName === "SerChat") { console.log("fields:", fields, updates); }
         if (fields) {
             const sql = `update ${this.TableName} set ${fields} ${filters}`;
-            // if (this.TableName === "SerLobby") { console.log(sql); }
+            if (this.TableName === "SerChat") { console.log("JTable Updates:", sql); }
             msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
             msg.ErrCon = sql;
             msg = await Query(sql, this.conn);

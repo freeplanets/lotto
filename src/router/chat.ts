@@ -6,6 +6,8 @@ import { PoolConnection } from "mariadb";
 // import os from "os";
 // import path from "path";
 import JTable from "../class/JTable";
+import AttachConn from "../components/class/Functions/AttachConn";
+import ChatFunc from "../components/class/Message/ChatFunc";
 import ChatToDB from "../components/class/Message/ChatToDB";
 import { SerChat } from "../components/class/Message/MsgDbIf";
 import { ErrCode } from "../DataSchema/ENum";
@@ -13,77 +15,70 @@ import { IDbAns, IMsg } from "../DataSchema/if";
 import { getConnection } from "../func/db";
 import { JWT_KEY } from "../func/db";
 
-const app: Router = Router();
-app.get("/SorList", async (req: Request, res: Response) => {
-	let msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER };
-	const param = req.query;
-	// console.log(param);
-	if (param.hostname) {
-		const mtd = new ChatToDB();
-		msg = await mtd.UserList(param.hostname as string);
-	}
-	res.send(JSON.stringify(msg));
-});
-app.get("/ChatList", async (req: Request, res: Response) => {
-	let msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER };
-	const param = req.query;
-	console.log("ChatList", param);
-	if (param.uid) {
-		const mtd = new ChatToDB();
-		msg = await mtd.GetMessage(param.uid as string);
-		/*
-		if (msg.ErrNo === ErrCode.PASS) {
-			await getImg(msg.data as SerChat[], mtd);
-		}
-		*/
-	}
-	res.send(JSON.stringify(msg));
-});
+interface HasToken {
+	token: string;
+}
+interface ChkAns {
+	status: number;
+	errcode?: string | number;
+	error?: any;
+	extra?: any;
+}
 interface MsgParam {
 	site: string;
 	passykey: string;
 	startDate: string;
 	endDate: string;
 }
-app.get("/getMessage", async (req: Request, res: Response) => {
-	let msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER, ErrCon: "Miss parameters!!"};
-	const param: MsgParam = req.query as any;
-	if (param.site && param.passykey) {
-		const mtd = new ChatToDB();
-		const site = param.site.replace(/\W/g, "");
-		msg = await mtd.GetSiteMessage(site, param.startDate, param.endDate);
+
+const app: Router = Router();
+const CFunc = new ChatFunc();
+
+app.get("/", async (req: Request, res: Response) => {
+	let msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER };
+	msg = await AttachConn(req.query, CFunc.CheckIn);
+	console.log("checkin", msg);
+	res.send(JSON.stringify(msg));
+});
+app.post("/Notify", async (req: Request, res: Response) => {
+	const msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER, ErrCon: "MISS_PARAMETER" };
+	const param = req.body;
+	// console.log("Notify:", param);
+	if (param.url) {
+		const ans: ChkAns = await NotifySiteUser(param.url as string);
+		// console.log("Notify ans", ans);
+		if (ans.status === 0) {
+			msg.ErrNo = ErrCode.PASS;
+			msg.ErrCon = "Pass";
+		} else {
+			msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
+			msg.ErrCon = "";
+			msg.error = ans;
+		}
+		res.send(JSON.stringify(msg));
 	} else {
-		msg.param = param;
+		res.send(JSON.stringify(msg));
 	}
+});
+app.get("/notifysite", async (req: Request, res: Response) => {
+	res.send({status: 0});
+});
+app.get("/SorList", async (req: Request, res: Response) => {
+	const msg = await AttachConn(req.query, CFunc.UserList);
+	// console.log("SorList:", req.query, msg);
+	res.send(JSON.stringify(msg));
+});
+app.get("/ChatList", async (req: Request, res: Response) => {
+	const msg = await AttachConn(req.query, CFunc.GetMessage);
+	res.send(JSON.stringify(msg));
+});
+app.get("/getMessage", async (req: Request, res: Response) => {
+	const msg = await AttachConn(req.query, CFunc.GetSiteMessage);
 	res.send(JSON.stringify(msg));
 });
 app.get("/Image", async (req: Request, res: Response) => {
-	let img;
-	const param = req.query;
-	console.log("Chat Image", param);
-	if (param.imgId) {
-		const mtd = new ChatToDB();
-		img = await mtd.GetImages(parseInt(String(param.imgId), 10));
-		try {
-			// const b = new Blob([img]);
-			console.log("Image", img);
-			/*
-			b.arrayBuffer().then((buf) => {
-				console.log("buffer:", buf);
-				res.send(b);
-			});
-			*/
-			const b64 = Buffer.from(img.cont).toString("base64");
-			const data = `data:${img.ctype};base64,${b64}`;
-			res.send(data);
-		} catch (err) {
-			console.log("Image", err);
-			res.send(img);
-		}
-	} else {
-		const  msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER };
-		res.send(JSON.stringify(msg));
-	}
+	const msg = await AttachConn(req.query, CFunc.GetImages);
+	res.send(JSON.stringify(msg));
 });
 app.post("/SorGet", async (req: Request, res: Response) => {
 	// console.log("SorGet invoked!!", os.tmpdir());
@@ -131,6 +126,7 @@ app.post("/SorGet", async (req: Request, res: Response) => {
 				}
 			}
 			console.log(`File [${name}] done`);
+			console.log("saveChat:", msg);
 			res.send(JSON.stringify(msg));
 		});
 		file.on("close", () => {
@@ -181,21 +177,30 @@ app.get("/Verify", (req: Request, res: Response) => {
 		res.send(JSON.stringify(msg));
 	}
 });
+app.post("/register", async (req: Request, res: Response) => {
+	const msg = await AttachConn(req.body, CFunc.Register);
+	msg.status = 0;
+	if (msg.ErrNo !== ErrCode.PASS) {
+		msg.status = 1;
+		msg.errcode = msg.ErrNo;
+		msg.error = msg.ErrCon;
+	}
+	res.send(JSON.stringify(msg));
+});
 app.get("/CheckIn", (req: Request, res: Response) => {
 	checkin(req.query as any, res);
 });
 app.post("/CheckIn", (req: Request, res: Response) => {
 	checkin(req.body, res);
 });
-interface HasToken {
-	token: string;
-}
-interface ChkAns {
-	status: number;
-	errcode?: string | number;
-	error?: any;
-	extra?: any;
-}
+app.post("/SwitchMessageTo", async (req: Request, res: Response) => {
+	const msg = await AttachConn(req.body, CFunc.SwitchMessageTo);
+	res.send(JSON.stringify(msg));
+});
+app.post("/DelMessages", async (req: Request, res: Response) => {
+	const msg = await AttachConn(req.body, CFunc.DelMessages);
+	res.send(JSON.stringify(msg));
+});
 function checkin(param: HasToken, res: Response) {
 	const msg: ChkAns = { status: 1, errcode: ErrCode.MISS_PARAMETER };
 	let token = param.token;
@@ -231,6 +236,24 @@ async function savefile(ctype: string, src: any, conn: PoolConnection): Promise<
 async function saveChat(data: SerChat, conn: PoolConnection) {
 	const jt = new JTable<SerChat>(conn, "SerChat");
 	return jt.Insert(data);
+}
+async function NotifySiteUser(url: string, uid = "") {
+	return new Promise<ChkAns>((resolve) => {
+		const param = uid ? `?uid=${uid}` : "";
+		const apiurl = `${url}${param}`;
+		// console.log("NotifySiteUser:", apiurl);
+		axios.get(apiurl).then((res) => {
+			// console.log("apians", res.data);
+			resolve(res.data as ChkAns);
+		}).catch((err) => {
+			// console.log("apierror", err);
+			const ans: ChkAns = {
+				status: 1,
+				error: err,
+			};
+			resolve(ans);
+		});
+	});
 }
 /*
 async function getImg(data: SerChat[], mb: ChatToDB) {
