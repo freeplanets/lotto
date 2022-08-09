@@ -12,8 +12,9 @@ export interface ChatPic {
 	cont: any;
 }
 export interface SerSiteData extends IHasID {
-	SiteName: string;
+	SiteName?: string;
 	NotifyUrl: string;
+	tkey?: string;
 	IP: string;
 }
 
@@ -131,12 +132,14 @@ export default class ChatFunc {
 	}
 	public Register: GetPostFunction = (param: any, conn: PoolConnection) => {
 		return new Promise<IMsg>(async (resolve) => {
-			let siteid: string = param.siteid.replace(/\W/g, "");
-			const notify: string = param.nodify;
-			const ip: string = param.remoteIP;
-			if (siteid && notify && ip) {
+			// let siteid: string = param.siteid.replace(/\W/g, "");
+			// const notify: string = param.nodify;
+			// const ip: string = param.remoteIP;
+			const { siteid, notify, tkey, remoteIP } = param;
+			console.log("Register param:", siteid, notify, tkey, remoteIP, param);
+			if (siteid && notify && tkey && remoteIP) {
 				const jt = new JTable<SerSiteData>(conn, MsgTable.SerSite);
-				siteid = siteid.replace(/\W/g, "");
+				const site = siteid.replace(/\W/g, "");
 				const params = { SiteName: siteid};
 				const ans: any = await jt.getOne(params, "id,SiteName");
 				console.log("Register after getOne:", ans);
@@ -144,9 +147,10 @@ export default class ChatFunc {
 				if (ans) { id = ans.id; }
 				const data: SerSiteData = {
 					id,
-					SiteName: siteid,
+					SiteName: site,
 					NotifyUrl: notify,
-					IP: ip,
+					tkey,
+					IP: remoteIP,
 				};
 				this.msg = await jt.Insert(data);
 				await conn.release();
@@ -158,12 +162,14 @@ export default class ChatFunc {
 	}
 	public CheckIn: GetPostFunction = (param: any, conn: PoolConnection) => {
 		return new Promise<IMsg>(async (resolve) => {
-			if (param.siteid) {
+			const siteid = param.siteid || param.site;
+			console.log("checkin param:", siteid);
+			if ( siteid ) {
 				const jt = new JTable<SerSiteData>(conn, MsgTable.SerSite);
 				const filter: IKeyVal = {
-					SiteName: param.siteid.replace(/\W/g, ""),
+					SiteName: siteid.replace(/\W/g, ""),
 				};
-				const ans = await jt.getOne(filter, "SiteName,NotifyUrl");
+				const ans = await jt.getOne(filter, "SiteName,NotifyUrl,tkey");
 				if (ans) {
 					this.msg.data = ans;
 					this.msg.ErrNo = ErrCode.PASS;

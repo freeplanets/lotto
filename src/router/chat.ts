@@ -7,8 +7,7 @@ import { PoolConnection } from "mariadb";
 // import path from "path";
 import JTable from "../class/JTable";
 import AttachConn from "../components/class/Functions/AttachConn";
-import ChatFunc from "../components/class/Message/ChatFunc";
-import ChatToDB from "../components/class/Message/ChatToDB";
+import ChatFunc, { SerSiteData } from "../components/class/Message/ChatFunc";
 import { SerChat } from "../components/class/Message/MsgDbIf";
 import { ErrCode } from "../DataSchema/ENum";
 import { IDbAns, IMsg } from "../DataSchema/if";
@@ -152,9 +151,44 @@ app.post("/SorGet", async (req: Request, res: Response) => {
 	});
 	req.pipe(bb);
 });
-app.get("/Verify", (req: Request, res: Response) => {
+app.get("/Verify", async (req: Request, res: Response) => {
+	let msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER , ErrCon: "MISS_PARAMETER" };
+	const param = req.query;
+	// console.log("Verify", param);
+	if (param.token) {
+		let token = param.token as string;
+		if (token.indexOf("#/") !== -1) { token = token.substring(0, token.length - 2); }
+		console.log("Verify start");
+		const user = jwt.decode(token);
+		msg = await AttachConn(user, CFunc.CheckIn);
+		console.log("Verify checkin", msg);
+		if (msg.ErrNo === ErrCode.PASS) {
+			const data = msg.data as SerSiteData;
+			if (data.tkey) {
+				try {
+					const verify = jwt.verify(token, data.tkey);
+					// console.log("Verify verify:", verify);
+					delete data.tkey;
+					delete data.SiteName;
+					if (verify) {
+						msg.data = data;
+						console.log("before send:", msg);
+						res.send(JSON.stringify(msg));
+						return;
+					}
+				} catch (err) {
+					console.log("catch:", err);
+				}
+			}
+		}
+	}
+	console.log("Verify end");
+	res.send(JSON.stringify(msg));
+});
+app.get("/VerifyOld", (req: Request, res: Response) => {
 	let msg: any = { status: 1, errcode: ErrCode.MISS_PARAMETER };
 	const param = req.query;
+	console.log("Verify", param);
 	if (param.url && param.token) {
 		let token = param.token as string;
 		if (token.indexOf("#/") !== -1) { token = token.substring(0, token.length - 2); }

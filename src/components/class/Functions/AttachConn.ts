@@ -5,7 +5,8 @@ import { ConnProvider, GetPostFunction } from "../Interface/Functions";
 const AttachConn: ConnProvider = (param: any, f: GetPostFunction) => {
 	return new Promise<IMsg>(async (resolve) => {
 		let msg: IMsg;
-		const conn = await getConnection(param.callform);
+		const callform = (param && param.callform) ? param.callform : "";
+		const conn = await getConnection(callform);
 		if (conn) {
 			msg = await f(param, conn);
 			await conn.release();
