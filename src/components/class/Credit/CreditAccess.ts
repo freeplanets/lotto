@@ -31,7 +31,7 @@ export default class CreditAccess {
     return new Promise<IMsg>(async (resolve) => {
       const msg: IMsg = { ErrNo: ErrCode.PASS };
       const sql = `update Member set Balance=${balance} where id=${this.UserID}`;
-      // console.log("CreditAccess conn info", this.conn.info);
+      console.log("CreditAccess conn info", this.conn.info);
       this.conn.query(sql).then((res: IDbAns) => {
         if (res.affectedRows > 0) {
           resolve(msg);
@@ -67,6 +67,7 @@ export default class CreditAccess {
       const param = [this.UserID, idenkey, money, balance, JSON.stringify(memo)];
       this.conn.query(sql, param).then(async (dbans: IDbAns) => {
         // const dbans: IDbAns = await
+        console.log('CreditAccess ModifyCredit:', sql, param);
         if (dbans.affectedRows > 0) {
           // return true;
           const bans =  await this.ModifyUserCredit(balance);

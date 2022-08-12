@@ -19,10 +19,11 @@ export interface SerSiteData extends IHasID {
 }
 
 export default class ChatFunc {
-	private msg: IMsg = {ErrNo: ErrCode.MISS_PARAMETER, ErrCon: "MISS_PARAMETER" };
+	private defaultMsg: IMsg = {ErrNo: ErrCode.MISS_PARAMETER, ErrCon: "MISS_PARAMETER" };
 	public UserList: GetPostFunction = (param: any, conn: PoolConnection) => {
 		return new Promise<IMsg>(async (resolve) => {
 			// hostname: string, identity?: any
+			let msg = { ...this.defaultMsg };
 			if (param.site) {
 				const identity = param.identity ? parseInt(String(param.identity), 10) : 0;
 				const site = param.site.replace(/\W/g, "");
@@ -32,15 +33,16 @@ export default class ChatFunc {
 					// isActive: 1,
 				};
 				if (identity) { filter.identity = identity; }
-				this.msg = await jt.Lists(filter);
+				msg = await jt.Lists(filter);
 				await conn.release();
 			}
-			resolve(this.msg);
+			resolve(msg);
 		});
 	}
 	public GetMessage: GetPostFunction = (param: any, conn: PoolConnection) => {
 		return new Promise<IMsg>(async (resolve) => {
 			// uid: string, identity = 0, site = ""
+			let msg = { ...this.defaultMsg };
 			if (param.uid) {
 				const identity = param.identity ? parseInt(String(param.identity), 10) : 0;
 				const site = param.site;
@@ -61,7 +63,7 @@ export default class ChatFunc {
 				};
 				filter.push(t);
 				console.log("GetMessage", identity, site, filter);
-				this.msg = await jt.Lists(filter);
+				msg = await jt.Lists(filter);
 				if (identity && site) {
 					const fMsgs: IKeyVal [] = [{
 							receiver: site,
@@ -72,7 +74,7 @@ export default class ChatFunc {
 					// console.log("GetMessage:", this.msg.data, ans.data);
 					if (ans.ErrNo === ErrCode.PASS) {
 						// const data: SerChat[] = this.msg.data ? this.msg.data as SerChat[] : [];
-						this.msg.data = this.ArrConcat(this.msg.data, ans.data);
+						msg.data = this.ArrConcat(msg.data, ans.data);
 						/*
 						if (ans.data && (ans.data as []).length > 0) {
 							// console.log("GetMessage:", data, this.msg.data);
@@ -84,7 +86,7 @@ export default class ChatFunc {
 				await conn.release();
 			}
 			// console.log("GetMessage:", this.msg);
-			resolve(this.msg);
+			resolve(msg);
 		});
 	}
 	public GetSiteMessage: GetPostFunction = (param: any, conn: PoolConnection) => {
@@ -102,14 +104,16 @@ export default class ChatFunc {
 			const dStart = DateF.toDbDateString(startDate);
 			const dEnd = DateF.toDbDateString(endDate);
 			filters.push(DateF.createDateFilter(`${dStart}-${dEnd}`, "CreateTime"));
-			this.msg = await jt.Lists(filters);
+			let msg = { ...this.defaultMsg };
+			msg = await jt.Lists(filters);
 			await conn.release();
-			resolve(this.msg);
+			resolve(msg);
 		});
 	}
 	public GetImages: GetPostFunction = (param: any, conn: PoolConnection) => {
 			return new Promise<any>(async (resolve) => {
 				// console.log("GetImages:", param);
+				const msg = { ...this.defaultMsg };
 				if (param.imgId) {
 					let img: any;
 					const id = parseInt(String(param.imgId), 10);
@@ -120,14 +124,14 @@ export default class ChatFunc {
 						if (img) {
 							const b64 = Buffer.from(img.cont).toString("base64");
 							const data = `data:${img.ctype};base64,${b64}`;
-							this.msg.data = { img: data };
+							msg.data = { img: data };
 						}
 					} catch (err) {
 						console.log("Image", err);
 					}
 					await conn.release();
 				}
-				resolve(this.msg);
+				resolve(msg);
 			});
 	}
 	public Register: GetPostFunction = (param: any, conn: PoolConnection) => {
@@ -135,6 +139,7 @@ export default class ChatFunc {
 			// let siteid: string = param.siteid.replace(/\W/g, "");
 			// const notify: string = param.nodify;
 			// const ip: string = param.remoteIP;
+			let msg = { ...this.defaultMsg };
 			const { siteid, notify, tkey, remoteIP } = param;
 			console.log("Register param:", siteid, notify, tkey, remoteIP, param);
 			if (siteid && notify && tkey && remoteIP) {
@@ -152,16 +157,21 @@ export default class ChatFunc {
 					tkey,
 					IP: remoteIP,
 				};
-				this.msg = await jt.Insert(data);
+				if (id) {
+					msg = await jt.Update(data);
+				} else {
+					msg = await jt.Insert(data);
+				}
 				await conn.release();
-				resolve(this.msg);
+				resolve(msg);
 			} else {
-				resolve(this.msg);
+				resolve(msg);
 			}
 		});
 	}
 	public CheckIn: GetPostFunction = (param: any, conn: PoolConnection) => {
 		return new Promise<IMsg>(async (resolve) => {
+			const msg = { ...this.defaultMsg };
 			const siteid = param.siteid || param.site;
 			console.log("checkin param:", siteid);
 			if ( siteid ) {
@@ -170,20 +180,23 @@ export default class ChatFunc {
 					SiteName: siteid.replace(/\W/g, ""),
 				};
 				const ans = await jt.getOne(filter, "SiteName,NotifyUrl,tkey");
+				console.log("checkin ans:", ans);
 				if (ans) {
-					this.msg.data = ans;
-					this.msg.ErrNo = ErrCode.PASS;
-					this.msg.ErrCon = "PASS";
+					msg.data = ans;
+					msg.ErrNo = ErrCode.PASS;
+					msg.ErrCon = "PASS";
 				} else {
-					this.msg.ErrNo = ErrCode.NO_DATA_FOUND;
-					this.msg.ErrCon = "NO_DATA_FOUND";
+					msg.ErrNo = ErrCode.NO_DATA_FOUND;
+					msg.ErrCon = "NO_DATA_FOUND";
 				}
 			}
-			resolve(this.msg);
+			console.log("checkin msg", msg);
+			resolve(msg);
 		});
 	}
 	public SwitchMessageTo: GetPostFunction = (param: any, conn: PoolConnection) => {
 		return new Promise<IMsg>(async (resolve) => {
+			let msg = { ...this.defaultMsg };
 			if (param.id && param.cid) {
 				const id = this.toNumber(param.id);
 				const cid = param.cid;
@@ -193,13 +206,14 @@ export default class ChatFunc {
 				};
 				const filter = { id };
 				const jt = new JTable<SerChat>(conn, MsgTable.SerChat);
-				this.msg = await jt.Updates(updates, filter);
+				msg = await jt.Updates(updates, filter);
 			}
-			resolve(this.msg);
+			resolve(msg);
 		});
 	}
 	public DelMessages: GetPostFunction = (param: any, conn: PoolConnection) => {
 		return new Promise<IMsg>(async (resolve) => {
+			let msg = { ...this.defaultMsg };
 			if (param.id && param.cid) {
 				let id: number;
 				id = this.toNumber(param.id);
@@ -209,9 +223,20 @@ export default class ChatFunc {
 				};
 				const filter = { id };
 				const jt = new JTable<SerChat>(conn, MsgTable.SerChat);
-				this.msg = await jt.Updates(updates, filter);
+				msg = await jt.Updates(updates, filter);
 			}
-			resolve(this.msg);
+			resolve(msg);
+		});
+	}
+	public Update: GetPostFunction = (param: any, conn: PoolConnection) => {
+		return new Promise<IMsg>(async (resolve) => {
+			const { tableName, data } = param;
+			let msg = { ...this.defaultMsg };
+			if (tableName && Array.isArray(data)) {
+				const jt = new JTable<IHasID[]>(conn, tableName);
+				msg = jt.MultiUpdate(data);
+			}
+			resolve(msg);
 		});
 	}
 	private toNumber(v: any): number {

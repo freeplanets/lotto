@@ -12,5 +12,6 @@ export interface SerChat {
 	sender: string;
 	receiver: string;
 	cont: string;
+	isReaded?: number;
 	ModifyTime?: string;
 }

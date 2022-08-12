@@ -542,34 +542,6 @@ async function register(params, res: Response) {
     // console.log("doRegister:", msg);
     res.send(JSON.stringify(msg));
 }
-/*
-async function ModifyCredit(uid: number, Account: string,
-                            AgentId: string, money: number, idenkey: string, conn: Connection) {
-    let sql = `select balance from UserCredit where uid=? order by id desc limit 0,1`;
-    const ans = await conn.query(sql, [uid]);
-    let balance: number = money;
-    if (ans[0]) {
-        balance = balance + ans[0].balance;
-    }
-    sql = `uid,Account,AgentID,idenkey,DepWD,Balance) values(?,?,?,?,?,?)`;
-    const param = [uid, Account, AgentId, idenkey, money, balance];
-    const dbans: IDbAns = await conn.query(sql, param);
-    if (dbans.affectedRows > 0) {
-        // return true;
-       const bans =  await ModifyUserCredit(uid, balance, conn);
-       if (bans) {
-           return { balance, orderId: dbans.insertId};
-       }
-    }
-    return false;
-}
-async function ModifyUserCredit(uid: number, balance: number, conn: Connection) {
-    const sql = `update User set Balance=${balance} where id=${uid}`;
-    const ans: IDbAns = await conn.query(sql);
-    if (ans.affectedRows > 0) { return true; }
-    return false;
-}
-*/
 async function getLedgerLever(req, res) {
     const params = req.query;
     // console.log("getTicketDetail:", params);

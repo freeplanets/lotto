@@ -43,18 +43,23 @@ app.post("/Notify", async (req: Request, res: Response) => {
 	const msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER, ErrCon: "MISS_PARAMETER" };
 	const param = req.body;
 	// console.log("Notify:", param);
-	if (param.url) {
-		const ans: ChkAns = await NotifySiteUser(param.url as string);
-		// console.log("Notify ans", ans);
-		if (ans.status === 0) {
-			msg.ErrNo = ErrCode.PASS;
-			msg.ErrCon = "Pass";
-		} else {
-			msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
-			msg.ErrCon = "";
-			msg.error = ans;
+	const { site } = param;
+	if (site) {
+		const chk = await AttachConn(param, CFunc.CheckIn);
+		if (chk.ErrNo === ErrCode.PASS) {
+			const { NotifyUrl } = chk.data as SerSiteData;
+			const ans: ChkAns = await NotifySiteUser(NotifyUrl);
+			console.log("Notify ans", ans);
+			if (ans.status === 0) {
+				msg.ErrNo = ErrCode.PASS;
+				msg.ErrCon = "Pass";
+			} else {
+				msg.ErrNo = ErrCode.NOT_DEFINED_ERR;
+				msg.ErrCon = "";
+				msg.error = ans;
+			}
+			res.send(JSON.stringify(msg));
 		}
-		res.send(JSON.stringify(msg));
 	} else {
 		res.send(JSON.stringify(msg));
 	}
@@ -163,22 +168,25 @@ app.get("/Verify", async (req: Request, res: Response) => {
 		msg = await AttachConn(user, CFunc.CheckIn);
 		console.log("Verify checkin", msg);
 		if (msg.ErrNo === ErrCode.PASS) {
-			const data = msg.data as SerSiteData;
-			if (data.tkey) {
+			const { tkey } = msg.data as SerSiteData;
+			delete msg.data;
+			if (tkey) {
 				try {
-					const verify = jwt.verify(token, data.tkey);
+					const verify = jwt.verify(token, tkey);
 					// console.log("Verify verify:", verify);
-					delete data.tkey;
-					delete data.SiteName;
 					if (verify) {
-						msg.data = data;
 						console.log("before send:", msg);
 						res.send(JSON.stringify(msg));
 						return;
 					}
 				} catch (err) {
 					console.log("catch:", err);
+					msg.ErrNo = ErrCode.NO_LOGIN;
+					msg.ErrCon = "Lougout or token expired!!";
 				}
+			} else {
+				msg.ErrNo = ErrCode.NO_LOGIN;
+				msg.ErrCon = "Token expired!!";
 			}
 		}
 	}
@@ -235,6 +243,12 @@ app.post("/DelMessages", async (req: Request, res: Response) => {
 	const msg = await AttachConn(req.body, CFunc.DelMessages);
 	res.send(JSON.stringify(msg));
 });
+app.post("/UpdateSerChat", async (req: Request, res: Response) => {
+	const param = req.body;
+	param.tableName = "SerChat";
+	const msg = await AttachConn(param, CFunc.Update);
+	res.send(JSON.stringify(msg));
+});
 function checkin(param: HasToken, res: Response) {
 	const msg: ChkAns = { status: 1, errcode: ErrCode.MISS_PARAMETER };
 	let token = param.token;
@@ -273,8 +287,7 @@ async function saveChat(data: SerChat, conn: PoolConnection) {
 }
 async function NotifySiteUser(url: string, uid = "") {
 	return new Promise<ChkAns>((resolve) => {
-		const param = uid ? `?uid=${uid}` : "";
-		const apiurl = `${url}${param}`;
+		const apiurl = `${url}?info=1&uid=${uid}`;
 		// console.log("NotifySiteUser:", apiurl);
 		axios.get(apiurl).then((res) => {
 			// console.log("apians", res.data);
