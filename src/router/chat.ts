@@ -7,8 +7,8 @@ import { PoolConnection } from "mariadb";
 // import path from "path";
 import JTable from "../class/JTable";
 import AttachConn from "../components/class/Functions/AttachConn";
-import ChatFunc, { SerSiteData } from "../components/class/Message/ChatFunc";
-import { SerChat } from "../components/class/Message/MsgDbIf";
+import ChatFunc from "../components/class/Message/ChatFunc";
+import { SerChat, SerSiteData } from "../components/class/Message/MsgDbIf";
 import { ErrCode } from "../DataSchema/ENum";
 import { IDbAns, IMsg } from "../DataSchema/if";
 import { getConnection } from "../func/db";
@@ -22,6 +22,7 @@ interface ChkAns {
 	errcode?: string | number;
 	error?: any;
 	extra?: any;
+	data?: any;
 }
 interface MsgParam {
 	site: string;
@@ -78,7 +79,19 @@ app.get("/ChatList", async (req: Request, res: Response) => {
 });
 app.get("/getMessage", async (req: Request, res: Response) => {
 	const msg = await AttachConn(req.query, CFunc.GetSiteMessage);
-	res.send(JSON.stringify(msg));
+	const ans: ChkAns = {
+		status: msg.ErrNo ? 1 : 0,
+		data: msg.data,
+	};
+	res.send(JSON.stringify(ans));
+});
+app.get("/getClosedMsg", async (req: Request, res: Response) => {
+	const msg = await AttachConn(req.query, CFunc.GetClosedMsg);
+	const ans: ChkAns = {
+		status: msg.ErrNo ? 1 : 0,
+		data: msg.data,
+	};
+	res.send(JSON.stringify(ans));
 });
 app.get("/Image", async (req: Request, res: Response) => {
 	const msg = await AttachConn(req.query, CFunc.GetImages);
@@ -247,6 +260,11 @@ app.post("/UpdateSerChat", async (req: Request, res: Response) => {
 	const param = req.body;
 	param.tableName = "SerChat";
 	const msg = await AttachConn(param, CFunc.Update);
+	res.send(JSON.stringify(msg));
+});
+app.post("/CloseMsg", async (req: Request, res: Response) => {
+	const param = req.body;
+	const msg = await AttachConn(param, CFunc.CloseMsg);
 	res.send(JSON.stringify(msg));
 });
 function checkin(param: HasToken, res: Response) {

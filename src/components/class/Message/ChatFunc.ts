@@ -4,19 +4,8 @@ import { ErrCode } from "../../../DataSchema/ENum";
 import { AnyObject, IHasID, IKeyVal, IMsg } from "../../../DataSchema/if";
 import DateF from "../Functions/MyDate";
 import { GetPostFunction } from "../Interface/Functions";
-import { SerChat, SerLobby } from "./MsgDbIf";
+import { ChatPic, SerChat, SerClosedData, SerLobby, SerSiteData } from "./MsgDbIf";
 import { MsgTable } from "./MsgToDB";
-
-export interface ChatPic {
-	id: number;
-	cont: any;
-}
-export interface SerSiteData extends IHasID {
-	SiteName?: string;
-	NotifyUrl: string;
-	tkey?: string;
-	IP: string;
-}
 
 export default class ChatFunc {
 	private defaultMsg: IMsg = {ErrNo: ErrCode.MISS_PARAMETER, ErrCon: "MISS_PARAMETER" };
@@ -233,9 +222,58 @@ export default class ChatFunc {
 			const { tableName, data } = param;
 			let msg = { ...this.defaultMsg };
 			if (tableName && Array.isArray(data)) {
-				const jt = new JTable<IHasID[]>(conn, tableName);
+				const jt = new JTable<IHasID>(conn, tableName);
 				msg = jt.MultiUpdate(data);
 			}
+			resolve(msg);
+		});
+	}
+	public CloseMsg: GetPostFunction = (param: any, conn: PoolConnection) => {
+		return new Promise<IMsg>(async (resolve) => {
+			const data = param as SerClosedData;
+			let msg = { ...this.defaultMsg };
+			if (data.MemberCid && data.ServeCid && data.cont && data.title) {
+				if (Array.isArray(data.cont)) {
+					const msgids = data.cont.map((itm) => {
+						return { id: itm.id, isDeled: 1 };
+					});
+					if (msgids.length > 0) {
+						const uparam = {
+							tableName: MsgTable.SerChat,
+							data: msgids,
+						};
+						msg = await this.Update(uparam, conn);
+						// console.log("closeMsg update check:", JSON.stringify(uparam), msg);
+					}
+					data.cont = JSON.stringify(data.cont);
+				}
+				if (msg.affectedRows > 0) {
+					const jt = new JTable<SerClosedData>(conn, MsgTable.SerClosed);
+					msg = await jt.Insert(data);
+					// console.log("CloseMsg:", msg);
+				}
+			}
+			resolve(msg);
+		});
+	}
+	public GetClosedMsg: GetPostFunction = (param: any, conn: PoolConnection) => {
+		return new Promise<IMsg>(async (resolve) => {
+			const site = param.site.replace(/\W/g, "");
+			const startDate = param.startDate;
+			const endDate = param.endDate;
+			const jt = new JTable<SerClosedData>(conn, MsgTable.SerClosed);
+			const filters: IKeyVal[] = [];
+			filters.push({
+				Key: "MemberCid",
+				Val: site,
+				Cond: "like",
+			});
+			const dStart = DateF.toDbDateString(startDate);
+			const dEnd = DateF.toDbDateString(endDate);
+			filters.push(DateF.createDateFilter(`${dStart}-${dEnd}`, "CreateTime"));
+			let msg = { ...this.defaultMsg };
+			msg = await jt.Lists(filters);
+			await conn.release();
 			resolve(msg);
 		});
 	}

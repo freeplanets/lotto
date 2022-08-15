@@ -11,6 +11,7 @@ export enum MsgTable {
   SerLobby = "SerLobby",
 	SerChatImg = "SerChatPic",
 	SerSite = "SerSite",
+	SerClosed = "SerClosed",
 }
 
 export default class MsgToDB extends AMsgSaver {
