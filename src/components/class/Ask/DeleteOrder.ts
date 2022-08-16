@@ -3,7 +3,7 @@ import { AskTable, CreditMemo, HasUID, IMsg, MemoCryptoCur } from "../../../Data
 import AskTableAccess from "./AskTableAccess";
 
 export default class DeleteOrder extends AskTableAccess<HasUID> {
-  public async doit(): Promise<IMsg> {
+  public async proc(): Promise<IMsg> {
     let msg: IMsg = { ErrNo: ErrCode.PASS };
     msg.UserID = this.ask.UserID;
     const ans = await this.tb.getOne(this.ask.id);

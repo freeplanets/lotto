@@ -20,7 +20,7 @@ const wsOptions: ClientOptions = {
   // localAddress: 'localhost',
 };
 const ChannelName = Channels.API_SERVER;
-const ChatSERVER = `${chatHost}/${sitename}/${ChannelName}/apiZero`;
+// const ChatSERVER = `${chatHost}/${sitename}/${ChannelName}/apiZero`;
 const wsSERVER = `${wsHost}`;
 // const chatClient = new ChatWS(ChatSERVER, wsOptions);
 const wsclient = new AskProcWS(wsSERVER, wsOptions, ChannelName);

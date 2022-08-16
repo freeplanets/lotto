@@ -97,6 +97,11 @@ class MyDate {
 		}
 		return new Date(time);
 	}
+	public delay(v: number): Promise<void> {
+		return new Promise((resolve) => {
+			setTimeout(resolve, v * 1000);
+		});
+	}
 	private checkDateFormat(d: string) {
 		const dd = d.split("-");
 		if (Number(dd[2]) > 100) {

@@ -4,7 +4,7 @@ import {IMarkSixNums} from "../MSNum";
 import HashSix from "../SettleType/HashSix";
 import {CMarkSixMum, IMSResult} from "./CMarkSixMum";
 // const SettleMethods = MarkSixST;
-export function HashSixSetl(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
+export function HashSixSetl(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.PoolConnection, hash?: string): ISqlProc {
   // let ans: string[] = [];
   // const imsr: IMSResult = imsra as IMSResult;
   const imsr: IMSResult = new CMarkSixMum(imsra, true).Nums;
@@ -39,7 +39,8 @@ export function HashSixSetl(tid: number, GameID: number, imsra: any, rtn: any, c
           }
       }
   });
-  ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  // ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  ans.final = `update Terms set Result='${hash}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
   // console.log("MarkSixSetl sql:", ans);
   /*
   ans.common.map((sql) => {

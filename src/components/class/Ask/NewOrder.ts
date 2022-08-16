@@ -4,7 +4,7 @@ import NumFunc from "../Functions/MyNumber";
 import AskTableAccess from "./AskTableAccess";
 
 export default class NewOrder extends AskTableAccess<HasUID> {
-  public async doit(): Promise<IMsg> {
+  public async proc(): Promise<IMsg> {
     let msg: IMsg = { ErrNo: ErrCode.PASS };
     const ask: AskTable = this.ask as AskTable;
     msg.UserID = ask.UserID;

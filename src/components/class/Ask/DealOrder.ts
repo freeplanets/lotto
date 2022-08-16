@@ -12,7 +12,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     super(ask, conn, tableName);
     if (SettleServiceID) { this.SettleServiceID = SettleServiceID; }
   }
-  public async doit(): Promise<IMsg> {
+  public async proc(): Promise<IMsg> {
     const msg: IMsg = { ErrNo: ErrCode.PASS };
     const ask = this.ask as AskTable;
     msg.UserID = ask.UserID;

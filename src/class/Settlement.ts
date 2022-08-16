@@ -28,6 +28,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     let GType: string|undefined;
     let msg: IMsg = { ErrNo: ErrCode.PASS };
     // const g = await getGame(GameID, conn);
+    const hash = num;
     const g = await getGTypeByGameID(GameID, conn);
     if (g) {
         // num = new NumPack(num, g).Nums; // 賓果時時彩，賓果賽車，用台灣賓果的號碼產生
@@ -127,7 +128,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     });
     if (rtn) {
         // console.log("rtn chk:", sql, rtn);
-        sqls = doBT(tid, GameID, num, rtn, conn, GType);
+        sqls = doBT(tid, GameID, num, rtn, conn, GType, hash);
         // console.log("after do BT:", sqls);
         let needBreak: boolean = false;
         if (sqls.pre.length > 0) {
@@ -190,7 +191,7 @@ export async function CancelTerm(tid: number, conn: mariadb.PoolConnection) {
     const CT = new CancelTermF(tid, conn);
     return CT.doit();
 }
-function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.PoolConnection, GType?: string): ISqlProc {
+function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.PoolConnection, GType?: string, hash?: string): ISqlProc {
     let ans: ISqlProc|undefined;
     switch (GType) {
         case "3D":
@@ -212,10 +213,10 @@ function doBT(tid: number, GameID: number, imsra: any, rtn: any, conn: mariadb.P
             ans = Speed3Setl(tid, GameID, imsra, rtn, conn);
             break;
         case "BTCHash":
-            ans = BTCHashSetl(tid, GameID, imsra, rtn, conn);
+            ans = BTCHashSetl(tid, GameID, imsra, rtn, conn, hash);
             break;
         case "HashSix":
-            ans = HashSixSetl(tid, GameID, imsra, rtn, conn);
+            ans = HashSixSetl(tid, GameID, imsra, rtn, conn, hash);
             break;
         case "SGPools":
             ans = SGPoolsSetl(tid, GameID, imsra, rtn, conn);

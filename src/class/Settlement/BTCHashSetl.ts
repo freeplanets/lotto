@@ -3,7 +3,7 @@ import {ISetl, ISqlProc} from "../../DataSchema/if";
 import BTCHash from "../SettleType/BTCHash";
 import {BTCHashNum, IBTCHashResult} from "./BTCHashNum";
 // const SettleMethods = MarkSixST;
-export function BTCHashSetl(tid: number, GameID: number, num: string, rtn: any, conn: mariadb.PoolConnection): ISqlProc {
+export function BTCHashSetl(tid: number, GameID: number, num: string, rtn: any, conn: mariadb.PoolConnection, hash?: string): ISqlProc {
   // let ans: string[] = [];
   const imsr: IBTCHashResult = new BTCHashNum(num).Nums;
   const ans: ISqlProc = {
@@ -26,7 +26,8 @@ export function BTCHashSetl(tid: number, GameID: number, num: string, rtn: any, 
           }
       }
   });
-  ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  // ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  ans.final = `update Terms set Result='${hash}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
   // console.log("BTCHashSetl:", ans);
   return ans;
 }
