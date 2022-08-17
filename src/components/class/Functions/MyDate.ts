@@ -97,9 +97,9 @@ class MyDate {
 		}
 		return new Date(time);
 	}
-	public delay(v: number): Promise<void> {
+	public delay(ms: number): Promise<void> {
 		return new Promise((resolve) => {
-			setTimeout(resolve, v * 1000);
+			setTimeout(resolve, ms);
 		});
 	}
 	private checkDateFormat(d: string) {
