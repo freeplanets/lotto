@@ -19,11 +19,11 @@ export default abstract class AskTableAccess<T extends HasUID> {
     this.InProcess = new MemberInProcess(this.conn);
   }
   public doit(): Promise<IMsg> {
-    // console.log("new doit involvement");
+    // if (chk) { console.log("doit:", chk); }
     return new Promise(async (resolve) => {
-      let msg = await this.InProcess.checkIn(this.ask.UserID);
+      let msg = await this.InProcess.checkIn(this.ask.UserID, this.ask.id);
       msg = await this.proc();
-      await this.InProcess.checkOut(this.ask.UserID);
+      await this.InProcess.checkOut(this.ask.UserID, this.ask.id);
       resolve(msg);
     });
   }

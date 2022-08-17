@@ -17,18 +17,21 @@ export default class MemberInProcess {
 	constructor(private conn: PoolConnection) {
 		this.jt = new JTable<MIP>(this.conn, tableName);
 	}
-	public async checkIn(UserID: number): Promise<IMsg> {
+	public async checkIn(UserID: number, chk = 0): Promise<IMsg> {
 		return new Promise(async (resolve) => {
 			let ans = await this.jt.getOne({UserID});
+			console.log(`MemberInProcess checkIn ${chk} start:`, JSON.stringify(ans));
 			while (ans && ans.InProcess) {
 				await MyDate.delay(1);
 				ans = await this.jt.getOne({UserID});
+				console.log(`MemberInProcess checkIn ${chk}:`, JSON.stringify(ans));
 			}
 			const msg = await this.modifyInProcess(UserID, true);
 			resolve(msg);
 		});
 	}
-	public async checkOut(UserID: number): Promise<IMsg> {
+	public async checkOut(UserID: number, chk = 0): Promise<IMsg> {
+		console.log(`modifyInProcess checkout ${chk}:`, UserID);
 		return await this.modifyInProcess(UserID, false);
 	}
 	private async modifyInProcess(UserID: number, InProcess: boolean) {
@@ -44,6 +47,7 @@ export default class MemberInProcess {
 		if (ans) {
 			msg.ErrCon = "";
 			msg.ErrNo = ErrCode.PASS;
+			// console.log("modifyInProcess", data);
 		}
 		return msg;
 	}

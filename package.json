@@ -7,7 +7,7 @@
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "preserve": "npm run build",
-    "serve": "node --trace-warnings --unhandled-rejections=strict .",
+    "serve": "node --trace-warnings .",
     "wstest": "ts-node ./src/components/webSC.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

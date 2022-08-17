@@ -32,6 +32,10 @@ export default class BTC {
 			http.get(`http://${url}`, (res: IncomingMessage) => {
 				// console.log(`STATUS: ${res.statusCode}`);
 				// console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+				res.on("error", () => {
+					console.log("BTC on error", res);
+					reject({code: res.statusCode, error: res.statusMessage});
+				});
 				if (res.statusCode === 200) {
 					let result = "";
 					res.setEncoding("utf8");
@@ -43,6 +47,7 @@ export default class BTC {
 						resolve(result);
 					});
 				} else {
+					console.log("BTC res error", res);
 					reject({code: res.statusCode, error: res.statusMessage});
 				}
 			}).on("abort", () => {

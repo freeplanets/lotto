@@ -285,7 +285,7 @@ export default class JTable<T extends AnyObject> {
     }
     public async MultiUpdate(data: T[], isAdd: boolean= false, onIdkey: boolean = false) {
         if (data.length === 0) { return false; }
-        console.log("JTable MultiUpdate", data);
+        // console.log("JTable MultiUpdate", data);
         const keys: string[] = [];
         const updates: string[] = [];
         const ff: string[] = [];

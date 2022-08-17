@@ -32,7 +32,7 @@ export const PreCheck = async (req: Request, res: Response, next) => {
       }
     } else {
       const authkey = req.headers.authkey ? req.headers.authkey as string : "";
-      await AuthChk(res, req.headers.authorization, authkey).then((msg1) => {
+      AuthChk(res, req.headers.authorization, authkey).then((msg1) => {
         if (msg1.ErrNo !== 0 ) { res.send(JSON.stringify(msg1)); } else {
           // console.log("next1", msg1);
           next();
@@ -106,9 +106,9 @@ const AuthChk = async (res: Response, auth: string, authkey = "") => {
 const LoginChk = async (UserID: number, sid: string): Promise<IMsg> => {
   return new Promise(async (resolve) => {
     const msg: IMsg = {ErrNo: 0};
-    await db.getConnection().then(async (conn) => {
+    db.getConnection().then(async (conn) => {
       if (conn) {
-        await chkLogin(UserID, sid, conn).then(async (res) => {
+        chkLogin(UserID, sid, conn).then(async (res) => {
           if (res) { resolve(msg); } else {
             msg.ErrNo = ErrCode.NO_LOGIN;
             await conn.release();
@@ -134,21 +134,27 @@ const LoginChk = async (UserID: number, sid: string): Promise<IMsg> => {
 };
 const chkLogin = (uid: number, sid: string, conn: mariadb.PoolConnection) => {
   return new Promise(async (resolve) => {
-    await setLoginStatus(uid, sid, conn).then(async (res) => {
+    setLoginStatus(uid, sid, conn).then(async (res) => {
       if (res) {
         const dbas: IDbAns = res as IDbAns;
         // console.log("setLoginStatus ans", res);
         const sql = `select * from LoginInfo where uid=${uid} and isActive=1 and logkey='${sid}'`;
         // console.log("chkLogin sql", sql);
-        await db.doQuery(sql, conn).then((res1) => {
+        db.doQuery(sql, conn).then((res1) => {
           if (res1[0]) {
             // console.log("chkLogin", sql, res1[0]);
             resolve(true);
           } else {
             resolve(false);
           }
+        }).catch((err) => {
+          console.log("chkLogin doQuery err:", err);
+          resolve(false);
         });
       }
+      resolve(false);
+    }).catch((err) => {
+      console.log("chkLogin err:", err);
       resolve(false);
     });
   });
@@ -159,7 +165,7 @@ const setLoginStatus = (uid: number, sid: string, conn: mariadb.PoolConnection, 
       const sql = `update LoginInfo set ${cond} where uid=${uid} and isActive=1
       and logkey='${sid}'
       and CURRENT_TIMESTAMP-timeproc${key ? "<" : ">"}${staytime}`;
-      await db.doQuery(sql, conn).then(async (res) => {
+      db.doQuery(sql, conn).then(async (res) => {
         // console.log("setLoginStatus", sql, res);
         if (!key) {
           const ans = await setLoginStatus(uid, sid, conn, 1);

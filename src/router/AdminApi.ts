@@ -1084,7 +1084,7 @@ app.get("/getTerms", async (req, res) => {
   // console.log("getTerms", sql, pa);
   const tans = await doQuery(sql, conn, pa);
   await new HasHash().check(tans, msg.Game.GType);
-  console.log("end HasHash");
+  // console.log("end HasHash");
   msg.data = tans;
   /*
   if (tans) {
