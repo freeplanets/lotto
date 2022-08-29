@@ -277,6 +277,17 @@ export default class ChatFunc {
 			resolve(msg);
 		});
 	}
+	public ChatHistory: GetPostFunction = (param: any, conn: PoolConnection) => {
+		return new Promise<IMsg>(async (resolve) => {
+			let msg = { ...this.defaultMsg };
+			if (param.cid) {
+				const filter = { MemberCid: param.cid };
+				const jt = new JTable<SerChat>(conn, MsgTable.SerClosed);
+				msg = await jt.Lists(filter);
+			}
+			resolve(msg);
+		});
+	}
 	private toNumber(v: any): number {
 		if (typeof(v) === "number") {
 			return v;

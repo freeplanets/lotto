@@ -44,6 +44,25 @@ export default abstract class AWebSocket {
   private createConnection() {
     console.log("connect to:", this.url);
     this.ws = new WebSocket(this.url, this.opts);
+    // code: 'ETIMEDOUT',
+    // syscall: 'read',
+    this.ws.on("timeout", (chk: any, error: any) => {
+      if (error) {
+        console.log("timeout err:", error);
+      }
+    });
+    this.ws.on("streamread", (chk: any, error: any) => {
+      if (error) {
+        console.log("steamread err:", error);
+      }
+    });
+    /*
+    this.ws.on("read", (chk: any, error: any) => {
+      if (error) {
+        console.log("read err:", error);
+      }
+    });
+    */
     this.ws.on("error", (err) => {
       console.log("createConnection error:", err);
     });
@@ -51,7 +70,7 @@ export default abstract class AWebSocket {
       console.log("disconnect:", data);
     });
     this.ws.on("open", (ws: WebSocket) => {
-			this.OnOpen(ws);
+      this.OnOpen(ws);
 		});
     this.ws.on("message", (data: Data) => {
 			this.OnMessage(data.toString());

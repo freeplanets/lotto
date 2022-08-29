@@ -22,7 +22,11 @@ export default abstract class AskTableAccess<T extends HasUID> {
     // if (chk) { console.log("doit:", chk); }
     return new Promise(async (resolve) => {
       let msg = await this.InProcess.checkIn(this.ask.UserID, this.ask.id);
-      msg = await this.proc();
+      try {
+        msg = await this.proc();
+      } catch (err) {
+        console.log("AskTableAccess:", err);
+      }
       await this.InProcess.checkOut(this.ask.UserID, this.ask.id);
       resolve(msg);
     });

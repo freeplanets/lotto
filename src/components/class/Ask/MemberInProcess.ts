@@ -60,18 +60,5 @@ export default class MemberInProcess {
 			await conn.release();
 		}
 		return ans;
-		/*
-		const ans = await this.jt.MultiUpdate([data]);
-		const msg: IMsg = {
-			ErrNo: ErrCode.NOT_DEFINED_ERR,
-			ErrCon: "Modify InProcess Error",
-		};
-		if (ans) {
-			msg.ErrCon = "";
-			msg.ErrNo = ErrCode.PASS;
-			// console.log("modifyInProcess", data);
-		}
-		return msg;
-		*/
 	}
 }

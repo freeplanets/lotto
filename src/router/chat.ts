@@ -267,6 +267,11 @@ app.post("/CloseMsg", async (req: Request, res: Response) => {
 	const msg = await AttachConn(param, CFunc.CloseMsg);
 	res.send(JSON.stringify(msg));
 });
+app.get("/ChatHistory", async (req: Request, res: Response) => {
+	const param = req.query;
+	const msg = await AttachConn(param, CFunc.ChatHistory);
+	res.send(JSON.stringify(msg));
+});
 function checkin(param: HasToken, res: Response) {
 	const msg: ChkAns = { status: 1, errcode: ErrCode.MISS_PARAMETER };
 	let token = param.token;
