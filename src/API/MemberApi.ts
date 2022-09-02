@@ -83,12 +83,23 @@ export async function getGameInfo(GameID: number|string, conn: mariadb.PoolConne
     });
     return gf;
 }
+function getNums(ndata: string) {
+    if (!ndata) { return ""; }
+    try {
+        const j = JSON.parse(ndata);
+        return j.Nums.join(",");
+    } catch (err) {
+        console.log("getNUms", err);
+        return "";
+    }
+}
 function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConnection) {
     const sql = "select * from Terms where GameID=? and id < ? order by id desc limit 0,1";
     const lg: ILastGame = {
         sno: "",
         nn: "",
-        ns: ""
+        ns: "",
+        ext: ""
     };
     return new Promise((resolve) => {
         conn.query(sql, [GameID, tid]).then((rows) => {
@@ -96,6 +107,7 @@ function getLastGame(GameID: number|string, tid: string, conn: mariadb.PoolConne
                 lg.sno = rows[0].TermID;
                 lg.nn = rows[0].Result;
                 lg.ns = rows[0].SpNo;
+                lg.ext = getNums(rows[0].ResultFmt);
             }
             resolve(lg);
         }).catch((err) => {

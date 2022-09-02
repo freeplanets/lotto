@@ -68,6 +68,7 @@ export interface ILastGame {
     sno: string;
     nn: string;          // 一般
     ns: string;          // 特碼
+    ext: string;         // 給 hash 號碼用
 }
 export interface IOdds {
     s: number;       // isStop
