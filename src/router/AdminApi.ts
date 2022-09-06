@@ -1718,7 +1718,8 @@ app.get("/CurOddsInfo", async (req, res) => {
       if (param.MaxOddsID) {
           MaxOddsID = parseInt(param.MaxOddsID as string, 10);
       }
-      const ans = await afunc.getCurOddsInfo(tid as number, param.GameID as string, MaxOddsID, conn);
+      const PayClassID = param.PayClassID ? parseInt(String(param.PayClassID), 10) : 0;
+      const ans = await afunc.getCurOddsInfo(tid as number, param.GameID as string, MaxOddsID, conn, PayClassID);
       if (ans) {
         msg.data = ans;
       } else {

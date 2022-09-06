@@ -274,14 +274,29 @@ export async function getCurTermId(GameID: number|string, conn: mariadb.PoolConn
   return ans;
 }
 
-export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: number, conn: mariadb.PoolConnection): Promise<any> {
+export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOddsID: number, conn: mariadb.PoolConnection, PayClassID = 0): Promise<any> {
   if (!tid) { return false; }
   const gameStoped: boolean = await chkTermIsSettled(GameID, conn, tid);
   // console.log("getCurOddsInfo gameStoped:", gameStoped);
-  const sql = `select UNIX_TIMESTAMP(OID) OID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps,PerStep,tolW,tolS,tolP from CurOddsInfo where tid=? and GameID=? and UNIX_TIMESTAMP(OID) > ?`;
+  let sql = "";
+  const param = [tid, GameID, MaxOddsID];
+  if (PayClassID) {
+    /*
+    sql = `SELECT UNIX_TIMESTAMP(OID) OID,c.BetType,Num,Odds+Rate Odds,isStop,Steps
+    FROM CurOddsInfo c left join PayRate p on c.GameID=p.GameID and c.BetType=p.BetType  and c.SubType=p.SubType
+    WHERE c.GameID=? and tid=? and PayClassID=? and UNIX_TIMESTAMP(OID) > ?`;
+    */
+    sql = `select UNIX_TIMESTAMP(OID) OID,c.BetType,c.SubType,Num,Odds+Rate Odds,MaxOdds,isStop,Steps,PerStep,tolW,tolS,tolP
+    from CurOddsInfo c left join PayRate p on c.GameID=p.GameID and c.BetType=p.BetType  and c.SubType=p.SubType
+    where tid=? and c.GameID=? and UNIX_TIMESTAMP(OID) > ? and PayClassID = ?`;
+    param.push(PayClassID);
+  } else {
+    sql = `select UNIX_TIMESTAMP(OID) OID,BetType,SubType,Num,Odds,MaxOdds,isStop,Steps,PerStep,tolW,tolS,tolP
+    from CurOddsInfo where tid=? and GameID=? and UNIX_TIMESTAMP(OID) > ?`;
+  }
   const ans = {};
-  const res = await doQuery(sql, conn, [tid, GameID, MaxOddsID]);
-  // console.log("getCurOddsInfo:", sql, [tid, GameID, MaxOddsID]);
+  const res = await doQuery(sql, conn, param);
+  // console.log("getCurOddsInfo:", sql, param);
   if (res) {
       // console.log("getCurOddsInfo", res);
       res.map((itm) => {
