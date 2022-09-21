@@ -3,6 +3,7 @@ import ATAFactor from "../../../components/ATAFactor";
 import FuncKeyManager from "../../../components/FuncKeyManager";
 import { ErrCode, FuncKey } from "../../../DataSchema/ENum";
 import { WsMsg } from "../../../DataSchema/if";
+import StrFunc from "../Functions/MyStr";
 import AWebSocket from "./AWebSocket";
 
 export default class AskProcWS extends AWebSocket {
@@ -30,19 +31,17 @@ export default class AskProcWS extends AWebSocket {
 				const ask = wsmsg.Ask;
 				const Askman = await this.ATAF.getATA(ask, wsmsg.SettleServiceID);
 				const msg = await Askman.doit();
-				// console.log("after doit:", JSON.stringify(msg));
 				if (msg.ErrNo === ErrCode.PASS ) {
 					const newWsmsg: WsMsg = { ...msg };
 					delete newWsmsg.ErrNo;
-					// console.log("before send", JSON.stringify(newWsmsg));
 					if ( this.ws.readyState === WebSocket.OPEN ) {
 						// console.log("Send msg to WS");
-						this.ws.send(JSON.stringify(newWsmsg));
+						this.ws.send(StrFunc.stringify(newWsmsg));
 					} else {
 						console.log(`WS Server error, code:${this.ws.readyState}, try build store mesage function later!`);
 					}
 				} else {
-					console.log("webSC on message:", JSON.stringify(msg));
+					console.log("webSC on message:", StrFunc.stringify(msg));
 				}
 			}
 			if (wsmsg.Message) {
@@ -61,7 +60,7 @@ export default class AskProcWS extends AWebSocket {
         ChannelName: channel,
       };
       // this.ws.send(`SetChannel:${channel}`);
-      this.ws.send(JSON.stringify(msg));
+      this.ws.send(StrFunc.stringify(msg));
     }
   }
 }

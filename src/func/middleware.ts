@@ -2,10 +2,12 @@ import {Request, Response } from "express";
 import { IncomingHttpHeaders } from "http";
 import jwt from "jsonwebtoken";
 import mariadb from "mariadb";
+import StrFunc from "../components/class/Functions/MyStr";
 import { ErrCode } from "../DataSchema/ENum";
 import { IDbAns, IMsg} from "../DataSchema/if";
 import * as db from "../func/db";
 import { ILoginInfo } from "../router/AdminApi";
+
 const staytime: number = 3000000;   // sec
 
 export const PreCheck = async (req: Request, res: Response, next) => {
@@ -28,19 +30,19 @@ export const PreCheck = async (req: Request, res: Response, next) => {
         // console.log("miss param", param, req.body);
         msg.ErrNo = ErrCode.MISS_PARAMETER;
         msg.ErrCon = "Missing parameter!!";
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
       }
     } else {
       const authkey = req.headers.authkey ? req.headers.authkey as string : "";
       AuthChk(res, req.headers.authorization, authkey).then((msg1) => {
-        if (msg1.ErrNo !== 0 ) { res.send(JSON.stringify(msg1)); } else {
+        if (msg1.ErrNo !== 0 ) { res.send(StrFunc.stringify(msg1)); } else {
           // console.log("next1", msg1);
           next();
         }
       }).catch((err) => {
         msg.ErrNo = ErrCode.NO_LOGIN;
         msg.debug = err;
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
       });
     }
   } else {

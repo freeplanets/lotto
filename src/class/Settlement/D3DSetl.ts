@@ -1,4 +1,5 @@
 import mariadb from "mariadb";
+import StrFunc from "../../components/class/Functions/MyStr";
 import {ISetl, ISqlProc} from "../../DataSchema/if";
 import {IExProc} from "../Bet";
 import D3DST from "../SettleType/D3DST";
@@ -27,7 +28,7 @@ export function D3DSetl(tid: number, GameID: number, num: string, rtn: any, conn
           }
       }
   });
-  ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${StrFunc.stringify(imsr)}',isSettled=? where id=${tid}`;
   return ans;
 }
 

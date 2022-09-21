@@ -3,6 +3,7 @@ import { PoolConnection } from "mariadb";
 import EDS from "../class/EncDecString";
 import JTable from "../class/JTable";
 import DataAccess from "../components/class/DataBase/DataAccess";
+import StrFunc from "../components/class/Functions/MyStr";
 import { ErrCode } from "../DataSchema/ENum";
 import { IDbAns, IGameAccessParams, IHasID, IMsg } from "../DataSchema/if";
 import { CryptoOp, IAgent, IUser } from "../DataSchema/user";
@@ -62,7 +63,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     if (!conn) {
         msg.ErrNo = 9;
         msg.ErrCon = "system busy!!";
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
         return;
     }
     const Account = param.Account as string;
@@ -71,7 +72,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
         msg.ErrNo = ErrCode.MISS_PARAMETER;
         msg.ErrCon = "Miss Parameters!!";
         await conn.release();
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
         return;
     }
     const login = await getUserLogin(Account, token, conn);
@@ -101,7 +102,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     }
     await conn.release();
     // console.log("memberlogin getUser:", msg, process.env.WS_SERVER);
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 agentApi.get("/2", async (req: Request, res: Response) => {
     await CreditAC(req.query, res, 2);
@@ -141,7 +142,7 @@ async function CreditAC(params, res: Response, ac: number) {
     if (!conn) {
         msg.ErrNo = 9;
         msg.ErrCon = "system busy!!";
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
         return;
     }
     const data: IAnsData = {code: 0};
@@ -190,7 +191,7 @@ async function CreditAC(params, res: Response, ac: number) {
     }
     await conn.release();
     // console.log("CreditAC ModifyCredit:", msg);
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 }
 function getAgentNew(agentId: string, site: string, conn: PoolConnection): Promise<any> {
     return new Promise<any>((resolve) => {
@@ -256,7 +257,7 @@ async function addUser(AgentId: string|number, PayClassID: number, param: IGameA
     if (usr) {
         if (param.nickName !== usr.Nickname) {
             const tmsg = await ModifyNickName(usr.id, param.nickName, conn);
-            console.log("ChangeNickName", param.nickName, JSON.stringify(tmsg));
+            console.log("ChangeNickName", param.nickName, StrFunc.stringify(tmsg));
         }
         return true;
     }
@@ -377,14 +378,14 @@ async function getTicketDetail(req, res) {
     if (!conn) {
         data.code = 9;
         data.ErrCon = "system busy!!";
-        res.send(JSON.stringify(data));
+        res.send(StrFunc.stringify(data));
         return;
     }
     if (!params.agentId || !params.param) {
         data.code = 9;
         data.ErrCon = "parameter is missing!!";
         await conn.release();
-        res.send(JSON.stringify(data));
+        res.send(StrFunc.stringify(data));
         return;
     }
     const Agent: IAgent = await getAgentNew(params.agentId, params.site, conn);
@@ -408,10 +409,10 @@ async function getTicketDetail(req, res) {
         data.code = 9;
         data.error = err;
         console.log("getTicketDetail error", data);
-        // res.send(JSON.stringify(data));
+        // res.send(StrFunc.stringify(data));
     });
     await conn.release();
-    res.send(JSON.stringify(data));
+    res.send(StrFunc.stringify(data));
 }
 async function getGameDataCaption(req, res) {
     const params = req.query;
@@ -422,14 +423,14 @@ async function getGameDataCaption(req, res) {
     if (!conn) {
         data.code = 9;
         data.ErrCon = "system busy!!";
-        res.send(JSON.stringify(data));
+        res.send(StrFunc.stringify(data));
         return;
     }
     if (!params.agentId || !params.param) {
         data.code = 9;
         data.ErrCon = "parameter is missing!!";
         await conn.release();
-        res.send(JSON.stringify(data));
+        res.send(StrFunc.stringify(data));
         return;
     }
     const Agent: IAgent = await getAgentNew(params.agentId, params.site, conn);
@@ -446,14 +447,14 @@ async function getGameDataCaption(req, res) {
             data.code = 9;
             data.error = err;
             console.log("getGameDataCaption error", data);
-            // res.send(JSON.stringify(data));
+            // res.send(StrFunc.stringify(data));
         });
     } else {
         data.code = 9;
         data.error = "param error!!";
     }
     await conn.release();
-    res.send(JSON.stringify(data));
+    res.send(StrFunc.stringify(data));
 }
 function paramcheck(msg: IMsg, param: any, option = ["agentId", "site"]): void {
     const isPass = option.every((key) => !!param[key]);
@@ -471,7 +472,7 @@ async function register(params, res: Response) {
     if (!conn) {
         msg.ErrNo = ErrCode.GET_CONNECTION_ERR;
         msg.ErrCon = "system busy!!";
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
         return;
     }
     // const Agent: IUser = await getAgent(params.agentId, conn);
@@ -532,7 +533,7 @@ async function register(params, res: Response) {
                 msg.Agent = Agent;
             }
         } else {
-            msg.ErrCon = JSON.stringify(param);
+            msg.ErrCon = StrFunc.stringify(param);
         }
     } else {
         msg.ErrNo = 9;
@@ -540,7 +541,7 @@ async function register(params, res: Response) {
     }
     await conn.release();
     // console.log("doRegister:", msg);
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 }
 async function getLedgerLever(req, res) {
     const params = req.query;
@@ -551,21 +552,21 @@ async function getLedgerLever(req, res) {
     if (!conn) {
         data.code = 9;
         data.ErrCon = "system busy!!";
-        res.send(JSON.stringify(data));
+        res.send(StrFunc.stringify(data));
         return;
     }
     if (!params.agentId || !params.param) {
         data.code = 9;
         data.ErrCon = "parameter is missing!!";
         await conn.release();
-        res.send(JSON.stringify(data));
+        res.send(StrFunc.stringify(data));
         return;
     }
     const Agent: IAgent = await getAgentNew(params.agentId, params.site, conn);
     const eds = new EDS(Agent.DfKey);
     const param = decParam(eds.Decrypted(params.param));
     const UpidFilter = Array.isArray(Agent.id) ? `UpId in (${Agent.id.join(",")})` : `UpId = ${Agent.id}`;
-    console.log("getLedgerLever param:", JSON.stringify(param));
+    console.log("getLedgerLever param:", StrFunc.stringify(param));
     const sql = `select LedgerLever.id,Member.Account userCode,ItemID,ItemType,BuyID,SellID,Qty,BuyPrice,SellPrice,(BuyFee + TFee) Fee,Lever,Qty*BuyPrice*Lever Amt,
         GainLose,(GainLose - BuyFee - TFee) WinLose,floor(BuyTime/1000) BuyTime,SellTime
         from LedgerLever left join Member on LedgerLever.UserID = Member.id where LedgerLever.${UpidFilter} and BuyTime > 0 and
@@ -578,10 +579,10 @@ async function getLedgerLever(req, res) {
         data.code = 9;
         data.error = err;
         console.log("getLedgerLever error", data);
-        // res.send(JSON.stringify(data));
+        // res.send(StrFunc.stringify(data));
     });
     await conn.release();
-    res.send(JSON.stringify(data));
+    res.send(StrFunc.stringify(data));
 }
 async function getAskTable(req, res) {
     const params = req.query;
@@ -592,14 +593,14 @@ async function getAskTable(req, res) {
     if (!conn) {
         data.code = 9;
         data.ErrCon = "system busy!!";
-        res.send(JSON.stringify(data));
+        res.send(StrFunc.stringify(data));
         return;
     }
     if (!params.agentId || !params.param) {
         data.code = 9;
         data.ErrCon = "parameter is missing!!";
         await conn.release();
-        res.send(JSON.stringify(data));
+        res.send(StrFunc.stringify(data));
         return;
     }
     const Agent: IAgent = await getAgentNew(params.agentId, params.site, conn);
@@ -608,7 +609,7 @@ async function getAskTable(req, res) {
     const startTime = param.startTime ? param.startTime : 0;
     const endTime = param.endTime ? param.endTime : 0;
     const UpidFilter = Array.isArray(Agent.id) ? `UpId in (${Agent.id.join(",")})` : `UpId = ${Agent.id}`;
-    console.log("getAskTable param:", JSON.stringify(param));
+    console.log("getAskTable param:", StrFunc.stringify(param));
     const sql = `select AskTable.id,Member.Account userCode,ItemID,ItemType,AskType,BuyType,Qty,Price,
         Amount*Lever Amount,Fee,UNIX_TIMESTAMP(AskTable.CreateTime) CreateTime,UNIX_TIMESTAMP(AskTable.ModifyTime) ModifyTime,
         AskTable.DealTime DealTime
@@ -624,10 +625,10 @@ async function getAskTable(req, res) {
         data.code = 9;
         data.error = err;
         console.log("getAskTable error", data);
-        // res.send(JSON.stringify(data));
+        // res.send(StrFunc.stringify(data));
     });
     await conn.release();
-    res.send(JSON.stringify(data));
+    res.send(StrFunc.stringify(data));
 }
 function ModifyNickName(id: number, Nickname: string, conn: PoolConnection) {
     const jt: JTable<IHasID> = new JTable(conn, "Member");
@@ -642,7 +643,7 @@ async function newSite(params, res: Response, ac: number) {
     if (!conn) {
         msg.ErrNo = 9;
         msg.ErrCon = "system busy!!";
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
         return;
     }
     const data: IAnsData = {code: 0};
@@ -658,7 +659,7 @@ async function newSite(params, res: Response, ac: number) {
         }
     }
     await conn.release();
-    res.send(JSON.stringify(Agent));
+    res.send(StrFunc.stringify(Agent));
 }
 /**
  * tablename: User

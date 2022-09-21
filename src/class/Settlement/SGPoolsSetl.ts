@@ -1,4 +1,5 @@
 import mariadb from "mariadb";
+import StrFunc from "../../components/class/Functions/MyStr";
 import {ISetl, ISqlProc} from "../../DataSchema/if";
 import SGPools from "../SettleType/SGPools";
 import {ISGPoolsResult, SGPoolsResult} from "./SGPoolsResult";
@@ -26,7 +27,7 @@ export function SGPoolsSetl(tid: number, GameID: number, num: string, rtn: any, 
           }
       }
   });
-  ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${StrFunc.stringify(imsr)}',isSettled=? where id=${tid}`;
   return ans;
 }
 

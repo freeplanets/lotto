@@ -17,10 +17,8 @@ export default class ReceiverManager {
 				const order = msg.data as Order;
 				const UserID = param.UserID;
 				const da = new DataAccess(this.conn);
-				// console.log("ReceiverManager", JSON.stringify(order));
 				if (!order.id && order.AskType) {
 					msg = await da.AskInProcess(UserID, order.ItemID, order.ItemType);
-					// console.log("ReceiverManager after AskInProcess", JSON.stringify(msg));
 				}
 				if (msg.ErrNo === ErrCode.PASS) {
 					msg = await da.getItemByID(order.ItemID);

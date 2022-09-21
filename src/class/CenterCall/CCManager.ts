@@ -1,5 +1,6 @@
 import EventEmitter from "events";
 import { PoolConnection } from "mariadb";
+import StrFunc from "../../components/class/Functions/MyStr";
 import { IMsg } from "../../DataSchema/if";
 import { getConnection } from "../../func/db";
 import CenterCall, { IFromCenter } from "./CenterCall";
@@ -52,13 +53,13 @@ export default class CCManager extends EventEmitter {
 			if (param.op) {
 				const CC = new CenterCall(param, this.conn);
 				if (typeof(CC[param.op]) === "function") {
-					console.log("do process:", param.lottoid, param.op, JSON.stringify(param));
+					console.log("do process:", param.lottoid, param.op, StrFunc.stringify(param));
 					msg = await CC[param.op]();
 				} else {
 					msg.ErrNo = 9;
-					msg.error = `op:${param.op} has no funcion ,${JSON.stringify(param)}`;
+					msg.error = `op:${param.op} has no funcion ,${StrFunc.stringify(param)}`;
 				}
-				console.log("op done:", param.lottoid, param.op, this.list.length, JSON.stringify(msg));
+				console.log("op done:", param.lottoid, param.op, this.list.length, StrFunc.stringify(msg));
 			}
 			this.inProcess = false;
 			this.emit("doProcess");

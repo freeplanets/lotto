@@ -1,4 +1,5 @@
 import { ExpressPeerServer } from "peer";
+import StrFunc from "../Functions/MyStr";
 import AMsgMan from "../Message/AMsgMan";
 import { IClient } from "./ClientManager";
 import SManager from "./SiteManager";
@@ -28,14 +29,14 @@ export default class ExpressPeerServerFactory {
 		eps.on("connection", async (client: IClient) => {
 			const cid = client.getId();
 			const msg = await this.msgman.UserConnected(cid);
-			console.log("peer connection", cid, client.getToken(), JSON.stringify(msg));
+			console.log("peer connection", cid, client.getToken(), StrFunc.stringify(msg));
 			client.send(`Welcome ${client.getId()}!`);
 			const sock = client.getSocket();
 			if (sock) {
 				sock.on("close", async () => {
 					const cmsg = await this.msgman.UserClosed(cid);
 					this.CM.Remove(cid);
-					console.log("user closed::", cid , JSON.stringify(cmsg));
+					console.log("user closed::", cid , StrFunc.stringify(cmsg));
 				});
 			}
 			this.CM.Add(client);

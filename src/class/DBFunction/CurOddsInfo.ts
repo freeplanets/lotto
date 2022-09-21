@@ -1,6 +1,7 @@
 import LZString from "lz-string";
 import { PoolConnection } from "mariadb";
 import { chkTermIsSettled } from "../../API/ApiFunc";
+import StrFunc from "../../components/class/Functions/MyStr";
 import { ErrCode } from "../../DataSchema/ENum";
 import { IMsg } from "../../DataSchema/if";
 import { doQuery } from "../../func/db";
@@ -41,7 +42,7 @@ export default class CurOddsInfo {
 		const ans = await this.Get(tid, GameID, 0);
 		if (ans) {
 			const oddSql = "insert into OpHistory(GameID, tid, OddsInfo) values(?,?,?) on duplicate key update GameID=values(GameID)";
-			const odds = JSON.stringify(ans);
+			const odds = StrFunc.stringify(ans);
 			const oddsZ = LZString.compressToUTF16(odds);
 			console.log("ZipCheck", odds.length, oddsZ.length);
 			doQuery(oddSql, this.conn, [GameID, tid, oddsZ]).then((saveinfo) => {

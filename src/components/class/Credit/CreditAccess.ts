@@ -2,6 +2,7 @@ import { PoolConnection } from "mariadb";
 import { ErrCode } from "../../../DataSchema/ENum";
 import { CreditMemo, IDbAns, IMsg } from "../../../DataSchema/if";
 import NumFunc from "../Functions/MyNumber";
+import StrFunc from "../Functions/MyStr";
 
 export default class CreditAccess {
   private decimalPlaces = 2;
@@ -64,7 +65,7 @@ export default class CreditAccess {
       }
       const idenkey = `${new Date().getTime()}ts${this.UserID}`;
       const sql = `insert into UserCredit(uid,idenkey,DepWD,Balance,memo) values(?,?,?,?,?)`;
-      const param = [this.UserID, idenkey, money, balance, JSON.stringify(memo)];
+      const param = [this.UserID, idenkey, money, balance, StrFunc.stringify(memo)];
       this.conn.query(sql, param).then(async (dbans: IDbAns) => {
         // const dbans: IDbAns = await
         console.log("CreditAccess ModifyCredit:", sql, param);

@@ -1,4 +1,5 @@
 import mariadb from "mariadb";
+import StrFunc from "../../components/class/Functions/MyStr";
 import {ISetl, ISqlProc} from "../../DataSchema/if";
 import {IMarkSixNums} from "../MSNum";
 import HashSix from "../SettleType/HashSix";
@@ -39,8 +40,8 @@ export function HashSixSetl(tid: number, GameID: number, imsra: any, rtn: any, c
           }
       }
   });
-  // ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
-  ans.final = `update Terms set Result='${hash}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  // ans.final = `update Terms set Result='${imsr.Nums.join(",")}',ResultFmt='${StrFunc.stringify(imsr)}',isSettled=? where id=${tid}`;
+  ans.final = `update Terms set Result='${hash}',ResultFmt='${StrFunc.stringify(imsr)}',isSettled=? where id=${tid}`;
   // console.log("MarkSixSetl sql:", ans);
   /*
   ans.common.map((sql) => {

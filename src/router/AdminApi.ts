@@ -1,5 +1,5 @@
 import express, {Request, Response, Router } from "express";
-import jwt from "jsonwebtoken";
+// import jwt from "jsonwebtoken";
 import mariadb from "mariadb";
 // import BetParam from "src/class/BetParam";
 // import {setPayRateData,setPayRate,isPayClassUsed,chkTermIsSettled,CreateOddsData,getGameList,getBtList} from '../API/ApiFunc';
@@ -15,6 +15,7 @@ import JDate from "../class/JDate";
 import JTable from "../class/JTable";
 import {SaveNums} from "../class/Settlement";
 import {CancelTerm} from "../class/Settlement";
+import StrFunc from "../components/class/Functions/MyStr";
 import HasHash from "../components/class/GetHash/HasHash";
 import { ErrCode } from "../DataSchema/ENum";
 import { AnyObject, HasUpID, IBasePayRateItm, IBetItem, IBTItem, ICommonParams, IDayReport, IDbAns, IDfOddsItems,
@@ -68,7 +69,7 @@ app.get("/login", async (req: Request, res: Response) => {
                 msg.ErrNo = ErrCode.MISS_PARAMETER;
                 msg.ErrCon = "Miss Parameters!!";
                 await conn.release();
-                res.send(JSON.stringify(msg));
+                res.send(StrFunc.stringify(msg));
                 return;
             }
             login = await getUserLogin(Account, token, conn);
@@ -149,7 +150,7 @@ app.get("/login", async (req: Request, res: Response) => {
         user.identity = 1;
         res = AddAuthHeader(user, res);
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/logout", async (req, res) => {
     const conn: mariadb.PoolConnection|undefined =  await getConnection();
@@ -169,7 +170,7 @@ app.get("/logout", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/getGAImg", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
@@ -183,7 +184,7 @@ app.get("/getGAImg", async (req, res) => {
         msg.ErrCon = "Missing AppName!!";
     }
     if (msg.ErrNo !== 0) {
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
     }
     const conn = await getConnection();
     if (conn) {
@@ -226,7 +227,7 @@ app.get("/getGAImg", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/GAValidate", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
@@ -240,7 +241,7 @@ app.get("/GAValidate", async (req, res) => {
         msg.ErrCon = "Missing Pin Code!!";
     }
     if (msg.ErrNo !== 0) {
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
     }
     const conn = await getConnection();
     if (conn) {
@@ -270,7 +271,7 @@ app.get("/GAValidate", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/getPrograms", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
@@ -288,7 +289,7 @@ app.get("/getPrograms", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/getProbTable", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
@@ -298,7 +299,7 @@ app.get("/getProbTable", async (req, res) => {
         msg.ErrCon = "Missing GType!!";
     }
     if (msg.ErrNo !== 0) {
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
     }
     const conn = await getConnection();
     if (conn) {
@@ -315,7 +316,7 @@ app.get("/getProbTable", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/SetUser", async (req, res) => {
     const param = req.query;
@@ -343,7 +344,7 @@ app.get("/SetUser", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.post("/ResetPassword", async (req, res) => {
     const conn: mariadb.PoolConnection|undefined =  await getConnection();
@@ -373,7 +374,7 @@ app.post("/ResetPassword", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.post("/ChangePassword", async (req, res) => {
     const conn: mariadb.PoolConnection|undefined =  await getConnection();
@@ -403,7 +404,7 @@ app.post("/ChangePassword", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/getSysInfo", async (req, res) => {
     const conn = await getConnection();
@@ -422,7 +423,7 @@ app.get("/getSysInfo", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/getGames", async (req, res) => {
   // const conn = await dbPool.getConnection();
@@ -446,7 +447,7 @@ app.get("/getGames", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/member/GameResult", async (req, res) => {
     const conn = await getConnection();
@@ -478,7 +479,7 @@ app.get("/member/GameResult", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.post("/saveBtClass", async (req, res) => {
   const conn = await getConnection();
@@ -498,7 +499,7 @@ app.post("/saveBtClass", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/getBtClass", async (req, res) => {
   const conn = await getConnection();
@@ -518,7 +519,7 @@ app.get("/getBtClass", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/delBtClass", async (req, res) => {
   const conn = await getConnection();
@@ -538,7 +539,7 @@ app.get("/delBtClass", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/getPayClass", async (req, res) => {
   const conn = await getConnection();
@@ -557,7 +558,7 @@ app.get("/getPayClass", async (req, res) => {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.post("/savePayClass", async (req, res) => {
   const msg: IMsg = {ErrNo: 0};
@@ -565,7 +566,7 @@ app.post("/savePayClass", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.body;
@@ -579,14 +580,14 @@ app.post("/savePayClass", async (req, res) => {
   };
   await conn.query(sql, params).then((v) => {
       // console.log("savePayClass", v);
-      // res.send(JSON.stringify(v));
+      // res.send(StrFunc.stringify(v));
       rlt = v;
   }).catch(async (err) => {
       console.log("savePayClass error", err);
       await conn.release();
       msg.ErrNo = 9;
       msg.debug = err;
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
   });
   let ans;
   if (param.data) {
@@ -613,7 +614,7 @@ app.post("/savePayClass", async (req, res) => {
   msg.debug = ans;
   // console.log("savePayClass", msg);
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 
 });
 app.get("/editPayClass", async (req, res) => {
@@ -623,7 +624,7 @@ app.get("/editPayClass", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   // console.log("param chk", param);
@@ -636,7 +637,7 @@ app.get("/editPayClass", async (req, res) => {
   };
   await conn.query(sql, params).then((v) => {
       // console.log("savePayClass", v);
-      // res.send(JSON.stringify(v));
+      // res.send(StrFunc.stringify(v));
       rlt = v;
       msg.data = rlt;
   }).catch((err) => {
@@ -645,7 +646,7 @@ app.get("/editPayClass", async (req, res) => {
       msg.debug = err;
   });
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/delPayClass", async (req, res) => {
   const param = req.query;
@@ -654,7 +655,7 @@ app.get("/delPayClass", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   // console.log("param chk", param);
@@ -665,7 +666,7 @@ app.get("/delPayClass", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "PayClass in used!!";
       await conn.release();
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
   }
   await conn.beginTransaction();
   let sql = `delete from  PayClass where id=?`;
@@ -676,7 +677,7 @@ app.get("/delPayClass", async (req, res) => {
   };
   await conn.query(sql, params).then((v) => {
       // console.log("savePayClass", v);
-      // res.send(JSON.stringify(v));
+      // res.send(StrFunc.stringify(v));
       rlt = v;
       if (rlt.affectedRows <= 0) {
           msg.ErrNo = 9;
@@ -712,7 +713,7 @@ app.get("/delPayClass", async (req, res) => {
       conn.rollback();
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/getBasePayRate", async (req, res) => {
   const conn = await getConnection();
@@ -720,7 +721,7 @@ app.get("/getBasePayRate", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.query;
@@ -749,7 +750,7 @@ app.get("/getBasePayRate", async (req, res) => {
     msg.ErrCon = "getBasePayRate error";
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/getPayRate", async (req, res) => {
   const conn = await getConnection();
@@ -757,7 +758,7 @@ app.get("/getPayRate", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.query;
@@ -786,7 +787,7 @@ app.get("/getPayRate", async (req, res) => {
       msg.ErrCon = "getPayRate error";
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/getGameType", async (req, res) => {
     const conn = await getConnection();
@@ -794,7 +795,7 @@ app.get("/getGameType", async (req, res) => {
     if (!conn) {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
       return;
     }
     const sql = `select GType,OpenNums,OpenSP,StartNum,EndNum,SameNum from GameType where 1`;
@@ -806,7 +807,7 @@ app.get("/getGameType", async (req, res) => {
         msg.ErrCon = "getGameType error";
     }
     await conn.release();
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.post("/batch/saveBasePayRate", async (req, res) => {
     const conn = await getConnection();
@@ -814,7 +815,7 @@ app.post("/batch/saveBasePayRate", async (req, res) => {
     if (!conn) {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
       return;
     }
     const param = req.body;
@@ -824,7 +825,7 @@ app.post("/batch/saveBasePayRate", async (req, res) => {
     datas.map((itm) => {
         itm.GameID = param.GameID;
         itm.GType = param.GType;
-        // itm.StepsGroup = JSON.stringify(itm.StepsGroup);
+        // itm.StepsGroup = StrFunc.stringify(itm.StepsGroup);
         itm.ModifyID = param.ModifyID;
     });
     const jt: JTable<IBasePayRateItm> = new JTable(conn, "BasePayRate");
@@ -835,7 +836,7 @@ app.post("/batch/saveBasePayRate", async (req, res) => {
         msg.ErrNo = 9;
     }
     await conn.release();
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.post("/batch/saveBasePayRate1", async (req, res) => {
   const conn = await getConnection();
@@ -843,7 +844,7 @@ app.post("/batch/saveBasePayRate1", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.body;
@@ -866,11 +867,11 @@ app.post("/batch/saveBasePayRate1", async (req, res) => {
   await conn.query(sql).then(async (v) => {
       console.log("getPayRate", sql, v);
       await conn.release();
-      res.send(JSON.stringify(v));
+      res.send(StrFunc.stringify(v));
   }).catch(async (err) => {
       console.log("getPayRate error", err);
       await conn.release();
-      res.send(JSON.stringify(err));
+      res.send(StrFunc.stringify(err));
   });
 });
 app.post("/batch/savePayRate", async (req, res) => {
@@ -879,7 +880,7 @@ app.post("/batch/savePayRate", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.body;
@@ -895,11 +896,11 @@ app.post("/batch/savePayRate", async (req, res) => {
   sql += " ON DUPLICATE KEY UPDATE Rate=values(Rate)";
   await conn.query(sql).then(async (v) => {
       await conn.release();
-      res.send(JSON.stringify(v));
+      res.send(StrFunc.stringify(v));
   }).catch(async (err) => {
       console.log("savePayRate error", err);
       await conn.release();
-      res.send(JSON.stringify(err));
+      res.send(StrFunc.stringify(err));
   });
 });
 app.post("/batch/saveProbTable", async (req, res) => {
@@ -908,7 +909,7 @@ app.post("/batch/saveProbTable", async (req, res) => {
     if (!conn) {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
       return;
     }
     const param = req.body;
@@ -916,7 +917,7 @@ app.post("/batch/saveProbTable", async (req, res) => {
     const datas: IProbTable[] = JSON.parse(param.data.replace(/\\/g, ""));
     // console.log("saveProbTable", datas);
     datas.map((itm) => {
-        // itm.StepsGroup = JSON.stringify(itm.StepsGroup);
+        // itm.StepsGroup = StrFunc.stringify(itm.StepsGroup);
         itm.ModifyID = param.ModifyID;
     });
     const jt: JTable<IProbTable> = new JTable(conn, "ProbabilityTable");
@@ -927,7 +928,7 @@ app.post("/batch/saveProbTable", async (req, res) => {
         msg.ErrNo = 9;
     }
     await conn.release();
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.post("/saveTerms", async (req, res) => {
   const param: ICommonParams = req.body;
@@ -954,19 +955,19 @@ app.post("/saveTerms", async (req, res) => {
       msg.ErrCon = "All params is empty!!";
   }
   if (msg.ErrNo !== 0) {
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
       return;
   }
   const conn = await getConnection();
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   ans = await afunc.chkTermIsSettled(GameID, conn);
   // console.log("chkTermIsSettled", ans);
-  // res.send(JSON.stringify(ans));
+  // res.send(StrFunc.stringify(ans));
   if (!ans) {
       const gans = await getGame(GameID as number, conn);
       if (gans) {
@@ -976,7 +977,7 @@ app.post("/saveTerms", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "find GType error!!";
         await conn.release();
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
         return;
       }
       const term: ITerms = {
@@ -991,7 +992,7 @@ app.post("/saveTerms", async (req, res) => {
         };
       msg = await afunc.createTerms(GType, term, conn, param.PLog as IParamLog[]);
       await conn.release();
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
         /*
       const params = [
           param.GameID, param.TermID, param.PDate, param.PTime, param.StopTime, param.StopTimeS, param.ModifyID];
@@ -1014,7 +1015,7 @@ app.post("/saveTerms", async (req, res) => {
       let tid;
       await conn.beginTransaction();
       await conn.query(sql, params).then(async (row) => {
-          // res.send(JSON.stringify(row));
+          // res.send(StrFunc.stringify(row));
           ans = row;
           msg.ErrCon = row;
           tid = row.insertId;
@@ -1027,7 +1028,7 @@ app.post("/saveTerms", async (req, res) => {
           msg.ErrNo = 8;
           msg.ErrCon = err;
           msg.debug = sql + ">>" + params.join(",");
-          // res.send(JSON.stringify(err));
+          // res.send(StrFunc.stringify(err));
       });
       if (ans) {
           if (!param.id) {
@@ -1035,7 +1036,7 @@ app.post("/saveTerms", async (req, res) => {
               if (codAns.ErrNo !== 0) {
                       await conn.rollback();
                       await conn.release();
-                      res.send(JSON.stringify(codAns));
+                      res.send(StrFunc.stringify(codAns));
               }
           }
           await conn.commit();
@@ -1045,7 +1046,7 @@ app.post("/saveTerms", async (req, res) => {
           msg.ErrCon = "Error!!";
       }
       await conn.release();
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
       */
   }
 });
@@ -1058,7 +1059,7 @@ app.get("/getTerms", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.query;
@@ -1114,7 +1115,7 @@ app.get("/getTerms", async (req, res) => {
   });
   */
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.post("/createBetItems", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1122,20 +1123,20 @@ app.post("/createBetItems", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.body;
   if (!param.GType) {
     msg.ErrNo = 9;
     msg.ErrCon = "Miss param GType!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   if (!param.ModifyID) {
     msg.ErrNo = 9;
     msg.ErrCon = "Miss param ModifyID!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const GType = param.GType;
@@ -1152,7 +1153,7 @@ app.post("/createBetItems", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "No Data !!!";
       await conn.release();
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
   }
   let sql = "insert into dfOddsItems(GType,BetType,Num,ModifyID) values";
   sql = sql + val.join(",");
@@ -1160,12 +1161,12 @@ app.post("/createBetItems", async (req, res) => {
   await conn.query(sql).then(async (row) => {
       msg.data = row;
       await conn.release();
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
   }).catch(async (err) => {
       msg.error = err;
       msg.ErrNo = 9;
       await conn.release();
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
   });
 
 });
@@ -1175,7 +1176,7 @@ app.get("/getDfOddsItem", async (req, res) => {
     if (!conn) {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
       return;
     }
     const sql = "select * from dfOddsItems where 1";
@@ -1186,7 +1187,7 @@ app.get("/getDfOddsItem", async (req, res) => {
         console.log("getDfoddsItem", ans);
     }
     await conn.release();
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.post("/saveGameCaption", async (req, res) => {
     const msg: IMsg = { ErrNo: 0};
@@ -1194,7 +1195,7 @@ app.post("/saveGameCaption", async (req, res) => {
     if (!conn) {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
       return;
     }
     const jt: JTable<IGameDataCaption> = new JTable(conn, "GameDataCaption");
@@ -1216,7 +1217,7 @@ app.post("/saveGameCaption", async (req, res) => {
     }
     // console.log("UpdateGame", ans);
     await conn.release();
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/GameList", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1224,17 +1225,17 @@ app.get("/GameList", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const jt: JTable<IGame> = new JTable(conn, "Games");
   const games: IGame[] | undefined = await jt.List();
-  // console.log("AdminApi /GameList", JSON.stringify(games));
+  // console.log("AdminApi /GameList", StrFunc.stringify(games));
   if (games) {
       msg.data = games;
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.post("/UpdateGame", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1242,7 +1243,7 @@ app.post("/UpdateGame", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const jt: JTable<IGame> = new JTable(conn, "Games");
@@ -1261,7 +1262,7 @@ app.post("/UpdateGame", async (req, res) => {
   }
   // console.log("UpdateGame", ans);
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.post("/Save/:TableName", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1269,7 +1270,7 @@ app.post("/Save/:TableName", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const TableName = req.params.TableName;
@@ -1285,7 +1286,7 @@ app.post("/Save/:TableName", async (req, res) => {
       msg.error = ans;
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.post("/SaveDfOddsItem", async (req, res) => {
     const msg: IMsg = { ErrNo: 0};
@@ -1293,7 +1294,7 @@ app.post("/SaveDfOddsItem", async (req, res) => {
     if (!conn) {
         msg.ErrNo = 9;
         msg.ErrCon = "get connection error!!";
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
         return;
     }
     // const param = req.body;
@@ -1305,7 +1306,7 @@ app.post("/SaveDfOddsItem", async (req, res) => {
         if (!dAns) {
             msg.ErrNo = 9;
             msg.ErrCon = "Delete " + req.body.GType + " data error!!";
-            res.send(JSON.stringify(msg));
+            res.send(StrFunc.stringify(msg));
             return;
         }
         console.log("Delete " + req.body.GType + ":", dAns);
@@ -1321,10 +1322,10 @@ app.post("/SaveDfOddsItem", async (req, res) => {
         msg.error = ans;
     }
     await conn.release();
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/member/getAnimals", (req, res) => {
-  res.send(JSON.stringify(getAnimals(true)));
+  res.send(StrFunc.stringify(getAnimals(true)));
 });
 app.get("/member/wagerLotto", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1332,7 +1333,7 @@ app.get("/member/wagerLotto", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.query;
@@ -1345,7 +1346,7 @@ app.get("/member/wagerLotto", async (req, res) => {
       msg.btLists = btlist;
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/member/getOddsItems", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1353,7 +1354,7 @@ app.get("/member/getOddsItems", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.query;
@@ -1363,7 +1364,7 @@ app.get("/member/getOddsItems", async (req, res) => {
   ans.Balance = await getUserCredit(UserID, conn);
 
   await conn.release();
-  res.send(JSON.stringify(ans));
+  res.send(StrFunc.stringify(ans));
 });
 app.get("/member/mybalance", async (req, res) => {
     const msg: IMsg = { ErrNo: 0};
@@ -1371,7 +1372,7 @@ app.get("/member/mybalance", async (req, res) => {
     if (!conn) {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
       return;
     }
     const param = req.query;
@@ -1380,7 +1381,7 @@ app.get("/member/mybalance", async (req, res) => {
     msg.Balance = await getUserCredit(UserID, conn);
 
     await conn.release();
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.post("/member/mwagermulti", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1388,7 +1389,7 @@ app.post("/member/mwagermulti", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.body;
@@ -1415,7 +1416,7 @@ app.post("/member/mwagermulti", async (req, res) => {
   }
   */
   await conn.release();
-  res.send(JSON.stringify(ans));
+  res.send(StrFunc.stringify(ans));
 });
 app.post("/member/mwagerone", async (req, res) => {
     const msg: IMsg = { ErrNo: 0};
@@ -1423,7 +1424,7 @@ app.post("/member/mwagerone", async (req, res) => {
     if (!conn) {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
       return;
     }
     const param = req.body;
@@ -1449,7 +1450,7 @@ app.post("/member/mwagerone", async (req, res) => {
     }
     */
     await conn.release();
-    res.send(JSON.stringify(ans));
+    res.send(StrFunc.stringify(ans));
   });
 app.post("/member/mwagerjn", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1457,7 +1458,7 @@ app.post("/member/mwagerjn", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.body;
@@ -1488,7 +1489,7 @@ app.post("/member/mwagerjn", async (req, res) => {
   }
   */
   await conn.release();
-  res.send(JSON.stringify(ans));
+  res.send(StrFunc.stringify(ans));
 });
 app.get("/member/getWagerItems", async (req, res) => {
   let msg: IMsg = { ErrNo: 0};
@@ -1496,7 +1497,7 @@ app.get("/member/getWagerItems", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.query;
@@ -1520,7 +1521,7 @@ app.get("/member/getWagerItems", async (req, res) => {
       }
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.post("/SaveUser", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1528,7 +1529,7 @@ app.post("/SaveUser", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const qstring = req.body;
@@ -1547,7 +1548,7 @@ app.post("/SaveUser", async (req, res) => {
       ans = await jt.Insert(param);
   }
   await conn.release();
-  res.send(JSON.stringify(ans));
+  res.send(StrFunc.stringify(ans));
 });
 app.get("/getUsers", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1555,7 +1556,7 @@ app.get("/getUsers", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.query;
@@ -1599,7 +1600,7 @@ app.get("/getUsers", async (req, res) => {
       msg.ErrCon = "Get Users Error!!";
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/member/getPayClass", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
@@ -1607,7 +1608,7 @@ app.get("/member/getPayClass", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.query;
@@ -1624,7 +1625,7 @@ app.get("/member/getPayClass", async (req, res) => {
       }
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 /*
 app.get("/getOpParams", async (req, res) => {
@@ -1633,7 +1634,7 @@ app.get("/getOpParams", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.query;
@@ -1650,7 +1651,7 @@ app.get("/getOpParams", async (req, res) => {
       }
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 */
 app.post("/SaveNums", async (req, res) => {
@@ -1659,7 +1660,7 @@ app.post("/SaveNums", async (req, res) => {
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     return;
   }
   const param = req.body;
@@ -1681,7 +1682,7 @@ app.post("/SaveNums", async (req, res) => {
       */
   }
   await conn.release();
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/CurOddsInfo", async (req, res) => {
   // const conn = await dbPool.getConnection();
@@ -1690,7 +1691,7 @@ app.get("/CurOddsInfo", async (req, res) => {
   if (!conn) {
       msg.ErrNo = 9;
       msg.ErrCon = "Connection error!!";
-      res.send(JSON.stringify(msg));
+      res.send(StrFunc.stringify(msg));
   } else {
       const param = req.query;
       let tid: number | undefined = 0;
@@ -1698,7 +1699,7 @@ app.get("/CurOddsInfo", async (req, res) => {
           msg.ErrNo = 9;
           msg.ErrCon = "GameID is missing!!";
           await conn.release();
-          res.send(JSON.stringify(msg));
+          res.send(StrFunc.stringify(msg));
       }
       if (!param.tid) {
         // if (param.GameID === "21") { console.log("before getCurTermId", param.tid); }
@@ -1708,7 +1709,7 @@ app.get("/CurOddsInfo", async (req, res) => {
               msg.ErrNo = 9;
               msg.ErrCon = "Get data error!!";
               await conn.release();
-              res.send(JSON.stringify(msg));
+              res.send(StrFunc.stringify(msg));
           }
       } else {
           tid = parseInt(param.tid as string, 10);
@@ -1728,9 +1729,9 @@ app.get("/CurOddsInfo", async (req, res) => {
       }
       await conn.release();
   }
-  // console.log("CurOddsInfo", JSON.stringify(msg));
+  // console.log("CurOddsInfo", StrFunc.stringify(msg));
   try {
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
   } catch (err) {
     console.log("Send to user error!!", err);
     res.send("");
@@ -1812,7 +1813,7 @@ app.get("/setOdds", async (req, res) => {
       }
       await conn.release();
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/setStop", async (req, res) => {
   const msg: IMsg = {ErrNo: 0};
@@ -1838,7 +1839,7 @@ app.get("/setStop", async (req, res) => {
       }
       await conn.release();
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.post("/saveComments", async (req, res) => {
   const param = req.body;
@@ -1862,7 +1863,7 @@ app.post("/saveComments", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "Get Connection error!";
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.post("/getComments", async (req, res) => {
   const param = req.body;
@@ -1886,7 +1887,7 @@ app.post("/getComments", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "Get Connection error!";
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/getBetHeaders", async (req, res) => {
   const param = req.query;
@@ -1964,7 +1965,7 @@ app.get("/getBetHeaders", async (req, res) => {
       msg.ErrNo = 9;
       msg.ErrCon = "Get Connection error!";
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
 });
 app.get("/getTermIDByGameID", async (req: Request, res: Response) => {
     // await getCurTermId();
@@ -1977,7 +1978,7 @@ app.get("/getTermIDByGameID", async (req: Request, res: Response) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get Connection error!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/getBetTotal", async (req, res) => {
     const param = req.query;
@@ -2039,7 +2040,7 @@ app.get("/getBetTotal", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/getLastTerm", async (req, res) => {
     const msg: IMsg = { ErrNo: 0 };
@@ -2058,7 +2059,7 @@ app.get("/getLastTerm", async (req, res) => {
         msg.ErrNo = 9;
         msg.debug = "db connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/getEditRecord", async (req, res) => {
     const msg: IMsg = { ErrNo: 0 };
@@ -2080,7 +2081,7 @@ app.get("/getEditRecord", async (req, res) => {
         msg.ErrNo = 9;
         msg.debug = "db connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/DelTerm", async (req, res) => {
     const msg: IMsg = { ErrNo: 0 };
@@ -2109,14 +2110,14 @@ app.get("/DelTerm", async (req, res) => {
         msg.ErrNo = 9;
         msg.debug = "db connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/CancelTerm", async (req, res) => {
     let msg: IMsg = { ErrNo: 0 };
     const param = req.query;
     const tid = parseInt(param.tid as string, 10);
     // console.log("CancelTerm", param);
-    // res.send(JSON.stringify(param));
+    // res.send(StrFunc.stringify(param));
     if (tid) {
         const conn = await getConnection();
         if (conn) {
@@ -2130,7 +2131,7 @@ app.get("/CancelTerm", async (req, res) => {
         msg.ErrNo = ErrCode.MISS_PARAMETER;
         msg.ErrCon = "tid is required!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/getBTCHashTable", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
@@ -2156,7 +2157,7 @@ app.get("/getBTCHashTable", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/getHashAna", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
@@ -2179,7 +2180,7 @@ app.get("/getHashAna", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.post("/saveHashAna", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
@@ -2208,7 +2209,7 @@ app.post("/saveHashAna", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 app.get("/delHashAna", async (req, res) => {
     const msg: IMsg = {ErrNo: 0};
@@ -2232,7 +2233,7 @@ app.get("/delHashAna", async (req, res) => {
         msg.ErrNo = 9;
         msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
 });
 async function getTermIds(GameID: number, conn: mariadb.PoolConnection): Promise<IMsg> {
     const msg: IMsg = { ErrNo: 0 };

@@ -1,6 +1,7 @@
 import mariadb, {PoolConnection} from "mariadb";
 // import {getUsers} from "../API/MemberApi";
 import JTable from "../class/JTable";
+import StrFunc from "../components/class/Functions/MyStr";
 import { ErrCode } from "../DataSchema/ENum";
 import {IChaseNum, ICommonParams, IDbAns, IMsg, IParamLog} from "../DataSchema/if";
 import {IGame, IPayClassParam, IPayRateItm, ITerms, IUserPartial} from "../DataSchema/user";
@@ -38,7 +39,7 @@ export async function setPayRate(param: IPayClassParam, conn: mariadb.PoolConnec
   let ans;
   console.log("sql:", sql);
   await conn.query(sql, [param.GameID]).then((v) => {
-      // console.log(JSON.stringify(v));
+      // console.log(StrFunc.stringify(v));
       ans = v;
   }).catch((err) => {
       console.log("setPayRate error", err);
@@ -121,7 +122,7 @@ export async function CreateOddsData(GameID: string|number, GType: string, tid: 
   }).catch((err) => {
       console.log(err);
       msg.ErrNo = 6;
-      msg.ErrCon = JSON.stringify(err);
+      msg.ErrCon = StrFunc.stringify(err);
       msg.debug =  sql + ">>" + params.join(",");
   });
   if (!isEmpty) {
@@ -131,11 +132,11 @@ export async function CreateOddsData(GameID: string|number, GType: string, tid: 
       `;
       console.log("CreateOddsData dfOddsItems chk:", tid, GameID);
       await conn.query(sql).then((row) => {
-          msg.ErrCon = JSON.stringify(row);
+          msg.ErrCon = StrFunc.stringify(row);
       }).catch((err) => {
           console.log(err);
           msg.ErrNo = 7;
-          msg.ErrCon = JSON.stringify(err);
+          msg.ErrCon = StrFunc.stringify(err);
           msg.debug = sql;
       });
       if (msg.ErrNo === 0) {
@@ -318,7 +319,7 @@ export async function getCurOddsInfo(tid: number, GameID: number|string, MaxOdds
       /*
       if (MaxOddsID === 0) {
           const oddSql = "insert into OpHistory(GameID, tid, OddsInfo) values(?,?,?) on duplicate key update GameID=values(GameID)";
-          doQuery(oddSql, conn, [GameID, tid, JSON.stringify(ans)]).then((saveinfo) => {
+          doQuery(oddSql, conn, [GameID, tid, StrFunc.stringify(ans)]).then((saveinfo) => {
             console.log("save odds history:", saveinfo);
           }).catch((err) => {
             console.log("save odds history error:", err);

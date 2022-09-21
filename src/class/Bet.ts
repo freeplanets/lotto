@@ -1,6 +1,7 @@
-import mariadb, { PoolConnection } from "mariadb";
+import mariadb from "mariadb";
 import MyDate from "../components/class/Functions/MyDate";
 import MyMath from "../components/class/Functions/MyMath";
+import StrFunc from "../components/class/Functions/MyStr";
 import { ErrCode } from "../DataSchema/ENum";
 import {IBasePayRateItm, IBet, IBetContent, IBetHeader,
     IBetTable, ICurOddsData, IMsg, INumAvg, INumData, IStrKeyNumer, KenoDataProcQue} from "../DataSchema/if";
@@ -75,7 +76,7 @@ export class Bet implements IBet {
                 return msg;
             }
         } else {
-            msg.ErrNo = 9;
+            msg.ErrNo = ErrCode.NO_DATA_FOUND;
             msg.ErrCon = "Terms data error!!";
             return msg;
         }
@@ -123,6 +124,7 @@ export class Bet implements IBet {
             const chkTimePass = BetTypes.every((bt) => this.chkBetTime(GType, bt, PDate, StopT, StopTS));
             if (!chkTimePass) {
                 msg.ErrNo = ErrCode.GAME_CLOSED;
+                msg.ErrCon = "GAME_CLOSED";
                 return msg;
             }
         }
@@ -140,6 +142,7 @@ export class Bet implements IBet {
         const opParams: IBasePayRateItm[] | undefined = await this.getOpParams(BetTypes);
         if (opParams) {
             Chker = new OpChk(this.GameInfo, this.tid, this.UserID, opParams, false, navg);
+            console.log("AnaNum", opParams, Chker);
         }
         let total: number = 0;
         let payouts: number = 0;
@@ -200,7 +203,7 @@ export class Bet implements IBet {
                 SNB.Content.push(itm);
                 BetDetail.push(bd);
             } else {
-                msg.ErrNo = 1;
+                msg.ErrNo = ErrCode.UNEXPECT_NUMBER;
                 msg.ErrCon = `BetType ${itm.BetType} item ${itm.Num} not found!!`;
                 return msg;
             }
@@ -225,7 +228,7 @@ export class Bet implements IBet {
             UpId: this.UpId,
             tid: this.tid,
             GameID: this.GameID,
-            BetContent: JSON.stringify(SNB),
+            BetContent: StrFunc.stringify(SNB),
             Total: total,
             Payout: payouts
         };
@@ -322,6 +325,7 @@ export class Bet implements IBet {
         const chkTimePass = this.chkBetTime(GType, BetType, this.TermInfo.PDate, this.TermInfo.StopTime, this.TermInfo.StopTimeS);
         if (!chkTimePass) {
             msg.ErrNo = ErrCode.GAME_CLOSED;
+            msg.ErrCon = "GAME_CLOSED";
             return msg;
         }
         const BetTypes: number[] = [BetType];
@@ -436,7 +440,7 @@ export class Bet implements IBet {
             UserID: this.UserID,
             tid: this.tid,
             GameID: this.GameID,
-            BetContent: JSON.stringify(SNB),
+            BetContent: StrFunc.stringify(SNB),
             Total: numsets.length * Amt
         };
         const balance = await getUserCredit(this.UserID, this.conn);
@@ -652,6 +656,7 @@ export class Bet implements IBet {
         const chkTimePass = this.chkBetTime(GType, BetType, this.TermInfo.PDate, this.TermInfo.StopTime, this.TermInfo.StopTimeS);
         if (!chkTimePass) {
             msg.ErrNo = ErrCode.GAME_CLOSED;
+            msg.ErrCon = "GAME_CLOSED";
             return msg;
         }
         let Chker: OpChk | undefined;
@@ -756,7 +761,7 @@ export class Bet implements IBet {
             UserID: this.UserID,
             tid: this.tid,
             GameID: this.GameID,
-            BetContent: JSON.stringify(SNB),
+            BetContent: StrFunc.stringify(SNB),
             Total: Amt
         };
         const balance = await getUserCredit(this.UserID, this.conn);
@@ -888,6 +893,7 @@ export class Bet implements IBet {
         const chkTimePass = this.chkBetTime(GType, BetType, this.TermInfo.PDate, this.TermInfo.StopTime, this.TermInfo.StopTimeS);
         if (!chkTimePass) {
             msg.ErrNo = ErrCode.GAME_CLOSED;
+            msg.ErrCon = "GAME_CLOSED";
             return msg;
         }
         let Chker: OpChk | undefined;
@@ -939,7 +945,7 @@ export class Bet implements IBet {
             UserID: this.UserID,
             tid: this.tid,
             GameID: this.GameID,
-            BetContent: JSON.stringify(SNB),
+            BetContent: StrFunc.stringify(SNB),
             Total
         };
         const balance = await getUserCredit(this.UserID, this.conn);
@@ -1105,6 +1111,7 @@ export class Bet implements IBet {
                     await this.saveNewOddsData(tmp);
                 }
             } else {
+                if (rows.meta) { delete rows.meta; }
                 ans = rows;
             }
         }).catch((err) => {
@@ -1145,6 +1152,7 @@ export class Bet implements IBet {
             // console.log("getOpParams", sql);
             this.conn.query(sql).then((res) => {
                 // console.log("getOpParams", res);
+                if (res.meta) { delete res.meta; }
                 resolve(res);
             }).catch((err) => {
                 console.log("getOpParams error:", err);
@@ -1231,7 +1239,8 @@ export class Bet implements IBet {
     }
     private chkTime(PDate: string, time: string) {
         const endTS = MyDate.getTime(`${PDate} ${time}`);
-        return MyDate.getTime() - endTS > 0 ? true : false;
+        console.log("chkTime", MyDate.getTime(), endTS, MyDate.getTime() - endTS);
+        return MyDate.getTime() - endTS < 0 ? true : false;
     }
     /*
     private async calDayReport(dt:IBetTable[]){

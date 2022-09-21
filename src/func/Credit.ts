@@ -1,4 +1,5 @@
 import { PoolConnection } from "mariadb";
+import StrFunc from "../components/class/Functions/MyStr";
 import { IDbAns } from "../DataSchema/if";
 import { doQuery } from "./db";
 
@@ -27,7 +28,7 @@ export async function ModifyCredit(uid: number, Account: string,
         memo.Type = 1;
         memo.Amount = money;
     }
-    const param = [uid, Account, AgentId, idenkey, money, balance, JSON.stringify(memo)];
+    const param = [uid, Account, AgentId, idenkey, money, balance, StrFunc.stringify(memo)];
     // const dbans: IDbAns = await conn.query(sql, param);
     const dbans: IDbAns = await doQuery(sql, conn, param);
     // console.log("ModifyCredit:", sql, dbans);

@@ -3,9 +3,11 @@ import https from "https";
 // import {PoolConnection} from "mariadb";
 import querystring from "querystring";
 import CCManager from "../class/CenterCall/CCManager";
+import StrFunc from "../components/class/Functions/MyStr";
 // import CenterCall, {IFromCenter} from "../class/CenterCall/CenterCall";
 // import {IMsg} from "../DataSchema/if";
 // import {getConnection} from "../func/db";
+
 CCManager.getInstance();
 
 const app: Router = express.Router();
@@ -20,11 +22,11 @@ async function webFunc(req: Request, res: Response) {
     // console.log("body", req.body);
     param = req.body;
   }
-  console.log("webFunc", JSON.stringify(param));
+  console.log("webFunc", StrFunc.stringify(param));
   /// *
   const ccm = CCManager.getInstance();
   ccm.Add(param);
-  res.send(`${JSON.stringify(param)} accepted!!`);
+  res.send(`${StrFunc.stringify(param)} accepted!!`);
   // */
   /*
   let msg: IMsg = {ErrNo: 0, error: ""};
@@ -48,7 +50,7 @@ async function webFunc(req: Request, res: Response) {
         msg = await CC[param.op]();
       } else {
         msg.ErrNo = 9;
-        msg.error = `op:${param.op} has no funcion ,${JSON.stringify(param)}`;
+        msg.error = `op:${param.op} has no funcion ,${StrFunc.stringify(param)}`;
       }
     }
     await conn.release();
@@ -64,7 +66,7 @@ async function webFunc(req: Request, res: Response) {
     }
     delete msg.ErrCon;
   }
-  res.send(JSON.stringify(msg));
+  res.send(StrFunc.stringify(msg));
   */
 }
 

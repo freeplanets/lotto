@@ -92,23 +92,26 @@ export function getConnection(caller?: string): Promise<PoolConnection|undefined
  * @returns connection query response or null when error occured
  */
 export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): Promise<any> {
-    let query: Promise<any>;
-    if (params) {
-        query = conn.query(sql, params);
-    } else {
-        query = conn.query(sql);
-    }
-    // console.log("doQuery:", sql, params);
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
+        let query: Promise<any>;
+        await conn.ping();
+        if (params) {
+            query = conn.query(sql, params);
+        } else {
+            query = conn.query(sql);
+        }
+        // console.log("doQuery:", sql, params);
         query.then((res) => {
             // console.log("doQuery", res);
             resolve(res);
         }).catch((err) => {
             // console.log("doQuery", sql, params, err);
             console.log("doQuery:", err, "SQL:", sql, "params:", params, "\nErrNo:", err.errno);
+            /*
             Object.keys(err).map((key) => {
                 console.log(key, ">", err[key]);
             });
+            */
             resolve(null);
         });
     });

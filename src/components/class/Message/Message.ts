@@ -2,6 +2,7 @@ import { PoolConnection } from "mariadb";
 import JTable from "../../../class/JTable";
 import { ErrCode } from "../../../DataSchema/ENum";
 import { ChatMsg, IHasID, IMsg, MsgCont, NameAndText } from "../../../DataSchema/if";
+import StrFunc from "../Functions/MyStr";
 import AMessage from "./AMessage";
 import MessageKey from "./MessageKey";
 
@@ -24,7 +25,7 @@ export default class Message extends AMessage {
 			text: SMsg.text,
 		};
 		if (SMsg.MKey) { this.mkey = SMsg.MKey; }
-		this.cont = JSON.stringify(nameText);
+		this.cont = StrFunc.stringify(nameText);
 		// this.MKey = MKey ? MKey : this.sha256;
 		this.MK = new MessageKey(this.UserKey, conn);
 		this.jt = new JTable(conn, "Messages");

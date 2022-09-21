@@ -4,6 +4,7 @@ import { PoolConnection } from "mariadb";
 import JTable from "../class/JTable";
 import ATACreator from "../components/ATACreator";
 import EmergencyClose from "../components/class/Ask/EmergencyClose";
+import StrFunc from "../components/class/Functions/MyStr";
 import UserInfoCrypto from "../components/class/Ledger/UserInfoCrypto";
 import Message from "../components/class/Message/Message";
 import ReceiverManager from "../components/class/Order/ReceiverManager";
@@ -264,7 +265,6 @@ export const SendOrder: IMyFunction<WebParams> = async (param: WebParams, conn: 
       Odr.ProcStatus = order.ProcStatus;
     }
   }
-  // console.log("before ModifyOrder:", JSON.stringify(Odr));
   msg = await ModifyOrder(Odr, conn);
   if (msg.ErrNo === ErrCode.PASS) {
       const wsmsg: WsMsg = Object.assign({}, msg);
@@ -278,7 +278,6 @@ export const SendOrderNew: IMyFunction<WebParams> = async (param: WebParams, con
   let msg: IMsg = {};
   const Receiver: ReceiverManager = new ReceiverManager(conn, wsclient);
   msg = await Receiver.Process(param);
-  // console.log("before ModifyOrder:", JSON.stringify(msg));
 
   if (msg.ErrNo === ErrCode.PASS) {
     const Odr = msg.data as HasUID;
@@ -368,7 +367,7 @@ export const sendMessage = async (param: WebParams, conn: PoolConnection) => {
         if (msg.ErrNo === ErrCode.PASS) {
           msg.MKey = Msger.MKey;
           if (!chatMsg.MKey) { chatMsg.MKey = Msger.MKey; }
-          wsmsg.Message = JSON.stringify(chatMsg);
+          wsmsg.Message = StrFunc.stringify(chatMsg);
           wsclient.Send(wsmsg);
           return msg;
         }

@@ -1,4 +1,5 @@
 import mariadb from "mariadb";
+import StrFunc from "../../components/class/Functions/MyStr";
 import {ISetl, ISqlProc} from "../../DataSchema/if";
 import {IExProc} from "../Bet";
 import MSNum, {IMarkSixNums} from "../MSNum";
@@ -29,7 +30,7 @@ export function MarkSixSetl(tid: number, GameID: number, imsra: any, rtn: any, c
           }
       }
   });
-  ans.final = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=? where id=${tid}`;
+  ans.final = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${StrFunc.stringify(imsr)}',isSettled=? where id=${tid}`;
   // console.log("MarkSixSetl sql:", ans);
   return ans;
 }

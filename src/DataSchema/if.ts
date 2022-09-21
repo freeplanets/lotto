@@ -462,6 +462,7 @@ export interface AskTable extends HasUID {
     SetID?: number; // 平倉對象ID -> System下單
     USetID?: number; // 平倉對象ID -> 會員下單
     isUserSettle?: number; // 會員平倉
+    ChoicePrice?: number; // 有利價
 }
 export interface LedgerLever extends HasUID {
     UpId: number;
@@ -623,6 +624,7 @@ export interface CryptoOpParams extends IHasID {
     ShortTerm1: number; // 短線1 不可平倉時間
     ShortTerm2: number; // 短線2 可平倉但加收手續費
     ShortTermFee: number; // 短線手續費則
+    ChoicePrice: number; // 有利價
 }
 export interface UserInfo extends IHasID {
     UpId: number;

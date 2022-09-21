@@ -22,6 +22,7 @@ import { MarkSixSetl} from "./Settlement/MarkSixSetl";
 import {SGPoolsSetl} from "./Settlement/SGPoolsSetl";
 import {Speed3Setl} from "./Settlement/Speed3Setl";
 import {VNNorthSetl} from "./Settlement/VNNorthSetl";
+// import StrFunc from "../components/class/Functions/MyStr";
 
 // 重結 isSettled =3 轉成 status = 4 提供平台視別
 export async function SaveNums(tid: number, GameID: number, num: string, conn: mariadb.PoolConnection, isSettled?: number, PLog?: IParamLog[]) {
@@ -165,7 +166,7 @@ export async function SaveNums(tid: number, GameID: number, num: string, conn: m
     }
     // console.log("batch:", ans);
     if (msg.ErrNo === ErrCode.PASS) {
-        // sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${JSON.stringify(imsr)}',isSettled=${SettleStatus} where id=${tid}`;
+        // sql = `update Terms set Result='${imsr.RegularNums.join(",")}',SpNo='${imsr.SPNo}',ResultFmt='${StrFunc.stringify(imsr)}',isSettled=${SettleStatus} where id=${tid}`;
         sql = sqls.final;
         const ans = await doQuery(sql, conn, [SettleStatus]);
         if (ans) {

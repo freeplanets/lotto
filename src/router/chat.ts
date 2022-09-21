@@ -7,6 +7,7 @@ import { PoolConnection } from "mariadb";
 // import path from "path";
 import JTable from "../class/JTable";
 import AttachConn from "../components/class/Functions/AttachConn";
+import StrFunc from "../components/class/Functions/MyStr";
 import ChatFunc from "../components/class/Message/ChatFunc";
 import { SerChat, SerSiteData } from "../components/class/Message/MsgDbIf";
 import { ErrCode } from "../DataSchema/ENum";
@@ -38,7 +39,7 @@ app.get("/", async (req: Request, res: Response) => {
 	let msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER };
 	msg = await AttachConn(req.query, CFunc.CheckIn);
 	console.log("checkin", msg);
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 app.post("/Notify", async (req: Request, res: Response) => {
 	const msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER, ErrCon: "MISS_PARAMETER" };
@@ -59,10 +60,10 @@ app.post("/Notify", async (req: Request, res: Response) => {
 				msg.ErrCon = "";
 				msg.error = ans;
 			}
-			res.send(JSON.stringify(msg));
+			res.send(StrFunc.stringify(msg));
 		}
 	} else {
-		res.send(JSON.stringify(msg));
+		res.send(StrFunc.stringify(msg));
 	}
 });
 app.get("/notifysite", async (req: Request, res: Response) => {
@@ -71,11 +72,11 @@ app.get("/notifysite", async (req: Request, res: Response) => {
 app.get("/SorList", async (req: Request, res: Response) => {
 	const msg = await AttachConn(req.query, CFunc.UserList);
 	// console.log("SorList:", req.query, msg);
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 app.get("/ChatList", async (req: Request, res: Response) => {
 	const msg = await AttachConn(req.query, CFunc.GetMessage);
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 app.get("/getMessage", async (req: Request, res: Response) => {
 	const msg = await AttachConn(req.query, CFunc.GetSiteMessage);
@@ -83,7 +84,7 @@ app.get("/getMessage", async (req: Request, res: Response) => {
 		status: msg.ErrNo ? 1 : 0,
 		data: msg.data,
 	};
-	res.send(JSON.stringify(ans));
+	res.send(StrFunc.stringify(ans));
 });
 app.get("/getClosedMsg", async (req: Request, res: Response) => {
 	const msg = await AttachConn(req.query, CFunc.GetClosedMsg);
@@ -91,11 +92,11 @@ app.get("/getClosedMsg", async (req: Request, res: Response) => {
 		status: msg.ErrNo ? 1 : 0,
 		data: msg.data,
 	};
-	res.send(JSON.stringify(ans));
+	res.send(StrFunc.stringify(ans));
 });
 app.get("/Image", async (req: Request, res: Response) => {
 	const msg = await AttachConn(req.query, CFunc.GetImages);
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 app.post("/SorGet", async (req: Request, res: Response) => {
 	// console.log("SorGet invoked!!", os.tmpdir());
@@ -144,7 +145,7 @@ app.post("/SorGet", async (req: Request, res: Response) => {
 			}
 			console.log(`File [${name}] done`);
 			console.log("saveChat:", msg);
-			res.send(JSON.stringify(msg));
+			res.send(StrFunc.stringify(msg));
 		});
 		file.on("close", () => {
 			console.log("file close");
@@ -189,7 +190,7 @@ app.get("/Verify", async (req: Request, res: Response) => {
 					// console.log("Verify verify:", verify);
 					if (verify) {
 						console.log("before send:", msg);
-						res.send(JSON.stringify(msg));
+						res.send(StrFunc.stringify(msg));
 						return;
 					}
 				} catch (err) {
@@ -204,7 +205,7 @@ app.get("/Verify", async (req: Request, res: Response) => {
 		}
 	}
 	console.log("Verify end");
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 app.get("/VerifyOld", (req: Request, res: Response) => {
 	let msg: any = { status: 1, errcode: ErrCode.MISS_PARAMETER };
@@ -221,15 +222,15 @@ app.get("/VerifyOld", (req: Request, res: Response) => {
 				msg.errcode = ErrCode.NO_DATA_FOUND;
 			}
 			console.log("Verify after", msg);
-			res.send(JSON.stringify(msg));
+			res.send(StrFunc.stringify(msg));
 		}).catch((err) => {
 			msg.error = err;
 			msg.errcode = ErrCode.APISERVER_GONE_AWAY;
 			console.log("Verify err", msg);
-			res.send(JSON.stringify(msg));
+			res.send(StrFunc.stringify(msg));
 		});
 	} else {
-		res.send(JSON.stringify(msg));
+		res.send(StrFunc.stringify(msg));
 	}
 });
 app.post("/register", async (req: Request, res: Response) => {
@@ -240,7 +241,7 @@ app.post("/register", async (req: Request, res: Response) => {
 		msg.errcode = msg.ErrNo;
 		msg.error = msg.ErrCon;
 	}
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 app.get("/CheckIn", (req: Request, res: Response) => {
 	checkin(req.query as any, res);
@@ -250,27 +251,27 @@ app.post("/CheckIn", (req: Request, res: Response) => {
 });
 app.post("/SwitchMessageTo", async (req: Request, res: Response) => {
 	const msg = await AttachConn(req.body, CFunc.SwitchMessageTo);
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 app.post("/DelMessages", async (req: Request, res: Response) => {
 	const msg = await AttachConn(req.body, CFunc.DelMessages);
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 app.post("/UpdateSerChat", async (req: Request, res: Response) => {
 	const param = req.body;
 	param.tableName = "SerChat";
 	const msg = await AttachConn(param, CFunc.Update);
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 app.post("/CloseMsg", async (req: Request, res: Response) => {
 	const param = req.body;
 	const msg = await AttachConn(param, CFunc.CloseMsg);
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 app.get("/ChatHistory", async (req: Request, res: Response) => {
 	const param = req.query;
 	const msg = await AttachConn(param, CFunc.ChatHistory);
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 });
 function checkin(param: HasToken, res: Response) {
 	const msg: ChkAns = { status: 1, errcode: ErrCode.MISS_PARAMETER };
@@ -288,7 +289,7 @@ function checkin(param: HasToken, res: Response) {
 			msg.error = err;
 		}
 	}
-	res.send(JSON.stringify(msg));
+	res.send(StrFunc.stringify(msg));
 }
 async function savefile(ctype: string, src: any, conn: PoolConnection): Promise<IDbAns|undefined> {
 	return new Promise(async (resolve) => {

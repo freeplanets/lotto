@@ -1,4 +1,6 @@
 import mariadb, { Connection, PoolConnection } from "mariadb";
+import StrFunc from "../components/class/Functions/MyStr";
+
 export default class NewPool {
 	private pool: mariadb.Pool;
 	private curCaller = "";
@@ -16,8 +18,10 @@ export default class NewPool {
 				let conn: PoolConnection | undefined;
 				if (err.code === "ER_GET_CONNECTION_TIMEOUT") {
 					conn = await this.resetPool();
+					resolve(conn);
+				} else {
+					resolve(undefined);
 				}
-				resolve(conn);
 			});
 		});
 	}
@@ -64,6 +68,6 @@ export default class NewPool {
 				info.func = funcName;
 			}
 		}
-		return JSON.stringify(info);
+		return StrFunc.stringify(info);
 	}
 }

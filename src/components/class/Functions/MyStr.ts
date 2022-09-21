@@ -36,5 +36,9 @@ class Mystr {
 			return data;
 		}
 	}
+	public stringify(data: any) {
+		// return JSON.stringify(data, (key, value) => typeof value === "bigint" ? value.toString() + "n" : value );
+		return JSON.stringify(data);
+	}
 }
 export default new Mystr();

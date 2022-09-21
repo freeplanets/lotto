@@ -5,6 +5,7 @@ import LedgerFactor from "../../LedgerFactor";
 import DataAccess from "../DataBase/DataAccess";
 import NumFunc from "../Functions/MyNumber";
 import AskTableAccess from "./AskTableAccess";
+// import StrFunc from "../../class/Functions/MyStr";
 
 export default class DealOrder extends AskTableAccess<HasUID> {
   private SettleServiceID = 0;
@@ -57,7 +58,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       // const ExtCredit = ask.ExtCredit ? ask.ExtCredit :  0;
       ask.TFee =  NumFunc.DecimalPlaces((ask.TermFee * TotalCredit), this.decimalPlaces);
     }
-    // console.log("DealOrder before", JSON.stringify(ask));
+    // console.log("DealOrder before", StrFunc.stringify(ask));
     let update: IMsg = {};
     if (this.SettleServiceID) {
       const da = new DataAccess(this.conn);
@@ -113,7 +114,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
       // console.log("ModifyCredit", modifycredit);
     }
 
-    // console.log("AddToLedger", JSON.stringify(lgmsg));
+    // console.log("AddToLedger", StrFunc.stringify(lgmsg));
 
     let NewAsk: AskTable|undefined;
     if (ask.Lever) {
@@ -144,11 +145,11 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     // await this.conn.commit();
     await this.Commit();
     const askOne = await this.tb.getOne(ask.id);
-    // console.log("DealOrder askOne", JSON.stringify(askOne));
+    // console.log("DealOrder askOne", StrFunc.stringify(askOne));
     const tmp: AskTable[] = [];
     if (askOne) { tmp.push(askOne as AskTable); }
     if (NewAsk) {
-      // console.log("DealOrder has NewAsk", JSON.stringify(NewAsk));
+      // console.log("DealOrder has NewAsk", StrFunc.stringify(NewAsk));
       tmp.push(NewAsk);
     }
     if ( tmp.length > 0 ) {
@@ -160,7 +161,7 @@ export default class DealOrder extends AskTableAccess<HasUID> {
     }
     if ( lgmsg.LedgerTotal ) { msg.LedgerTotal = lgmsg.LedgerTotal; }
     msg.Balance = await this.getBalance();
-    // console.log("DealOrder doit done:", JSON.stringify(msg));
+    // console.log("DealOrder doit done:", StrFunc.stringify(msg));
     return msg;
   }
   private async AddToLedger(ask: AskTable) {

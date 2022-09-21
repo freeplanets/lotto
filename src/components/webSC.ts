@@ -8,6 +8,7 @@ import { Channels } from "../DataSchema/ENum";
 // import FuncKeyManager from "./FuncKeyManager";
 import AskProcWS from "./class/WebSocket/AskProcWS";
 // import ChatWS from "./class/WebSocket/ChatWS";
+// import StrFunc from "./class/Functions/MyStr";
 
 dotenv.config();
 
@@ -45,7 +46,7 @@ export class WsClient {
       const wsmsg: WsMsg = {
         Message: msg,
       };
-      this.ws.send(JSON.stringify(wsmsg));
+      this.ws.send(StrFunc.stringify(wsmsg));
     }
   }
   public Send(msg: WsMsg) {
@@ -54,7 +55,7 @@ export class WsClient {
     // console.log("Send Mesage:", msg);
     // this.ws.send(msg);
     try {
-      this.ws.send(JSON.stringify(msg));
+      this.ws.send(StrFunc.stringify(msg));
     } catch (err) {
       console.log("WsClient Send error:", err);
     }
@@ -96,19 +97,19 @@ export class WsClient {
           const ask = wsmsg.Ask;
           const Askman = await ATAF.getATA(ask, wsmsg.SettleServiceID);
           const msg = await Askman.doit();
-          // console.log("after doit:", JSON.stringify(msg));
+          // console.log("after doit:", StrFunc.stringify(msg));
           if (msg.ErrNo === ErrCode.PASS ) {
             const newWsmsg: WsMsg = { ...msg };
             delete newWsmsg.ErrNo;
-            // console.log("before send", JSON.stringify(newWsmsg));
+            // console.log("before send", StrFunc.stringify(newWsmsg));
             if ( this.ws.readyState === WebSocket.OPEN ) {
               // console.log("Send msg to WS");
-              this.ws.send(JSON.stringify(newWsmsg));
+              this.ws.send(StrFunc.stringify(newWsmsg));
             } else {
               console.log(`WS Server error, code:${this.ws.readyState}, try build store mesage function later!`);
             }
           } else {
-            console.log("webSC on message:", JSON.stringify(msg));
+            console.log("webSC on message:", StrFunc.stringify(msg));
           }
         }
         if (wsmsg.Message) {
@@ -143,7 +144,7 @@ export class WsClient {
         ChannelName: channel,
       };
       // this.ws.send(`SetChannel:${channel}`);
-      this.ws.send(JSON.stringify(msg));
+      this.ws.send(StrFunc.stringify(msg));
     }
   }
 }

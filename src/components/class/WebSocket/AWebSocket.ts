@@ -1,5 +1,6 @@
 import WebSocket, { ClientOptions, Data } from "ws";
 import { WsMsg } from "../../../DataSchema/if";
+import StrFunc from "../Functions/MyStr";
 
 export default abstract class AWebSocket {
   get isConnected() {
@@ -16,7 +17,7 @@ export default abstract class AWebSocket {
       const wsmsg: WsMsg = {
         Message: msg,
       };
-      this.ws.send(JSON.stringify(wsmsg));
+      this.ws.send(StrFunc.stringify(wsmsg));
     }
   }
   public Send(msg: WsMsg) {
@@ -25,7 +26,7 @@ export default abstract class AWebSocket {
     // console.log("Send Mesage:", msg);
     // this.ws.send(msg);
     try {
-      this.ws.send(JSON.stringify(msg));
+      this.ws.send(StrFunc.stringify(msg));
     } catch (err) {
       console.log("WsClient Send error:", err);
     }
@@ -49,6 +50,11 @@ export default abstract class AWebSocket {
     this.ws.on("timeout", (chk: any, error: any) => {
       if (error) {
         console.log("timeout err:", error);
+      }
+    });
+    this.ws.on("unexpected-response", (chk: any, error: any) => {
+      if (error) {
+        console.log("unexpected-response", error);
       }
     });
     this.ws.on("streamread", (chk: any, error: any) => {

@@ -1,7 +1,7 @@
 import { PoolConnection } from "mariadb";
 import JTable from "../../../class/JTable";
 import { ErrCode } from "../../../DataSchema/ENum";
-import { IKeyVal, IMsg } from "../../../DataSchema/if";
+import { AnyObject, IKeyVal, IMsg } from "../../../DataSchema/if";
 import { doQuery, getConnection } from "../../../func/db";
 import AMsgSaver from "./AMsgSaver";
 import { SerChat, SerLobby } from "./MsgDbIf";
@@ -40,7 +40,7 @@ export default class MsgToDB extends AMsgSaver {
 			resolve(msg);
 		});
 	}
-	private getJT<T>(tablename: string): Promise<JTable<T>> {
+	private getJT<T extends AnyObject>(tablename: string): Promise<JTable<T>> {
 		return new Promise<JTable<T>>(async (resolve) => {
 			if (!this.conn || !this.conn.isValid()) { this.conn = await getConnection("MsgToDB"); }
 			resolve(new JTable<T>(this.conn as PoolConnection, tablename));

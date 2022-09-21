@@ -3,6 +3,7 @@ import JTable from "../../../class/JTable";
 import { ErrCode } from "../../../DataSchema/ENum";
 import { AnyObject, IHasID, IKeyVal, IMsg } from "../../../DataSchema/if";
 import DateF from "../Functions/MyDate";
+import StrFunc from "../Functions/MyStr";
 import { GetPostFunction } from "../Interface/Functions";
 import { ChatPic, SerChat, SerClosedData, SerLobby, SerSiteData } from "./MsgDbIf";
 import { MsgTable } from "./MsgToDB";
@@ -243,9 +244,9 @@ export default class ChatFunc {
 							data: msgids,
 						};
 						msg = await this.Update(uparam, conn);
-						// console.log("closeMsg update check:", JSON.stringify(uparam), msg);
+						// console.log("closeMsg update check:", StrFunc.stringify(uparam), msg);
 					}
-					data.cont = JSON.stringify(data.cont);
+					data.cont = StrFunc.stringify(data.cont);
 				}
 				if (msg.affectedRows > 0) {
 					const jt = new JTable<SerClosedData>(conn, MsgTable.SerClosed);

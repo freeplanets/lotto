@@ -15,7 +15,7 @@ export default class CryptoOpParamProcess {
 		this.order = order;
 	}
 	public async check(): Promise<IMsg> {
-		const ans = true;
+		// const ans = true;
 		if (!this.order.isUserSettle) {
 			this.checkOneHand();
 			if (this.msg.ErrNo === ErrCode.PASS) { await this.checkFullStorage(); }
@@ -57,7 +57,7 @@ export default class CryptoOpParamProcess {
 			if (st1 || st2) {
 				const checktime = new Date().getTime();
 				const dealtime = await this.getDealTime(this.order.id);
-				const diff = (checktime - dealtime) / 1000;
+				const diff = (BigInt(checktime) - BigInt(dealtime)) / BigInt(1000);
 				// console.log("checkshortTerm check", checktime, dealtime, diff);
 				if (st1 && diff < st1) {
 					this.msg.ErrNo = ErrCode.IN_SHORT_TERM;

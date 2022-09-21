@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, {Request, Response} from "express";
 import mariadb from "mariadb";
+import StrFunc from "./components/class/Functions/MyStr";
 import MsgMan from "./components/class/Message/MsgMan";
 import MsgToDB from "./components/class/Message/MsgToDB";
 import ExpressPeerServerFactory from "./components/class/peer/ExpressPeerServerFactory";
@@ -47,7 +48,7 @@ app.use(PreCheck);
 app.get("/", async (req: Request, res: Response) => {
     // console.log("root");
     const msg: IMsg = { ErrNo: ErrCode.PASS, ErrCon: "ok" };
-    res.send(JSON.stringify(msg));
+    res.send(StrFunc.stringify(msg));
     });
 app.get("/login", async (req, res) => {
         // console.log(req.query);
@@ -74,7 +75,7 @@ app.get("/login", async (req, res) => {
             msg.ErrNo = 9;
             msg.ErrCon = "Get connection error!!";
         }
-        res.send(JSON.stringify(msg));
+        res.send(StrFunc.stringify(msg));
     });
     // start the Express server
 app.get("/saveGames", async (req, res) => {
@@ -89,14 +90,14 @@ app.get("/saveGames", async (req, res) => {
         if (conn) {
             conn.query(sql, params).then(async (v) => {
                 await conn.release();
-                res.send(JSON.stringify(v));
+                res.send(StrFunc.stringify(v));
             }).catch(async (err) => {
                 console.log("saveGames", err);
                 await conn.release();
                 res.send(err);
             });
         } else {
-            res.send(JSON.stringify({error: "connection error!!"}));
+            res.send(StrFunc.stringify({error: "connection error!!"}));
         }
     });
 app.use("/api", adminRouter);

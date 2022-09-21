@@ -1,5 +1,6 @@
 import mariadb from "mariadb";
 import UpdateFieldString from "../components/class/DataBase/UpdateFieldString";
+import StrFunc from "../components/class/Functions/MyStr";
 import FilterFactory from "../components/FilterFactory";
 import { ErrCode } from "../DataSchema/ENum";
 import { AnyObject, IDbAns, IKeyVal, IMsg } from "../DataSchema/if";
@@ -301,7 +302,7 @@ export default class JTable<T extends AnyObject> {
             }
             keys.push(key);
             ff.push("?");
-            if (key !== "id") {
+            if (key !== "id" && key !== "UserID" && key !== "UpId" && key !== "SDate" ) {
                 const f = idx.find((itm) => itm === key);
                 if (!f) {
                     if (isAdd) {
@@ -312,13 +313,21 @@ export default class JTable<T extends AnyObject> {
                 }
             }
         });
-        const values = data.map((dta: T) => keys.map((fn) => typeof(dta[fn]) === "object" ? JSON.stringify(dta[fn]) : dta[fn]));
+        const values = data.map((dta: T) => keys.map((fn) => typeof(dta[fn]) === "object" ? StrFunc.stringify(dta[fn]) : dta[fn]));
         // console.log("JTable MultiUpdate values", values, keys);
         const sql = `insert into ${this.TableName}(${keys.join(",")}) values(${ff.join(",")})
             on duplicate key update ${updates.join(",")}`;
         // console.log(`MultiUpdate ${this.TableName}:`, sql);
         let ans1;
-        await this.conn.batch(sql, values).then((res) => {
+        try {
+            ans1 = await this.conn.batch(sql, values);
+        } catch (err) {
+            console.log("sql:", sql);
+            console.log("JTable MultiUpdate error", err, values);
+            ans1 = false;
+        }
+       /*
+        this.conn.batch(sql, values).then((res: any) => {
             // console.log("batch update:", res);
             ans1 = res;
         }).catch((err) => {
@@ -326,6 +335,7 @@ export default class JTable<T extends AnyObject> {
             console.log("JTable MultiUpdate error", err, values);
             ans1 = false;
         });
+        */
         return ans1;
     }
     private async getIndexes(): Promise<string[] | boolean> {

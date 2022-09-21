@@ -34,7 +34,6 @@ export default class LedgerLeverAccess extends ALedger<LedgerLever> {
       Val: SearchID,
     };
     const ldg: LedgerLever[] | undefined = await this.jtable.List(kv);
-    // console.log("SettleOne", JSON.stringify(kv), JSON.stringify(ldg), JSON.stringify(ask));
     let ldgOne: LedgerLever | undefined;
     if (ldg) {
       // console.log("LedgerLeverAccess SettleOne chk1");

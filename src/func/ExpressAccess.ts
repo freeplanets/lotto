@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import { PoolConnection } from "mariadb";
+import StrFunc from "../components/class/Functions/MyStr";
 import { ErrCode } from "../DataSchema/ENum";
 import {IKeyVal, IMsg} from "../DataSchema/if";
 import {getConnection} from "./db";
+
 export type GetPostFunction = (param: any, conn: PoolConnection) => Promise<IMsg>;
 export default class ExpressAccess {
   protected getConnection = getConnection;
@@ -19,7 +21,7 @@ export default class ExpressAccess {
       this.msg.ErrNo = ErrCode.GET_CONNECTION_ERR;
       this.msg.ErrCon = "Get connection error!!";
     }
-    res.send(JSON.stringify(this.msg));
+    res.send(StrFunc.stringify(this.msg));
   }
   private combineParams(old: IKeyVal, add: IKeyVal): IKeyVal {
     if (!old) { old = {}; }

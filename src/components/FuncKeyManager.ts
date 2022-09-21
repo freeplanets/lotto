@@ -5,6 +5,7 @@ import AOneFunction from "./class/DataBase/CryptoItem/AOneFunction";
 import CodeDistinct from "./class/DataBase/CryptoItem/CodeDistinct";
 import GetUnFinishedAsks from "./class/DataBase/CryptoItem/GetUnFinishedAsks";
 import SavePriceTick from "./class/DataBase/CryptoItem/SavePriceTick";
+import StrFunc from "./class/Functions/MyStr";
 
 export default class FuncKeyManager {
 	private ws: WebSocket;
@@ -36,7 +37,7 @@ export default class FuncKeyManager {
 			// console.log("doit funckey:", this.returnfunc);
 			const ans = this.item.execute();
 			ans.then((res) => {
-				// console.log("doit res", this.returnfunc, JSON.stringify(res));
+				// console.log("doit res", this.returnfunc, StrFunc.stringify(res));
 				if (this.returnfunc !== FuncKey.DO_NOTHING) {
 					// console.log("doit", res);
 					if (res) {
@@ -45,8 +46,13 @@ export default class FuncKeyManager {
 							ChannelName: Channels.SETTLE_SERVER,
 							data: res,
 						};
-						// console.log("FuncKeyManager doit", JSON.stringify(wsg));
-						this.ws.send(JSON.stringify(wsg));
+						// console.log("FuncKeyManager doit", StrFunc.stringify(wsg));
+						try {
+							this.ws.send(StrFunc.stringify(wsg));
+						} catch (err) {
+							console.log("FuncKeyManager JSON stringify error:", err);
+							console.log(wsg);
+						}
 					}
 				}
 			});

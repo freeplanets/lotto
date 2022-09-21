@@ -1,5 +1,6 @@
 import { CreditType, ErrCode, MemoType } from "../../../DataSchema/ENum";
 import { AskTable, CreditMemo, HasUID, IMsg, MemoCryptoCur } from "../../../DataSchema/if";
+import StrFunc from "../../class/Functions/MyStr";
 import NumFunc from "../Functions/MyNumber";
 import AskTableAccess from "./AskTableAccess";
 
@@ -10,7 +11,7 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     msg.UserID = ask.UserID;
     // await this.conn.beginTransaction();
     await this.BeginTrans();
-    // console.log("NewOrder doit:", JSON.stringify(ask));
+    // console.log("NewOrder doit:", StrFunc.stringify(ask));
     if (ask.BuyType === 0) {
       if (ask.LeverCredit) {
         ask.Fee = ask.Fee ? ask.LeverCredit * ask.Fee : 0;
@@ -71,7 +72,7 @@ export default class NewOrder extends AskTableAccess<HasUID> {
     const hasOne = await this.tb.getOne(AskID);
     if (hasOne) { msg.Ask = hasOne as AskTable; }
     msg.Balance = await this.getBalance();
-    // console.log("NewOrder doit before return:", JSON.stringify(msg));
+    // console.log("NewOrder doit before return:", StrFunc.stringify(msg));
     return msg;
   }
 }

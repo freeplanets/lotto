@@ -31,7 +31,6 @@ export default class BTC {
 		return new Promise((resolve, reject) => {
 			http.get(`http://${url}`, (res: IncomingMessage) => {
 				// console.log(`STATUS: ${res.statusCode}`);
-				// console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 				res.on("error", () => {
 					console.log("BTC on error", res);
 					reject({code: res.statusCode, error: res.statusMessage});
