@@ -103,6 +103,7 @@ export function doQuery(sql: string, conn: PoolConnection, params?: IAxParams): 
         // console.log("doQuery:", sql, params);
         query.then((res) => {
             // console.log("doQuery", res);
+            if (res.meta) { delete res.meta; }
             resolve(res);
         }).catch((err) => {
             // console.log("doQuery", sql, params, err);

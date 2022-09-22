@@ -94,11 +94,12 @@ export default class JTable<T extends AnyObject> {
         }
         let mb: T[] | undefined;
         /*
-        if (this.TableName === "SerChat") {
+        if (this.TableName === "AskTable") {
             console.log("JTable List sql", sql, keys);
         }
         */
         await this.conn.query(sql).then((row) => {
+            if (row.meta) { delete row.meta; }
             mb = row;
         }).catch((err) => {
             // mb = false;

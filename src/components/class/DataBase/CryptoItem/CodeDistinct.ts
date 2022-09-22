@@ -17,9 +17,13 @@ export default class CodeDistinct extends AOneFunction {
 					if (res) {
 						tmp = res;
 					}
+					await conn.release();
+					resolve(tmp);
+				}).catch(async (err) => {
+					console.log("CodeDistinct", err);
+					await conn.release();
+					resolve(false);
 				});
-				await conn.release();
-				resolve(tmp);
 			} else {
 				resolve(false);
 			}
