@@ -46,7 +46,7 @@ export default class FuncKeyManager {
 							ChannelName: Channels.SETTLE_SERVER,
 							data: res,
 						};
-						console.log("FuncKeyManager doit", StrFunc.stringify(wsg));
+						// console.log("FuncKeyManager doit", StrFunc.stringify(wsg));
 						try {
 							this.ws.send(StrFunc.stringify(wsg));
 						} catch (err) {
