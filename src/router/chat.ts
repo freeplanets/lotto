@@ -87,11 +87,17 @@ app.get("/getMessage", async (req: Request, res: Response) => {
 	res.send(StrFunc.stringify(ans));
 });
 app.get("/getClosedMsg", async (req: Request, res: Response) => {
+	console.log("getClosedMsg query:", req.query);
 	const msg = await AttachConn(req.query, CFunc.GetClosedMsg);
-	const ans: ChkAns = {
-		status: msg.ErrNo ? 1 : 0,
-		data: msg.data,
-	};
+	let ans: any;
+	if (req.query.act) {
+		ans = msg;
+	} else {
+		ans = {
+			status: msg.ErrNo ? 1 : 0,
+			data: msg.data,
+		};
+	}
 	res.send(StrFunc.stringify(ans));
 });
 app.get("/Image", async (req: Request, res: Response) => {

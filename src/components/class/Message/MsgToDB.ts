@@ -26,9 +26,11 @@ export default class MsgToDB extends AMsgSaver {
 				const sql = `insert into ${MsgTable.SerLobby}(cid, hostname, identity, uid, isActive) values (
 					'${data.cid}','${data.hostname}',${data.identity},'${data.uid}',${0 || data.isActive}
 				) on duplicate key update isActive = values(isActive)`;
-				console.log(sql);
+				console.log("MsgToDB.UserConnected:", sql);
 				msg =  await doQuery(sql, this.conn);
+				console.log("UserConnected check0");
 			}
+			console.log("UserConnected check1");
 			resolve(msg);
 		});
 	}

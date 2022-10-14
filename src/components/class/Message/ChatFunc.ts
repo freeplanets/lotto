@@ -162,7 +162,7 @@ export default class ChatFunc {
 	public CheckIn: GetPostFunction = (param: any, conn: PoolConnection) => {
 		return new Promise<IMsg>(async (resolve) => {
 			const msg = { ...this.defaultMsg };
-			const siteid = param.siteid || param.site;
+			const siteid = param ? param.siteid || param.site : "";
 			console.log("checkin param:", siteid);
 			if ( siteid ) {
 				const jt = new JTable<SerSiteData>(conn, MsgTable.SerSite);
@@ -233,7 +233,8 @@ export default class ChatFunc {
 		return new Promise<IMsg>(async (resolve) => {
 			const data = param as SerClosedData;
 			let msg = { ...this.defaultMsg };
-			if (data.MemberCid && data.ServeCid && data.cont && data.title) {
+			// if (data.MemberCid && data.ServeCid && data.cont && data.title) {
+			if (data.MemberCid && data.ServeCid && data.cont) {
 				if (Array.isArray(data.cont)) {
 					const msgids = data.cont.map((itm) => {
 						return { id: itm.id, isDeled: 1 };
@@ -269,12 +270,15 @@ export default class ChatFunc {
 				Val: site,
 				Cond: "like",
 			});
-			const dStart = DateF.toDbDateString(startDate);
-			const dEnd = DateF.toDbDateString(endDate);
-			filters.push(DateF.createDateFilter(`${dStart}-${dEnd}`, "CreateTime"));
+			if (startDate && endDate) {
+				const dStart = DateF.toDbDateString(startDate);
+				const dEnd = DateF.toDbDateString(endDate);
+				filters.push(DateF.createDateFilter(`${dStart}-${dEnd}`, "CreateTime"));
+			}
 			let msg = { ...this.defaultMsg };
 			msg = await jt.Lists(filters);
-			await conn.release();
+			console.log("GetClosedMsg", msg, filters);
+			// await conn.release();
 			resolve(msg);
 		});
 	}
