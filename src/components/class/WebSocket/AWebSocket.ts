@@ -47,11 +47,6 @@ export default abstract class AWebSocket {
     this.ws = new WebSocket(this.url, this.opts);
     // code: 'ETIMEDOUT',
     // syscall: 'read',
-    this.ws.on("timeout", (chk: any, error: any) => {
-      if (error) {
-        console.log("timeout err:", error);
-      }
-    });
     this.ws.on("unexpected-response", (chk: any, error: any) => {
       if (error) {
         console.log("unexpected-response", error);

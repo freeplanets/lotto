@@ -12,7 +12,7 @@ import MemberReport from "../components/class/Report/Member";
 import wsclient from "../components/webSC";
 import { ErrCode, StopType } from "../DataSchema/ENum";
 import { AnyObject, AskTable, ChatMsg, HasUID, IHasID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
-import { AuthExpire, AuthKey, AuthLimit, JWT_KEY } from "../func/db";
+import { AuthExpire, AuthKey, AuthLimit, doQuery, JWT_KEY } from "../func/db";
 import { GetPostFunction } from "./ExpressAccess";
 
 interface IMyFunction<T> extends GetPostFunction {
@@ -297,6 +297,25 @@ export const getOrder: IMyFunction<WebParams> = async (param: WebParams, conn: P
   filter.push({ Key: "ProcStatus", Val: 2, Cond: "<"});
   const jt: JTable<AskTable> = new JTable(conn, "AskTable");
   return await jt.Lists(filter);
+};
+export const getOrderList: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
+  const msg: IMsg = { ErrNo: ErrCode.MISS_PARAMETER , ErrCon: "MISS_PARAMETER" };
+  const Filter = `${param.Filter}`.replace(/\\/g, "").replace("CreateTime", "A.CreateTime");
+  if (Filter) {
+    const sql = `select A.id,UserID,A.UpId,A.ItemID,AskType,BuyType,ItemType,Code,Qty,Price,Amount,Fee,AskFee,AskPrice,
+    LeverCredit,ExtCredit,Lever,SetID,USetID,ProcStatus,A.CreateTime,DealTime,isUserSettle, M.Nickname, S.MarkTS
+    from AskTable A
+      left join Member M on A.UserID = M.id
+      left join MemberSettleMark S on A.id = S.AskID and A.ItemID = S.ItemID
+    where ${Filter}`;
+    console.log("getOrderList", sql);
+    const ans = await doQuery(sql, conn);
+    if (ans) {
+      msg.ErrNo = ErrCode.PASS;
+      msg.data = ans;
+    }
+  }
+  return msg;
 };
 
 export const DeleteOrder: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {

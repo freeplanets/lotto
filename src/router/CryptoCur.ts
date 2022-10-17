@@ -22,6 +22,9 @@ app.post("/SendOrder", (req: Request, res: Response) => {
 app.get("/GetOrder", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.getOrder);
 });
+app.get("/GetOrderList", (req: Request, res: Response) => {
+  EA.process(req, res, ccfunc.getOrderList);
+});
 app.get("/GetLedgerInfo", (req: Request, res: Response) => {
   EA.process(req, res, ccfunc.getLedgerInfo);
 });

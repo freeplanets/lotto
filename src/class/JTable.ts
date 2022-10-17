@@ -75,6 +75,9 @@ export default class JTable<T extends AnyObject> {
         return msg;
     }
     public async List(keys?: string | IKeyVal | IKeyVal[], fields?: string|string[], orderField?: string): Promise<T[] | undefined> {
+        if (this.TableName === "Items") {
+            console.log("JTable keys:", keys);
+        }
         let filter = "";
         if (keys) {
             filter = new FilterFactory(keys).getFilter();
@@ -93,11 +96,9 @@ export default class JTable<T extends AnyObject> {
             sql = `${sql} order by ${orderField}`;
         }
         let mb: T[] | undefined;
-        /*
-        if (this.TableName === "AskTable") {
+        if (this.TableName === "Items") {
             console.log("JTable List sql", sql, keys);
         }
-        */
         await this.conn.query(sql).then((row) => {
             if (row.meta) { delete row.meta; }
             mb = row;
