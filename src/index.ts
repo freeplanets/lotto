@@ -108,7 +108,7 @@ app.use("/test", apiRouter);
 app.use("/api/chat", chat);
 // app.listen(port, () => {
 const server = app.listen(3000, "0.0.0.0", () => {
-    console.log(`server started at http://localhost:${ port }`);
+    console.log(`server v0.9147 started at http://localhost:${ port }`);
 });
 const peerServer = new ExpressPeerServerFactory(server, new MsgMan(new MsgToDB())).get();
 app.use("/peerjs", peerServer);
