@@ -10,7 +10,7 @@ import Message from "../components/class/Message/Message";
 import ReceiverManager from "../components/class/Order/ReceiverManager";
 import MemberReport from "../components/class/Report/Member";
 import wsclient from "../components/webSC";
-import { ErrCode, StopType } from "../DataSchema/ENum";
+import { ErrCode, FuncKey, StopType } from "../DataSchema/ENum";
 import { AnyObject, AskTable, ChatMsg, HasUID, IHasID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { AuthExpire, AuthKey, AuthLimit, doQuery, JWT_KEY } from "../func/db";
 import { GetPostFunction } from "./ExpressAccess";
@@ -44,6 +44,18 @@ export const save: IMyFunction<WebParams> = async (param: WebParams, conn: PoolC
           msg = await jt.Insert(param.TableDatas);
         }
       }
+      if (param.TableName === "Items" && msg.ErrNo === ErrCode.PASS) {
+        const msgItem: WsMsg = {
+          Func: FuncKey.GET_CRYPTOITEM_CODE_DISTINCT
+        };
+        if (Array.isArray(param.TableDatas)) {
+          msgItem.data = param.TableDatas;
+        } else {
+          msgItem.data = [param.TableDatas];
+        }
+        console.log("SaveItem send msg", msgItem);
+        wsclient.Send(msgItem);
+      }
     }
   } else {
     msg.ErrNo = ErrCode.MISS_PARAMETER;
@@ -53,7 +65,7 @@ export const save: IMyFunction<WebParams> = async (param: WebParams, conn: PoolC
 };
 export const savedata: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   let msg: IMsg = {ErrNo: 0};
-  console.log("savedata", param);
+  // console.log("savedata", param);
   if (param.TableName && param.TableData) {
     const jt = new JTable(conn, param.TableName);
     if (typeof param.TableData === "string") {
