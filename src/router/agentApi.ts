@@ -570,7 +570,7 @@ async function getLedgerLever(req, res) {
     const sql = `select LedgerLever.id,Member.Account userCode,ItemID,ItemType,BuyID,SellID,Qty,BuyPrice,SellPrice,(BuyFee + TFee) Fee,Lever,Qty*BuyPrice*Lever Amt,
         GainLose,(GainLose - BuyFee - TFee) WinLose,floor(BuyTime/1000) BuyTime,SellTime
         from LedgerLever left join Member on LedgerLever.UserID = Member.id where LedgerLever.${UpidFilter} and BuyTime > 0 and
-        SellTime > ${param.startTime} order by SellTime limit 0,1000`;
+        SellTime >= ${param.startTime} order by SellTime limit 0,1000`;
     console.log("getLedgerLever", sql);
     conn.query(sql).then((rows) => {
         data.list = rows;
