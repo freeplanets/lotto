@@ -615,8 +615,8 @@ async function getAskTable(req, res) {
         Amount*Lever Amount,Fee,UNIX_TIMESTAMP(AskTable.CreateTime) CreateTime,UNIX_TIMESTAMP(AskTable.ModifyTime) ModifyTime,
         AskTable.DealTime DealTime
         from AskTable left join Member on AskTable.UserID = Member.id where AskTable.${UpidFilter} and
-        AskTable.id > ${startTime}
-        order by AskTable.id limit 0,1000`;
+        AskTable.DealTime between ${startTime} and ${endTime}
+        order by AskTable.DealTime limit 0,1000`;
         // AskTable.DealTime between ${startTime} and ${endTime}
         // AskTable.ModifyTime between from_unixtime(${startTime}) and from_unixtime(${endTime})
     // console.log("getAskTable", sql);
