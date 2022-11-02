@@ -98,11 +98,9 @@ export default class JTable<T extends AnyObject> {
             sql = `${sql} order by ${orderField}`;
         }
         let mb: T[] | undefined;
-        /*
-        if (this.TableName === "Items") {
+        if (this.TableName === "SerClosed") {
             console.log("JTable List sql", sql, keys);
         }
-        */
         await this.conn.query(sql).then((row) => {
             if (row.meta) { delete row.meta; }
             mb = row;

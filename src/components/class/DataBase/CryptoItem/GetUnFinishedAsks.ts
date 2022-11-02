@@ -19,7 +19,7 @@ export default class GetUnFinishedAsks extends AOneFunction {
 				const ans = await jt.List(filter);
 				await conn.release();
 				if (ans) {
-					// console.log("GetUnFinishedAsks before resolve", ans);
+					// console.log("GetUnFinishedAsks before resolve", JSON.stringify(ans));
 					resolve(ans);
 				} else {
 					// console.log("check1");

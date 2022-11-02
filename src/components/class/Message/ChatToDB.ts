@@ -90,7 +90,7 @@ export default class ChatToDB {
 				});
 				const dStart = DateF.toDbDateString(startDate);
 				const dEnd = DateF.toDbDateString(endDate);
-				filters.push(DateF.createDateFilter(`${dStart}-${dEnd}`, "CreateTime"));
+				filters.push(DateF.createDateFilter(`${dStart} ${dEnd}`, "CreateTime"));
 				this.msg = await jt.Lists(filters);
 				await conn.release();
 			}

@@ -93,7 +93,7 @@ export default class ChatFunc {
 			});
 			const dStart = DateF.toDbDateString(startDate);
 			const dEnd = DateF.toDbDateString(endDate);
-			filters.push(DateF.createDateFilter(`${dStart}-${dEnd}`, "CreateTime"));
+			filters.push(DateF.createDateFilter(`${dStart} ${dEnd}`, "CreateTime"));
 			let msg = { ...this.defaultMsg };
 			msg = await jt.Lists(filters);
 			await conn.release();
@@ -263,6 +263,7 @@ export default class ChatFunc {
 			const site = param.site.replace(/\W/g, "");
 			const startDate = param.startDate;
 			const endDate = param.endDate;
+			const match = param.match;
 			const jt = new JTable<SerClosedData>(conn, MsgTable.SerClosed);
 			const filters: IKeyVal[] = [];
 			filters.push({
@@ -270,10 +271,17 @@ export default class ChatFunc {
 				Val: site,
 				Cond: "like",
 			});
-			if (startDate && endDate) {
+			if (startDate) {
 				const dStart = DateF.toDbDateString(startDate);
-				const dEnd = DateF.toDbDateString(endDate);
-				filters.push(DateF.createDateFilter(`${dStart}-${dEnd}`, "CreateTime"));
+				const dEnd = endDate ? DateF.toDbDateString(endDate) : dStart;
+				filters.push(DateF.createDateFilter(`${dStart} ${dEnd}`, "CreateTime"));
+			}
+			if (match) {
+				filters.push({
+					Key: "cont",
+					Val: match,
+					Cond: "match",
+				});
 			}
 			let msg = { ...this.defaultMsg };
 			msg = await jt.Lists(filters);

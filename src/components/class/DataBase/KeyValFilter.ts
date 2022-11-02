@@ -30,6 +30,8 @@ export default class KeyValFilter extends AFilter {
           return `${f.Key} in (${f.Val})`;
         case "like":
           return `${f.Key} like '%${f.Val}%'`;
+        case "match":
+          return `MATCH(${f.Key}) AGAINST('${f.Val}' IN BOOLEAN MODE)`;
       }
     } else {
       f.Cond = "=";

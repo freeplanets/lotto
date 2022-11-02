@@ -13,7 +13,7 @@ export default class CodeDistinct extends AOneFunction {
 			if (conn) {
 				const sql = "select distinct Code,StayLimit from Items where isActive = 1 and isLoan = 1";
 				this.query(sql, conn).then(async (res) => {
-					// console.log("done for query", res);
+					console.log("done for query", res);
 					if (res) {
 						tmp = res;
 					}

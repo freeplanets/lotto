@@ -73,13 +73,16 @@ class MyDate {
 		return Math.floor((curTime - chkTime) / 1000 / 60);
 	}
 	public createDateFilter(v: string, key?: string): IKeyVal {
-		const dates = v.split("-");
+		const dates = v.split(" ");
 		const d1 = dates[0];
 		const d2 = `${dates[1] ? dates[1] : dates[0]} 23:59:59.999`;
+		console.log("createDateFilter", v, key, d1, d2);
 		const keyV: IKeyVal = {
 			Key: key || "ModifyTime",
-			Val: this.getTime(d1),
-			Val2: this.getTime(d2),
+			// Val: this.getTime(d1),
+			// Val2: this.getTime(d2),
+			Val: d1,
+			Val2: d2,
 			Cond: "between",
 		};
 		return keyV;
