@@ -38,6 +38,7 @@ export enum FuncKey {
   GET_UNFINISHED_ASKS = "getUnFinishedAsks",
   SAVE_PRICETICK = "savePriceTick",
   DO_NOTHING = "doNothing",
+  DELETE_UNDEALED_ASKS = "deleteUnDealedAsks",
 }
 export enum PriceCheckType {
   CurPrice = 0,

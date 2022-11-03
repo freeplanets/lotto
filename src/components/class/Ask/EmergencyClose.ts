@@ -10,14 +10,14 @@ export default class EmergencyClose {
 	constructor(private wsc: AWebSocket, conn: PoolConnection, tableName = "AskTable") {
 		this.jt = new JTable(conn, tableName);
 	}
-	public async doit() {
+	public async doit(fkey = FuncKey.EMERGENCY_CLOSE) {
 		let msg: IMsg = { ErrNo: ErrCode.PASS };
 		msg = await this.CancelUnPricedAsk();
 		// console.log("EmergencyClose doit:", msg);
 		if (msg.ErrNo === ErrCode.PASS) {
 			if (msg.data) {
 				const wsg: WsMsg = {
-					Func: FuncKey.EMERGENCY_CLOSE,
+					Func: fkey,
 					Asks: msg.data as AskTable[],
 				};
 				this.wsc.Send(wsg);
