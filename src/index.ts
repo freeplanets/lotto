@@ -1,4 +1,5 @@
 // import bodyParser from "body-parser";
+import { exec, ExecException } from "child_process";
 import cors from "cors";
 import dotenv from "dotenv";
 import express, {Request, Response} from "express";
@@ -18,6 +19,16 @@ import apiRouter from "./router/api";
 import chat from "./router/chat";
 import CryptoCur from "./router/CryptoCur";
 import GameCenter from "./router/FromCenter";
+
+exec("node -v", (err: ExecException | null, stdout: string, stderr: string) => {
+    if (err) {
+      console.log("ExecException", err);
+    } else if (stderr) {
+      console.log("Error", stderr);
+    } else {
+      console.log("node version:", stdout);
+    }
+});
 
 dotenv.config();
 // const args: minimist.ParsedArgs = minimist(process.argv.slice(2), {});

@@ -34,7 +34,7 @@ export default class HashGameManager {
 		if (height &&  height > this.heightKeeper) {
 			console.log("HashGameManager", this.heightKeeper, height);
 			this.heightKeeper = height;
-			const conn = await db.getConnection(`HashGameManager check:`);
+			const conn = await db.getConnection("HashGameManager check:");
 			if (conn && height) {
 				const sw = height % TermAuto.GAP;
 				switch (sw) {
