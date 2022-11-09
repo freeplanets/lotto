@@ -9,9 +9,11 @@ import AWebSocket from "./AWebSocket";
 export default class AskProcWS extends AWebSocket {
 	private ATAF = new ATAFactor();
 	private dfChannel: string = "";
+	private chkInfo = new Date().getTime();
 	constructor(url: string, opt: ClientOptions, dfChanel: string) {
 		super(url, opt);
 		this.dfChannel = dfChanel;
+		console.log("AskProcWS created:", this.chkInfo);
 	}
 	public OnOpen(ws: WebSocket) {
 		console.log("connectd:", this.url);
@@ -41,7 +43,7 @@ export default class AskProcWS extends AWebSocket {
 						console.log(`WS Server error, code:${this.ws.readyState}, try build store mesage function later!`);
 					}
 				} else {
-					console.log("webSC on message:", StrFunc.stringify(msg));
+					console.log("web_SC on message:", StrFunc.stringify(msg));
 				}
 			}
 			if (wsmsg.Message) {
@@ -51,6 +53,9 @@ export default class AskProcWS extends AWebSocket {
 			console.log("message json parse error:", data);
 			console.log(error);
 		}
+	}
+	get Info() {
+		return this.dfChannel;
 	}
   private registerChannel(channel: string) {
     if (this.ws.readyState === this.ws.OPEN) {

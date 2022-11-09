@@ -2,7 +2,6 @@ import { PoolConnection } from "mariadb";
 import JTable from "../../../class/JTable";
 import { ErrCode, FuncKey } from "../../../DataSchema/ENum";
 import { AskTable, HasUID, IHasID, IKeyVal, IMsg, WsMsg } from "../../../DataSchema/if";
-// import { AskProcWS } from "../../webSC";
 import AWebSocket from "../WebSocket/AWebSocket";
 
 export default class EmergencyClose {

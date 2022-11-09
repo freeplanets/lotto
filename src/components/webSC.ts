@@ -24,9 +24,18 @@ const ChannelName = Channels.API_SERVER;
 // const ChatSERVER = `${chatHost}/${sitename}/${ChannelName}/apiZero`;
 const wsSERVER = `${wsHost}`;
 // const chatClient = new ChatWS(ChatSERVER, wsOptions);
-const wsclient = new AskProcWS(wsSERVER, wsOptions, ChannelName);
+// const wsclient = new AskProcWS(wsSERVER, wsOptions, ChannelName);
+export class WebSC {
+  public static getSock(): AskProcWS {
+    if (!WebSC.sock) {
+      WebSC.sock = new AskProcWS(wsSERVER, wsOptions, ChannelName);
+    }
+    return WebSC.sock;
+  }
+  private static sock: AskProcWS | null = null;
+}
 // export { chatClient };
-export default wsclient;
+// export default wsclient;
 /*
 export class WsClient {
   get isConnected() {

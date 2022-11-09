@@ -8,6 +8,7 @@ import StrFunc from "./components/class/Functions/MyStr";
 import MsgMan from "./components/class/Message/MsgMan";
 import MsgToDB from "./components/class/Message/MsgToDB";
 import ExpressPeerServerFactory from "./components/class/peer/ExpressPeerServerFactory";
+import { WebSC  } from "./components/webSC";
 import { ErrCode } from "./DataSchema/ENum";
 import { IMsg } from "./DataSchema/if";
 import {doQuery, getConnection, IAxParams, port} from "./func/db";
@@ -123,6 +124,9 @@ const server = app.listen(3000, "0.0.0.0", () => {
 });
 const peerServer = new ExpressPeerServerFactory(server, new MsgMan(new MsgToDB())).get();
 app.use("/peerjs", peerServer);
+
+const wSock = WebSC.getSock();
+console.log("wSock Info:", wSock.Info);
 /*
 }).catch((err) => {
     console.log("db error:", err);

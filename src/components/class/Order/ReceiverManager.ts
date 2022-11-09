@@ -2,7 +2,6 @@ import { PoolConnection } from "mariadb";
 import { Channels, ErrCode, StopType } from "../../../DataSchema/ENum";
 import { IMsg, Items, Order, UserInfo, WebParams, WsMsg } from "../../../DataSchema/if";
 import DataAccess from "../DataBase/DataAccess";
-// import { AskProcWS } from "../../../components/webSC";
 import AWebSocket from "../WebSocket/AWebSocket";
 import AProcess from "./AProcess";
 import LoanProcess from "./LoanProcess";

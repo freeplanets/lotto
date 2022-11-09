@@ -9,7 +9,7 @@ import UserInfoCrypto from "../components/class/Ledger/UserInfoCrypto";
 import Message from "../components/class/Message/Message";
 import ReceiverManager from "../components/class/Order/ReceiverManager";
 import MemberReport from "../components/class/Report/Member";
-import wsclient from "../components/webSC";
+import { WebSC } from "../components/webSC";
 import { ErrCode, FuncKey, StopType } from "../DataSchema/ENum";
 import { AnyObject, AskTable, ChatMsg, HasUID, IHasID, IKeyVal, IMsg, Items, Lever, NoDelete, WebParams, WsMsg } from "../DataSchema/if";
 import { AuthExpire, AuthKey, AuthLimit, doQuery, JWT_KEY } from "../func/db";
@@ -18,6 +18,8 @@ import { GetPostFunction } from "./ExpressAccess";
 interface IMyFunction<T> extends GetPostFunction {
   (param: T, conn: PoolConnection): IMsg;
 }
+const wsclient = WebSC.getSock();
+
 export const f: IMyFunction<WebParams> = async (param: WebParams, conn: PoolConnection) => {
   const msg: IMsg = {ErrNo: 0};
   msg.ErrCon = `id:${param.id} > ${conn.info?.status}`;
