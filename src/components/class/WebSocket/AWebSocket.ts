@@ -47,12 +47,18 @@ export default abstract class AWebSocket {
     this.ws = new WebSocket(this.url, this.opts);
     // code: 'ETIMEDOUT',
     // syscall: 'read',
-    /*
     this.ws.on("unexpected-response", (chk: any, error: any) => {
       if (error) {
         console.log("unexpected-response", error);
       }
+      // console.log("connection close.");
+      const me = this;
+      setTimeout(() => {
+        console.log("do reconnect");
+        me.createConnection();
+      }, 5000);
     });
+    /*
     this.ws.on("streamread", (chk: any, error: any) => {
       if (error) {
         console.log("steamread err:", error);
