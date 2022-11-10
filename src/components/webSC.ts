@@ -27,10 +27,10 @@ const wsSERVER = `${wsHost}`;
 // const wsclient = new AskProcWS(wsSERVER, wsOptions, ChannelName);
 export class WebSC {
   public static getSock(): AskProcWS {
-    if (!WebSC.sock) {
-      WebSC.sock = new AskProcWS(wsSERVER, wsOptions, ChannelName);
+    if (!this.sock) {
+      this.sock = new AskProcWS(wsSERVER, wsOptions, ChannelName);
     }
-    return WebSC.sock;
+    return this.sock;
   }
   private static sock: AskProcWS | null = null;
 }

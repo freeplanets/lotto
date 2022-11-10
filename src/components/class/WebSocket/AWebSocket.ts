@@ -64,6 +64,9 @@ export default abstract class AWebSocket {
       }
     });
     */
+    this.ws.on("ping", () => {
+      console.log("get ping " + new Date().toLocaleString());
+    });
     this.ws.on("error", (err) => {
       console.log("createConnection error:", err);
     });
