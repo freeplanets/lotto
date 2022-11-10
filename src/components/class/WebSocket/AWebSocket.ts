@@ -47,6 +47,7 @@ export default abstract class AWebSocket {
     this.ws = new WebSocket(this.url, this.opts);
     // code: 'ETIMEDOUT',
     // syscall: 'read',
+    /*
     this.ws.on("unexpected-response", (chk: any, error: any) => {
       if (error) {
         console.log("unexpected-response", error);
@@ -57,7 +58,6 @@ export default abstract class AWebSocket {
         console.log("steamread err:", error);
       }
     });
-    /*
     this.ws.on("read", (chk: any, error: any) => {
       if (error) {
         console.log("read err:", error);
