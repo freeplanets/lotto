@@ -16,7 +16,7 @@ export default class NewPool {
 			}).catch(async (err) => {
 				console.log(`${caller} getConnection Error:`, err);
 				let conn: PoolConnection | undefined;
-				if (err.code === "ER_GET_CONNECTION_TIMEOUT") {
+				if (err.code === "ER_GET_CONNECTION_TIMEOUT" || err.code === "ER_CLOSING_POOL") {
 					conn = await this.resetPool();
 					resolve(conn);
 				} else {

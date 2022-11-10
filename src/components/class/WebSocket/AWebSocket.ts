@@ -75,6 +75,11 @@ export default abstract class AWebSocket {
     });
     this.ws.on("error", (err) => {
       console.log("createConnection error:", err);
+      const me = this;
+      setTimeout(() => {
+        console.log("do reconnect");
+        me.createConnection();
+      }, 5000);
     });
     this.ws.on("disconnect", (data) => {
       console.log("disconnect:", data);
