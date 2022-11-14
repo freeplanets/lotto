@@ -16,6 +16,7 @@ export default class ATACreator {
         this.checkName = "DealOrder";
         break;
       case 3: // 刪除
+      case 4: //
         this.ATA = new DeleteOrder(ask, conn, tableName);
         this.checkName = "DeleteOrder";
         break;

@@ -7,12 +7,13 @@ export default abstract class AWebSocket {
     if (!this.ws) { return false; }
     return this.ws.readyState === this.ws.OPEN;
   }
-  protected ws!: WebSocket;
+  private static inCreateProc = false;
+  protected ws: WebSocket | null = null;
   constructor(protected url: string, private opts: ClientOptions) {
     this.createConnection();
   }
   public SendMessage(msg: string) {
-    if (this.ws.readyState === WebSocket.OPEN) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       // console.log("Send Mesage to Server:", msg);
       const wsmsg: WsMsg = {
         Message: msg,
@@ -26,23 +27,28 @@ export default abstract class AWebSocket {
     // console.log("Send Mesage:", msg);
     // this.ws.send(msg);
     try {
-      this.ws.send(StrFunc.stringify(msg));
+      if (this.ws) {
+        this.ws.send(StrFunc.stringify(msg));
+      }
     } catch (err) {
       console.log("WsClient Send error:", err);
     }
   }
   public Close() {
-      if (this.ws.readyState !== this.ws.OPEN) {
+      if (this.ws && this.ws.readyState !== this.ws.OPEN) {
         console.log("wait Server connected.....", this.ws.readyState, this.ws.OPEN);
       } else {
         console.log("disconnect....");
-        this.ws.close();
+        if (this.ws) { this.ws.close(); }
         console.log("done");
       }
   }
 	public abstract OnMessage(data: string): void;
 	public abstract OnOpen(ws: WebSocket): void;
   private createConnection() {
+    if (AWebSocket.inCreateProc) { return; }
+    const me = this;
+    AWebSocket.inCreateProc = true;
     console.log("connect to:", this.url);
     this.ws = new WebSocket(this.url, this.opts);
     // code: 'ETIMEDOUT',
@@ -52,7 +58,6 @@ export default abstract class AWebSocket {
         console.log("unexpected-response", error);
       }
       // console.log("connection close.");
-      const me = this;
       setTimeout(() => {
         console.log("do reconnect");
         me.createConnection();
@@ -75,11 +80,12 @@ export default abstract class AWebSocket {
     });
     this.ws.on("error", (err) => {
       console.log("createConnection error:", err);
-      const me = this;
+      /*
       setTimeout(() => {
         console.log("do reconnect");
         me.createConnection();
       }, 5000);
+      */
     });
     this.ws.on("disconnect", (data) => {
       console.log("disconnect:", data);
@@ -90,13 +96,13 @@ export default abstract class AWebSocket {
     this.ws.on("message", (data: Data) => {
 			this.OnMessage(data.toString());
 		});
-    this.ws.on("close", () => {
-      console.log("connection close.");
-      const me = this;
+    this.ws.on("close", (ws: WebSocket) => {
+      console.log("connection close.", ws);
       setTimeout(() => {
         console.log("do reconnect");
         me.createConnection();
       }, 5000);
     });
+    AWebSocket.inCreateProc = false;
   }
 }

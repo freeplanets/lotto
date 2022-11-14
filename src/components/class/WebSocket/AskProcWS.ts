@@ -36,11 +36,12 @@ export default class AskProcWS extends AWebSocket {
 				if (msg.ErrNo === ErrCode.PASS ) {
 					const newWsmsg: WsMsg = { ...msg };
 					delete newWsmsg.ErrNo;
-					if ( this.ws.readyState === WebSocket.OPEN ) {
+					if ( this.ws && this.ws.readyState === WebSocket.OPEN ) {
 						// console.log("Send msg to WS");
 						this.ws.send(StrFunc.stringify(newWsmsg));
 					} else {
-						console.log(`WS Server error, code:${this.ws.readyState}, try build store mesage function later!`);
+						const tmpcode = this.ws ? this.ws.readyState : WebSocket.CLOSED;
+						console.log(`WS Server error, code:${tmpcode}, try build store mesage function later!`);
 					}
 				} else {
 					console.log("web_SC on message:", StrFunc.stringify(msg));
@@ -58,7 +59,7 @@ export default class AskProcWS extends AWebSocket {
 		return this.dfChannel;
 	}
   private registerChannel(channel: string) {
-    if (this.ws.readyState === this.ws.OPEN) {
+    if (this.ws && this.ws.readyState === this.ws.OPEN) {
       console.log("Register Channel to Server:", channel);
       const msg: WsMsg = {
         Func: FuncKey.SET_CHANNEL,
