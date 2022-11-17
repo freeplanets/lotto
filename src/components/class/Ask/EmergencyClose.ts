@@ -13,13 +13,13 @@ export default class EmergencyClose {
 	public async doit(fkey = FuncKey.EMERGENCY_CLOSE) {
 		let msg: IMsg = { ErrNo: ErrCode.PASS };
 		msg = await this.CancelUnPricedAsk();
-		console.log("EmergencyClose doit:", msg);
 		if (msg.ErrNo === ErrCode.PASS) {
 			if (msg.data) {
 				const wsg: WsMsg = {
 					Func: fkey,
 					Asks: msg.data as AskTable[],
 				};
+				console.log("EmergencyClose doit:", wsg);
 				this.wsc.Send(wsg);
 			}
 		} else {
@@ -33,12 +33,16 @@ export default class EmergencyClose {
 		const users = await this.jt.List(param, ["id", "UserID"]);
 		const msg: IMsg = { ErrNo: ErrCode.PASS, ErrCon: "No Asks" };
 		if (users) {
+			msg.ErrCon = "";
+			// msg.data = users;
+			msg.data = [];
 			await Promise.all(users.map(async (itm) => {
 				const tmp: HasUID = {
 					id: itm.id,
 					UserID: itm.UserID,
 					ProcStatus: 4,
 				};
+				(msg.data as object[]).push(tmp);
 				const DelProc = new DeleteOrder(tmp, this.conn, "AskTable");
 				await DelProc.proc();
 			})).catch((err) => {

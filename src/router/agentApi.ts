@@ -465,7 +465,7 @@ function paramcheck(msg: IMsg, param: any, option = ["agentId", "site"]): void {
 }
 async function register(params, res: Response) {
     // const params = req.query;
-    console.log("agentApi/1 :", params);
+    // console.log("agentApi/1 :", params);
     const msg: IMsg = {ErrNo: 0};
     const data: IAnsData = {code: 0};
     const conn = await getConnection();
@@ -495,7 +495,7 @@ async function register(params, res: Response) {
             }
         } else {
             param = decParam(eds.Decrypted(params.param));
-            console.log("agentApi/1 param:", param);
+            // console.log("agentApi/1 param:", param);
         }
         let ans = false;
         if (param.key && param.key === "admin") {

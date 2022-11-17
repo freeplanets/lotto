@@ -56,6 +56,7 @@ export function getUserCredit(uid: number, conn: PoolConnection) {
             if (res[0]) {
                 balance = balance + res[0].balance;
             }
+            // console.log("getUserCredit:", sql, balance);
             resolve(balance);
         }).catch((err) => {
             console.log("getUserCredit error", err);

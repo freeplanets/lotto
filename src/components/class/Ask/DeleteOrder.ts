@@ -7,7 +7,7 @@ export default class DeleteOrder extends AskTableAccess<HasUID> {
     let msg: IMsg = { ErrNo: ErrCode.PASS };
     msg.UserID = this.ask.UserID;
     const ans = await this.tb.getOne(this.ask.id);
-    console.log("DeleteOrder getOne", JSON.stringify(this.ask) , ans);
+    // console.log("DeleteOrder getOne", JSON.stringify(this.ask) , ans);
     if (ans) {
       // this.conn.beginTransaction();
       await this.BeginTrans();

@@ -23,6 +23,7 @@ export default class AskProcWS extends AWebSocket {
 	}
 	public async OnMessage(data: Data) {
 		try {
+			// console.log("AskProcWS OnMessage:", data);
 			const wsmsg: WsMsg = JSON.parse(data as string);
 			if (wsmsg.Func) {
 				new FuncKeyManager(wsmsg, this).doit();

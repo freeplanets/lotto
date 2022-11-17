@@ -99,6 +99,8 @@ export default class UserInfoCrypto {
         msg.LedgerTotal = ans.data;
       }
     }
+    msg.Balance = await this.getCredit();
+    // console.log("getLedgerLever:", msg);
     /*
     ans = await this.getLedgerLever();
     if (ans.ErrNo === ErrCode.PASS) {

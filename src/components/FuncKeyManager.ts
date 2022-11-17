@@ -6,7 +6,7 @@ import CodeDistinct from "./class/DataBase/CryptoItem/CodeDistinct";
 import DelUndealedAsks from "./class/DataBase/CryptoItem/DelUndealedAsks";
 import GetUnFinishedAsks from "./class/DataBase/CryptoItem/GetUnFinishedAsks";
 import SavePriceTick from "./class/DataBase/CryptoItem/SavePriceTick";
-import StrFunc from "./class/Functions/MyStr";
+// import StrFunc from "./class/Functions/MyStr";
 import AWebSocket from "./class/WebSocket/AWebSocket";
 
 export default class FuncKeyManager {
@@ -16,7 +16,7 @@ export default class FuncKeyManager {
 	constructor(wsg: WsMsg, ws: AWebSocket) {
 		const funckey = wsg.Func ? wsg.Func : FuncKey.DO_NOTHING;
 		this.ws = ws;
-		// console.log("funcKey:", funckey);
+		// console.log("FuncKeyManager:", wsg);
 		this.returnfunc = funckey;
 		switch (funckey) {
 			case FuncKey.GET_CRYPTOITEM_CODE_DISTINCT:
@@ -24,7 +24,7 @@ export default class FuncKeyManager {
 				this.item = new CodeDistinct();
 				break;
 			case FuncKey.GET_UNFINISHED_ASKS:
-				// console.log("get unfinished Asks", this.returnfunc);
+				console.log("get unfinished Asks", this.returnfunc, wsg);
 				this.item = new GetUnFinishedAsks();
 				break;
 			case FuncKey.SAVE_PRICETICK:

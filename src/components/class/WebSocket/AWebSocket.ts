@@ -14,7 +14,7 @@ export default abstract class AWebSocket {
   }
   public SendMessage(msg: string) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      // console.log("Send Mesage to Server:", msg);
+      console.log("Send Mesage to Server:", msg);
       const wsmsg: WsMsg = {
         Message: msg,
       };
@@ -46,7 +46,10 @@ export default abstract class AWebSocket {
 	public abstract OnMessage(data: string): void;
 	public abstract OnOpen(ws: WebSocket): void;
   private createConnection() {
-    if (AWebSocket.inCreateProc) { return; }
+    if (AWebSocket.inCreateProc) {
+      console.log("connecting......");
+      return;
+    }
     const me = this;
     AWebSocket.inCreateProc = true;
     console.log("connect to:", this.url);
@@ -96,8 +99,8 @@ export default abstract class AWebSocket {
     this.ws.on("message", (data: Data) => {
 			this.OnMessage(data.toString());
 		});
-    this.ws.on("close", (ws: WebSocket) => {
-      console.log("connection close.", ws);
+    this.ws.on("close", () => {
+      console.log("connection close.", new Date().toLocaleString());
       setTimeout(() => {
         console.log("do reconnect");
         me.createConnection();
