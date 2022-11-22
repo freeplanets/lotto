@@ -9,11 +9,11 @@ export default class ATAFactor {
   public async getATA(ask: AskTable, SettleServiceID?: number): Promise<AskTableAccess<HasUID>> {
     if (!this.conn) {
       // console.log("ATAFactor create conn:");
-      this.conn = await getConnection();
+      this.conn = await getConnection("ATAFactor getATA");
     } else if (!this.conn.isValid()) {
       console.log("ATAFactor recreate conn:");
       await this.conn.release();
-      this.conn = await getConnection();
+      this.conn = await getConnection("ATAFactor getATA again");
     }
     if (this.conn) {
       return new ATACreator(ask, this.conn, "AskTable", SettleServiceID).getATA();

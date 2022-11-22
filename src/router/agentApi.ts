@@ -59,7 +59,7 @@ agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     // console.log("memberlogin", param);
     // const conn = await dbPool.getConnection();
     let msg: IMsg = {ErrNo: 0};
-    const conn = await getConnection();
+    const conn = await getConnection("agentApi memberlogin");
     if (!conn) {
         msg.ErrNo = 9;
         msg.ErrCon = "system busy!!";
@@ -138,7 +138,7 @@ async function CreditAC(params, res: Response, ac: number) {
     // const conn = await dbPool.getConnection();
     console.log(`agentApi/${ac} param:`, params);
     const msg: IMsg = {ErrNo: 0};
-    const conn = await getConnection();
+    const conn = await getConnection("agentApi CreditAC");
     if (!conn) {
         msg.ErrNo = 9;
         msg.ErrCon = "system busy!!";
@@ -374,7 +374,7 @@ async function getTicketDetail(req, res) {
     // console.log("getTicketDetail:", params);
     const data: IAnsData = {code: 0};
     // const conn = await dbPool.getConnection();
-    const conn = await getConnection();
+    const conn = await getConnection("agentApi getTicketDetail");
     if (!conn) {
         data.code = 9;
         data.ErrCon = "system busy!!";
@@ -419,7 +419,7 @@ async function getGameDataCaption(req, res) {
     // console.log("getTicketDetail:", params);
     const data: IAnsData = {code: 0};
     // const conn = await dbPool.getConnection();
-    const conn = await getConnection();
+    const conn = await getConnection("agentApi getGameDataCaption");
     if (!conn) {
         data.code = 9;
         data.ErrCon = "system busy!!";
@@ -468,7 +468,7 @@ async function register(params, res: Response) {
     // console.log("agentApi/1 :", params);
     const msg: IMsg = {ErrNo: 0};
     const data: IAnsData = {code: 0};
-    const conn = await getConnection();
+    const conn = await getConnection("agentApi register");
     if (!conn) {
         msg.ErrNo = ErrCode.GET_CONNECTION_ERR;
         msg.ErrCon = "system busy!!";
@@ -548,7 +548,7 @@ async function getLedgerLever(req, res) {
     // console.log("getTicketDetail:", params);
     const data: IAnsData = {code: 0};
     // const conn = await dbPool.getConnection();
-    const conn = await getConnection();
+    const conn = await getConnection("agentApi getLedgerLever");
     if (!conn) {
         data.code = 9;
         data.ErrCon = "system busy!!";
@@ -590,7 +590,7 @@ async function getAskTable(req, res) {
     // console.log("getTicketDetail:", params);
     const data: IAnsData = {code: 0};
     // const conn = await dbPool.getConnection();
-    const conn = await getConnection();
+    const conn = await getConnection("agentApi getAskTable");
     if (!conn) {
         data.code = 9;
         data.ErrCon = "system busy!!";
@@ -641,7 +641,7 @@ async function newSite(params, res: Response, ac: number) {
     // const conn = await dbPool.getConnection();
     console.log(`agentApi/${ac} param:`, params);
     let msg: IMsg = {ErrNo: 0};
-    const conn = await getConnection();
+    const conn = await getConnection("agentApi newSite");
     if (!conn) {
         msg.ErrNo = 9;
         msg.ErrCon = "system busy!!";

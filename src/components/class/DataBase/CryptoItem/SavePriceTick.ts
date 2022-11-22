@@ -10,7 +10,7 @@ export default class SavePriceTick extends AOneFunction {
 	public execute() {
 		return new Promise<any>(async (resolve) => {
 			if (this.data && this.data.length > 0) {
-				const conn = await getConnection();
+				const conn = await getConnection("SavePriceTick execute");
 				if (conn) {
 					const jt: JTable<PriceTick> = new JTable(conn, "PriceTick");
 					const ans = await jt.MultiInsert(this.data, true);

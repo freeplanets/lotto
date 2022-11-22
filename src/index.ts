@@ -64,7 +64,7 @@ app.get("/", async (req: Request, res: Response) => {
     });
 app.get("/login", async (req, res) => {
         // console.log(req.query);
-        const conn: mariadb.PoolConnection|undefined =  await getConnection();
+        const conn: mariadb.PoolConnection|undefined =  await getConnection("index login");
         const msg: IMsg = { ErrNo: 0};
         if (conn) {
             const param = req.query;
@@ -92,7 +92,7 @@ app.get("/login", async (req, res) => {
     // start the Express server
 app.get("/saveGames", async (req, res) => {
         // const conn = await dbPool.getConnection();
-        const conn = await getConnection();
+        const conn = await getConnection("saveGames");
         const param = req.query;
         const id: number = param.id ? parseInt(param.id as string, 0) : 0;
         const name = param.name ? `${param.name}` : "";

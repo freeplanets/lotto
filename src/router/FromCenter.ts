@@ -27,47 +27,6 @@ async function webFunc(req: Request, res: Response) {
   const ccm = CCManager.getInstance();
   ccm.Add(param);
   res.send(`${StrFunc.stringify(param)} accepted!!`);
-  // */
-  /*
-  let msg: IMsg = {ErrNo: 0, error: ""};
-  const conn: PoolConnection|undefined = await getConnection();
-  if (conn) {
-    const params: IFromCenter = {
-      issueno: "",
-      lrid: "",
-      openbet: "",
-      lastresultissue: "",
-      op: "",
-      Method: "",
-      result: "",
-    };
-    Object.keys(param).map((key) => {
-      params[key] = param[key] as string;
-    });
-    const CC: CenterCall = new CenterCall(param, conn);
-    if (param.op) {
-      if (typeof(CC[param.op]) === "function") {
-        msg = await CC[param.op]();
-      } else {
-        msg.ErrNo = 9;
-        msg.error = `op:${param.op} has no funcion ,${StrFunc.stringify(param)}`;
-      }
-    }
-    await conn.release();
-  } else {
-    msg.ErrNo = 9;
-    msg.error = "Get connection error!!";
-  }
-  if (msg.ErrNo === 9) {
-    msg.error = msg.ErrCon;
-    const ans = await sendMsg(msg.ErrCon as string);
-    if (ans) {
-      msg.slack = ans;
-    }
-    delete msg.ErrCon;
-  }
-  res.send(StrFunc.stringify(msg));
-  */
 }
 
 async function sendMsg(msg: string) {

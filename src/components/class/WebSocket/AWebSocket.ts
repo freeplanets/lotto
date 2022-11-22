@@ -24,10 +24,10 @@ export default abstract class AWebSocket {
   public Send(msg: WsMsg) {
     // console.log("before Send Mesage:", msg);
     if (!this.isConnected) { return; }
-    // console.log("Send Mesage:", msg);
     // this.ws.send(msg);
     try {
       if (this.ws) {
+        // console.log("Send Mesage:", msg);
         this.ws.send(StrFunc.stringify(msg));
       }
     } catch (err) {
@@ -50,6 +50,7 @@ export default abstract class AWebSocket {
       console.log("connecting......");
       return;
     }
+    this.ws = null;
     const me = this;
     AWebSocket.inCreateProc = true;
     console.log("connect to:", this.url);
@@ -58,13 +59,15 @@ export default abstract class AWebSocket {
     // syscall: 'read',
     this.ws.on("unexpected-response", (chk: any, error: any) => {
       if (error) {
-        console.log("unexpected-response", error);
+        console.log("unexpected-response", chk, error);
       }
       // console.log("connection close.");
-      setTimeout(() => {
-        console.log("do reconnect");
-        me.createConnection();
-      }, 5000);
+      if (me.ws?.readyState !== 1) {
+        setTimeout(() => {
+          console.log("unexpected-response do reconnect");
+          me.createConnection();
+        }, 5000);
+      }
     });
     /*
     this.ws.on("streamread", (chk: any, error: any) => {
@@ -82,7 +85,7 @@ export default abstract class AWebSocket {
       console.log("get ping " + new Date().toLocaleString());
     });
     this.ws.on("error", (err) => {
-      console.log("createConnection error:", err);
+      console.log("error:", err);
       /*
       setTimeout(() => {
         console.log("do reconnect");
@@ -102,7 +105,7 @@ export default abstract class AWebSocket {
     this.ws.on("close", () => {
       console.log("connection close.", new Date().toLocaleString());
       setTimeout(() => {
-        console.log("do reconnect");
+        console.log("close then do reconnect");
         me.createConnection();
       }, 5000);
     });

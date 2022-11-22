@@ -22,7 +22,7 @@ export default class ChatToDB {
 	private msg: IMsg = { ErrNo: ErrCode.DB_QUERY_ERROR };
 	public UserList(hostname: string, identity?: any): Promise<IMsg> {
 		return new Promise<IMsg>(async (resolve) => {
-			const conn = await getConnection();
+			const conn = await getConnection("ChatToDB UserList");
 			if (conn) {
 				const jt = new JTable<SerLobby>(conn, MsgTable.SerLobby);
 				const filter: AnyObject = {
@@ -38,7 +38,7 @@ export default class ChatToDB {
 	}
 	public GetMessage(uid: string, identity = 0, site = ""): Promise<IMsg> {
 		return new Promise<IMsg>(async (resolve) => {
-			const conn = await getConnection();
+			const conn = await getConnection("ChatToDB GetMessage");
 			if (conn) {
 				const jt = new JTable<SerChat>(conn, MsgTable.SerChat);
 				const filter: IKeyVal[] = [];
@@ -79,7 +79,7 @@ export default class ChatToDB {
 	}
 	public GetSiteMessage(site: string, startDate: string, endDate: string) {
 		return new Promise<IMsg>(async (resolve) => {
-			const conn = await getConnection();
+			const conn = await getConnection("ChatToDB GetSiteMessage");
 			if (conn) {
 				const jt = new JTable<SerChat>(conn, "SerChat");
 				const filters: IKeyVal[] = [];
@@ -99,7 +99,7 @@ export default class ChatToDB {
 	}
 	public GetImages(id: number): Promise<any> {
 			return new Promise<IMsg>(async (resolve) => {
-				const conn = await getConnection();
+				const conn = await getConnection("ChatToDB GetImages");
 				let img;
 				if (conn) {
 					const jt = new JTable<ChatPic>(conn, MsgTable.SerChatImg);
@@ -111,7 +111,7 @@ export default class ChatToDB {
 	}
 	public Register(siteid: string, notify: string, ip: string): Promise<IMsg> {
 		return new Promise<IMsg>(async (resolve) => {
-			const conn = await getConnection();
+			const conn = await getConnection("ChatToDB Register");
 			if (conn) {
 				const jt = new JTable<SerSiteData>(conn, MsgTable.SerSite);
 				siteid = siteid.replace(/\W/g, "");
@@ -141,7 +141,7 @@ export default class ChatToDB {
 	public CheckIn(siteid: string): Promise<IMsg> {
 		return new Promise<IMsg>(async (resolve) => {
 			const msg: IMsg = { ErrNo: ErrCode.GET_CONNECTION_ERR };
-			const conn = await getConnection();
+			const conn = await getConnection("ChatToDB CheckIn");
 			if (conn) {
 				const jt = new JTable<SerSiteData>(conn, MsgTable.SerSite);
 				const filter: IKeyVal = {

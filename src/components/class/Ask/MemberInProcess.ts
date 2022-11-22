@@ -44,7 +44,7 @@ export default class MemberInProcess {
 			UserID,
 			InProcess: InProcess ? 1 : 0,
 		};
-		const conn = await getConnection();
+		const conn = await getConnection("modifyInProcess");
 		if (conn) {
 			const sql = `insert into MemberInProcess(UserID, InProcess) values(${data.UserID}, ${data.InProcess})
 			on duplicate key update InProcess=values(InProcess)`;
