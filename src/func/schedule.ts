@@ -54,7 +54,7 @@ export function DelPriceTickDataBefortLast3Days() {
   });
 }
 async function doLeftPriceTickData(days: number) {
-  const conn: mariadb.PoolConnection|undefined = await db.getConnection();
+  const conn: mariadb.PoolConnection|undefined = await db.getConnection("doLeftPriceTickData");
   if (conn) {
     const ts = DateFunc.dayDiffTS(days);
     const sql = `delete from PriceTick where ticktime < ${ts}`;
@@ -64,7 +64,7 @@ async function doLeftPriceTickData(days: number) {
   }
 }
 async function doDayTotal(d: string) {
-  const conn: mariadb.PoolConnection|undefined = await db.getConnection();
+  const conn: mariadb.PoolConnection|undefined = await db.getConnection("doDayTotal");
   if (conn) {
     const sqls: string[] = [];
     let sql: string;

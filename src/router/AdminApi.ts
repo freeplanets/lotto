@@ -426,7 +426,6 @@ app.get("/getSysInfo", async (req, res) => {
     res.send(StrFunc.stringify(msg));
 });
 app.get("/getGames", async (req, res) => {
-  // const conn = await dbPool.getConnection();
   const conn = await getConnection("AdminApi getGames");
   const msg: IMsg = {ErrNo: 0};
   if (conn) {
@@ -1659,7 +1658,6 @@ app.post("/SaveNums", async (req, res) => {
   res.send(StrFunc.stringify(msg));
 });
 app.get("/CurOddsInfo", async (req, res) => {
-  // const conn = await dbPool.getConnection();
   const msg: IMsg = {ErrNo: 0};
   const conn = await getConnection("AdminApi CurOddsInfo");
   if (!conn) {

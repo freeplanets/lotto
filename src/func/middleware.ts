@@ -108,7 +108,7 @@ const AuthChk = async (res: Response, auth: string, authkey = "") => {
 const LoginChk = async (UserID: number, sid: string): Promise<IMsg> => {
   return new Promise(async (resolve) => {
     const msg: IMsg = {ErrNo: 0};
-    db.getConnection().then(async (conn) => {
+    db.getConnection("middleware LoginChk").then(async (conn) => {
       if (conn) {
         chkLogin(UserID, sid, conn).then(async (res) => {
           if (res) { resolve(msg); } else {

@@ -4,8 +4,9 @@ import StrFunc from "../components/class/Functions/MyStr";
 export default class NewPool {
 	private pool: mariadb.Pool;
 	private curCaller = "";
+	private chk = false;
 	constructor(private opt: mariadb.PoolConfig, private isDebug = false) {
-		this.pool = this.createPool();
+		this.pool = this.createPool(this.chk);
 	}
 	public getConnection(caller: string= ""): Promise<mariadb.PoolConnection | undefined> {
 		return new Promise((resolve) => {
@@ -18,7 +19,7 @@ export default class NewPool {
 				let conn: PoolConnection | undefined;
 				if (err.code === "ER_GET_CONNECTION_TIMEOUT" || err.code === "ER_CLOSING_POOL") {
 					conn = await this.resetPool();
-					resolve(undefined);
+					resolve(conn);
 				} else {
 					resolve(undefined);
 				}
@@ -49,7 +50,7 @@ export default class NewPool {
 	public async resetPool() {
 		console.log("resetPool:", this.info());
 		await this.pool.end();
-		this.pool = this.createPool();
+		this.pool = this.createPool(this.chk);
 		const conn = await this.getConnection(this.curCaller);
 		return conn;
 	}

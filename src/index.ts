@@ -44,10 +44,7 @@ if (process.env.WORKSTATUS !== "localhost") {
     // schedule.getBTCHash("mis.uuss.net:8332");
 }
 const app = express();
-/*
-dbPool.getConnection().then((conn) => {
-});
-*/
+
     // define a route handler for the default home page
 const crosOption: cors.CorsOptions = {
 };
@@ -91,7 +88,6 @@ app.get("/login", async (req, res) => {
     });
     // start the Express server
 app.get("/saveGames", async (req, res) => {
-        // const conn = await dbPool.getConnection();
         const conn = await getConnection("saveGames");
         const param = req.query;
         const id: number = param.id ? parseInt(param.id as string, 0) : 0;

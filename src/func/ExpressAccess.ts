@@ -13,7 +13,7 @@ export default class ExpressAccess {
      // params = req.query ? req.query : req.body;
     let params = this.combineParams({}, req.body);
     params = this.combineParams(params, req.query as IKeyVal);
-    const conn: PoolConnection | undefined = await this.getConnection();
+    const conn: PoolConnection | undefined = await this.getConnection("ExpressAccess process");
     if (conn) {
       this.msg = await f(params, conn);
       await conn.release();

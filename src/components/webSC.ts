@@ -28,6 +28,7 @@ const wsSERVER = `${wsHost}`;
 export class WebSC {
   public static getSock(): AskProcWS {
     if (!this.sock) {
+      console.log(">>> create new WebSC", new Date().toLocaleString());
       this.sock = new AskProcWS(wsSERVER, wsOptions, ChannelName);
     }
     return this.sock;

@@ -57,7 +57,6 @@ agentApi.get("/1", async (req: Request, res: Response) => {
 agentApi.get("/memberlogin", async (req: Request, res: Response) => {
     const param = req.query;
     // console.log("memberlogin", param);
-    // const conn = await dbPool.getConnection();
     let msg: IMsg = {ErrNo: 0};
     const conn = await getConnection("agentApi memberlogin");
     if (!conn) {
@@ -135,7 +134,6 @@ agentApi.get("/logHandle", async (req: Request, res: Response) => {
 });
 async function CreditAC(params, res: Response, ac: number) {
     // const params = req.query;
-    // const conn = await dbPool.getConnection();
     console.log(`agentApi/${ac} param:`, params);
     const msg: IMsg = {ErrNo: 0};
     const conn = await getConnection("agentApi CreditAC");
@@ -373,7 +371,6 @@ async function getTicketDetail(req, res) {
     const params = req.query;
     // console.log("getTicketDetail:", params);
     const data: IAnsData = {code: 0};
-    // const conn = await dbPool.getConnection();
     const conn = await getConnection("agentApi getTicketDetail");
     if (!conn) {
         data.code = 9;
@@ -418,7 +415,6 @@ async function getGameDataCaption(req, res) {
     const params = req.query;
     // console.log("getTicketDetail:", params);
     const data: IAnsData = {code: 0};
-    // const conn = await dbPool.getConnection();
     const conn = await getConnection("agentApi getGameDataCaption");
     if (!conn) {
         data.code = 9;
@@ -547,7 +543,6 @@ async function getLedgerLever(req, res) {
     const params = req.query;
     // console.log("getTicketDetail:", params);
     const data: IAnsData = {code: 0};
-    // const conn = await dbPool.getConnection();
     const conn = await getConnection("agentApi getLedgerLever");
     if (!conn) {
         data.code = 9;
@@ -589,7 +584,6 @@ async function getAskTable(req, res) {
     const params = req.query;
     // console.log("getTicketDetail:", params);
     const data: IAnsData = {code: 0};
-    // const conn = await dbPool.getConnection();
     const conn = await getConnection("agentApi getAskTable");
     if (!conn) {
         data.code = 9;
@@ -638,7 +632,6 @@ function ModifyNickName(id: number, Nickname: string, conn: PoolConnection) {
 }
 async function newSite(params, res: Response, ac: number) {
     // const params = req.query;
-    // const conn = await dbPool.getConnection();
     console.log(`agentApi/${ac} param:`, params);
     let msg: IMsg = {ErrNo: 0};
     const conn = await getConnection("agentApi newSite");
