@@ -2,7 +2,7 @@ import mariadb, { Connection, PoolConnection } from "mariadb";
 import StrFunc from "../components/class/Functions/MyStr";
 
 export default class NewPool {
-	private pool: mariadb.Pool;
+	private pool: mariadb.Pool | null;
 	private curCaller = "";
 	private chk = false;
 	constructor(private opt: mariadb.PoolConfig, private isDebug = false) {
@@ -11,7 +11,7 @@ export default class NewPool {
 	public getConnection(caller: string= ""): Promise<mariadb.PoolConnection | undefined> {
 		return new Promise((resolve) => {
 			this.curCaller = caller;
-			this.pool.getConnection().then((conn) => {
+			this.pool?.getConnection().then((conn) => {
 				if (caller && this.isDebug) { console.log("NewPool getConnection:", caller); }
 				resolve(conn);
 			}).catch(async (err) => {
@@ -49,7 +49,8 @@ export default class NewPool {
 	}
 	public async resetPool() {
 		console.log("resetPool:", this.info());
-		await this.pool.end();
+		await this.pool?.end();
+		this.pool = null;
 		this.pool = this.createPool(this.chk);
 		const conn = await this.getConnection(this.curCaller);
 		return conn;

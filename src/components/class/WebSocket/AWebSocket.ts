@@ -28,6 +28,9 @@ export default abstract class AWebSocket {
     try {
       if (this.ws) {
         // console.log("Send Mesage:", msg);
+        if (msg.Ask || msg.Asks) {
+          console.log("Send Ask", JSON.stringify(msg));
+        }
         this.ws.send(StrFunc.stringify(msg));
       }
     } catch (err) {
