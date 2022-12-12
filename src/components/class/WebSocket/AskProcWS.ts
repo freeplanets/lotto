@@ -26,6 +26,7 @@ export default class AskProcWS extends AWebSocket {
 			// console.log("AskProcWS OnMessage:", data);
 			const wsmsg: WsMsg = JSON.parse(data as string);
 			if (wsmsg.Func) {
+				// if (wsmsg.Func === FuncKey.SAVE_PRICETICK) { console.log("FuncKey.SAVE_PRICETICK", wsmsg.data); }
 				new FuncKeyManager(wsmsg, this).doit();
 				// console.log("after FuncKeyManager doit");
 			}

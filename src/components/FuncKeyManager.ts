@@ -1,4 +1,3 @@
-import WebSocket from "ws";
 import { Channels, FuncKey } from "../DataSchema/ENum";
 import { WsMsg } from "../DataSchema/if";
 import AOneFunction from "./class/DataBase/CryptoItem/AOneFunction";

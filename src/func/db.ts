@@ -44,6 +44,7 @@ const mdOptions: mariadb.PoolConfig = {
     charset: "UTF8",
     // idleTimeout: 600,
     // connectionLimit: process.env.MAX_CONNECTIONS ? parseInt(process.env.MAX_CONNECTIONS, 10) : 30,
+    connectionLimit: 20,
 };
 /*
 const ccOptions: mariadb.PoolConfig = {

@@ -10,6 +10,7 @@ export default class SavePriceTick extends AOneFunction {
 	public execute() {
 		return new Promise<any>(async (resolve) => {
 			if (this.data && this.data.length > 0) {
+				// console.log("SavePriceTick:", new Date().toLocaleString(), this.data[0].code , this.data.length);
 				const conn = await getConnection("SavePriceTick execute");
 				if (conn) {
 					const jt: JTable<PriceTick> = new JTable(conn, "PriceTick");

@@ -7,6 +7,7 @@ export default class NewPool {
 	private chk = false;
 	constructor(private opt: mariadb.PoolConfig, private isDebug = false) {
 		this.pool = this.createPool(this.chk);
+		console.log(">>> NewPool:", new Date().toLocaleString());
 	}
 	public getConnection(caller: string= ""): Promise<mariadb.PoolConnection | undefined> {
 		return new Promise((resolve) => {
@@ -44,14 +45,22 @@ export default class NewPool {
 			pool.on("acquire", (conn) => {
 				showInfo("acquire", conn);
 			});
+			pool.on("enqueue", () => {
+				console.log("enqueue");
+			});
+			pool.on("connection", (conn) => {
+				showInfo("connection", conn);
+			});
 		}
 		return pool;
 	}
 	public async resetPool() {
 		console.log("resetPool:", this.info());
+		/*
 		await this.pool?.end();
 		this.pool = null;
 		this.pool = this.createPool(this.chk);
+		*/
 		const conn = await this.getConnection(this.curCaller);
 		return conn;
 	}
