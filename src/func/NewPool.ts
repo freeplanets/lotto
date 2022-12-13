@@ -5,12 +5,19 @@ export default class NewPool {
 	private pool: mariadb.Pool | null;
 	private curCaller = "";
 	private chk = false;
+	// private maxConns = 0;
 	constructor(private opt: mariadb.PoolConfig, private isDebug = false) {
 		this.pool = this.createPool(this.chk);
 		console.log(">>> NewPool:", new Date().toLocaleString());
 	}
 	public getConnection(caller: string= ""): Promise<mariadb.PoolConnection | undefined> {
-		return new Promise((resolve) => {
+		return new Promise(async (resolve) => {
+			/*
+			if (!this.maxConns) {
+				this.maxConns = await this.getMaxConnections();
+				console.log("check maxC:", this.maxConns, this.info());
+			}
+			*/
 			this.curCaller = caller;
 			this.pool?.getConnection().then((conn) => {
 				if (caller && this.isDebug) { console.log("NewPool getConnection:", caller); }
@@ -56,6 +63,8 @@ export default class NewPool {
 	}
 	public async resetPool() {
 		console.log("resetPool:", this.info());
+		// const activeConn = this.pool?.activeConnections();
+		// const maxConn = this.pool.
 		/*
 		await this.pool?.end();
 		this.pool = null;
@@ -81,4 +90,24 @@ export default class NewPool {
 		}
 		return StrFunc.stringify(info);
 	}
+	/*
+	private getMaxConnections(): Promise<number> {
+		return new Promise((resolve) => {
+			if (this.pool) {
+				this.pool.query('SHOW VARIABLES LIKE "max_connections"').then((res) => {
+					// console.log("getMaxConnections", res[0]?.Value);
+					resolve(res[0]?.Value ? res[0]?.Value : 0);
+				}).catch((err) => {
+					console.log("getMaxConnections", err);
+					resolve(0);
+				}).finally(() => {
+					console.log("getMaxConnections end");
+					resolve(999);
+				});
+			} else {
+				resolve(0);
+			}
+		});
+	}
+	*/
 }

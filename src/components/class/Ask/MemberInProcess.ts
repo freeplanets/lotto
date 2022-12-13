@@ -33,7 +33,7 @@ export default class MemberInProcess {
 		});
 	}
 	public async checkOut(UserID: number, chk = 0): Promise<IMsg> {
-		console.log(`modifyInProcess checkout ${chk}:`, UserID);
+		console.log(`MemberInProces checkout ${chk}:`, UserID);
 		const msg: IMsg = { ErrNo: ErrCode.PASS };
 		await this.modifyInProcess(UserID, false);
 		return msg;
