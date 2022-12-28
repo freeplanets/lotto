@@ -415,6 +415,10 @@ export const getEmergencyLog = async (conn: PoolConnection) => {
   const sql = "Select e.*, u.Account from EmergencyClose e left join User u on e.ModifyID = u.id order by e.ModifyTime desc limit 0,10";
 };
 export const AddAuthHeader = (obj: AnyObject, res: Response): Response => {
+  if (obj.iat) {
+    delete obj.iat;
+    delete obj.exp;
+  }
   const jsign = jwt.sign(obj, JWT_KEY, {expiresIn: AuthExpire});
   res.setHeader("AuthKey", AuthKey);
   res.setHeader("Authorization", jsign);

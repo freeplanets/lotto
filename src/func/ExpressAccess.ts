@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { PoolConnection } from "mariadb";
 import StrFunc from "../components/class/Functions/MyStr";
 import { ErrCode } from "../DataSchema/ENum";
-import {IKeyVal, IMsg} from "../DataSchema/if";
-import {getConnection} from "./db";
+import { AnyObject, IKeyVal, IMsg } from "../DataSchema/if";
+import { AddAuthHeader } from "./ccfunc";
+import { getConnection } from "./db";
 
 export type GetPostFunction = (param: any, conn: PoolConnection) => Promise<IMsg>;
 export default class ExpressAccess {
@@ -20,6 +22,11 @@ export default class ExpressAccess {
     } else {
       this.msg.ErrNo = ErrCode.GET_CONNECTION_ERR;
       this.msg.ErrCon = "Get connection error!!";
+    }
+    const info: any = jwt.decode(String(req.headers.authorization));
+    if (info) {
+      // delete info.exp;
+      res = AddAuthHeader(info as AnyObject, res);
     }
     res.send(StrFunc.stringify(this.msg));
   }
