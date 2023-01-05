@@ -9,8 +9,8 @@ dotenv.config();
 export const port = process.env.SERVER_PORT;  // default port to listen
 export const JWT_KEY = process.env.SITE_NAME ? process.env.SITE_NAME : "thisisjwtkey";
 export const AuthKey = "refresh";
-export const AuthLimit = 3600;  // 3600secs or  1 hour
-export const AuthExpire = "1 hour";
+export const AuthLimit = 1800;  // 3600secs or  1 hour
+export const AuthExpire = "30m"; //"1 hour"
 /*
 {
 host: process.env.DBHOST,

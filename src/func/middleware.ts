@@ -7,14 +7,19 @@ import { ErrCode } from "../DataSchema/ENum";
 import { IDbAns, IMsg} from "../DataSchema/if";
 import * as db from "../func/db";
 import { ILoginInfo } from "../router/AdminApi";
+import { AddAuthHeader } from "./ccfunc";
 
 const staytime: number = 3000000;   // sec
 
 export const PreCheck = async (req: Request, res: Response, next) => {
   // console.log("CPreCheck:", req.body, req.query);
   const param = CheckParams(req);
+  // console.log("PreCheck", param);
   if (req.path.indexOf("getSysInfo") < 0 && req.path.indexOf("login") < 0 && req.path.indexOf("logout") < 0
-    && req.path.indexOf("agentApi") < 0 && req.path.indexOf("member") < 0 && req.path.indexOf("GameCenter") < 0
+    && req.path.indexOf("agentApi") < 0
+    && req.path.indexOf("member") < 0
+    // && !param.token
+    && req.path.indexOf("GameCenter") < 0
     && req.path.indexOf("peers") < 0 && req.path.indexOf("peerjs") < 0 && req.path.indexOf("chat") < 0) {
     const msg: IMsg = {ErrNo: 0};
     const UserID: number|undefined = param.UserID;
@@ -36,10 +41,11 @@ export const PreCheck = async (req: Request, res: Response, next) => {
       const authkey = req.headers.authkey ? req.headers.authkey as string : "";
       AuthChk(res, req.headers.authorization, authkey).then((msg1) => {
         if (msg1.ErrNo !== 0 ) { res.send(StrFunc.stringify(msg1)); } else {
-          // console.log("next1", msg1);
+          // console.log("AuthChk before next:", res.getHeaders());
           next();
         }
       }).catch((err) => {
+        // console.log("AuthChk err:", req.path, err);
         msg.ErrNo = ErrCode.NO_LOGIN;
         msg.debug = err;
         res.send(StrFunc.stringify(msg));
@@ -93,15 +99,16 @@ const AuthChk = async (res: Response, auth: string, authkey = "") => {
   if (info && typeof(info) === "object") {
     // console.log(DateFunc.toLocalString(info.iat ? info.iat * 1000 : info.iat));
     // console.log(DateFunc.toLocalString(info.exp ? info.exp * 1000 : info.exp));
-    if (authkey === db.AuthKey) {
+    // if (authkey === db.AuthKey) {
       console.log("do authkey:", authkey, db.AuthKey);
-      const jsign = jwt.sign(info, db.JWT_KEY, { expiresIn: db.AuthExpire });
-      const { id , sid } = info as ILoginInfo;
-      res.setHeader("Authorization", jsign);
-      res.setHeader("Access-Control-Expose-Headers", "Authorization");
-      if (sid) { return LoginChk(id, sid); }
-    }
-    msg.ErrNo = ErrCode.PASS;
+      // const jsign = jwt.sign(info, db.JWT_KEY, { expiresIn: db.AuthExpire });
+      // res.setHeader("Authorization", jsign);
+      // res.setHeader("Access-Control-Expose-Headers", "Authorization");
+      AddAuthHeader(info, res);
+      // const { id , sid } = info as ILoginInfo;
+      // if (sid) { return LoginChk(id, sid); }
+    // }
+      msg.ErrNo = ErrCode.PASS;
   }
   return msg;
 };

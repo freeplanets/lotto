@@ -23,11 +23,13 @@ export default class ExpressAccess {
       this.msg.ErrNo = ErrCode.GET_CONNECTION_ERR;
       this.msg.ErrCon = "Get connection error!!";
     }
+    /*
     const info: any = jwt.decode(String(req.headers.authorization));
     if (info) {
       // delete info.exp;
       res = AddAuthHeader(info as AnyObject, res);
     }
+    */
     res.send(StrFunc.stringify(this.msg));
   }
   private combineParams(old: IKeyVal, add: IKeyVal): IKeyVal {

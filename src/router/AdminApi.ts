@@ -449,11 +449,11 @@ app.get("/getGames", async (req, res) => {
   res.send(StrFunc.stringify(msg));
 });
 app.get("/member/GameResult", async (req, res) => {
-    const conn = await getConnection("AdminApi /member/GameResult");
+    const conn = await getConnection("AdminApi GameResult");
     const msg: IMsg = {ErrNo: 0};
     if (conn) {
         const param = req.query;
-        console.log("/member/m_stirsbead_result", param);
+        console.log("m_stirsbead_result", param);
         const sql = "select TermID,PTime,Result,SpNo,isSettled from Terms where GameID = ? and isSettled order by id desc limit 0,20";
         const ans = await doQuery(sql, conn, [parseInt(param.GameID as string, 10)]);
         if (ans) {
@@ -1328,7 +1328,7 @@ app.get("/member/getAnimals", (req, res) => {
 });
 app.get("/member/wagerLotto", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
-  const conn = await getConnection("AdminApi /member/wagerLotto");
+  const conn = await getConnection("AdminApi wagerLotto");
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
@@ -1349,7 +1349,7 @@ app.get("/member/wagerLotto", async (req, res) => {
 });
 app.get("/member/getOddsItems", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
-  const conn = await getConnection("AdminApi /member/getOddsItems");
+  const conn = await getConnection("AdminApi getOddsItems");
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
@@ -1357,7 +1357,6 @@ app.get("/member/getOddsItems", async (req, res) => {
     return;
   }
   const param = req.query;
-  // console.log("/api/member/getOddsItems", param);
   const UserID = parseInt(`${param.UserID}`, 10);
   const ans = await getOddsData(param.GameID as string, parseInt(param.PayClassID as string, 10), parseInt(param.maxOID as string, 10), conn);
   ans.Balance = await getUserCredit(UserID, conn);
@@ -1367,7 +1366,7 @@ app.get("/member/getOddsItems", async (req, res) => {
 });
 app.get("/member/mybalance", async (req, res) => {
     const msg: IMsg = { ErrNo: 0};
-    const conn = await getConnection("AdminApi /member/mybalance");
+    const conn = await getConnection("AdminApi mybalance");
     if (!conn) {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
@@ -1375,7 +1374,6 @@ app.get("/member/mybalance", async (req, res) => {
       return;
     }
     const param = req.query;
-    // console.log("/api/member/getOddsItems", param);
     const UserID = parseInt(`${param.UserID}`, 10);
     msg.Balance = await getUserCredit(UserID, conn);
 
@@ -1384,7 +1382,7 @@ app.get("/member/mybalance", async (req, res) => {
 });
 app.post("/member/mwagermulti", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
-  const conn = await getConnection("AdminApi /member/mwagermulti");
+  const conn = await getConnection("AdminApi mwagermulti");
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
@@ -1392,7 +1390,6 @@ app.post("/member/mwagermulti", async (req, res) => {
     return;
   }
   const param = req.body;
-  // console.log("/api/member/mwagermulti", param);
   const UserID = param.UserID;
   const Account = param.Account;
   const tid = param.LNoID;
@@ -1419,7 +1416,7 @@ app.post("/member/mwagermulti", async (req, res) => {
 });
 app.post("/member/mwagerone", async (req, res) => {
     const msg: IMsg = { ErrNo: 0};
-    const conn = await getConnection("AdminApi /member/mwagerone");
+    const conn = await getConnection("AdminApi mwagerone");
     if (!conn) {
       msg.ErrNo = 9;
       msg.ErrCon = "get connection error!!";
@@ -1427,7 +1424,6 @@ app.post("/member/mwagerone", async (req, res) => {
       return;
     }
     const param = req.body;
-    // console.log("/api/member/mwagerjn", param);
     const UserID = param.UserID;
     const Account = param.Account;
     const UpId = param.UpId;
@@ -1453,7 +1449,7 @@ app.post("/member/mwagerone", async (req, res) => {
   });
 app.post("/member/mwagerjn", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
-  const conn = await getConnection("AdminApi /member/mwagerjn");
+  const conn = await getConnection("AdminApi mwagerjn");
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
@@ -1461,7 +1457,6 @@ app.post("/member/mwagerjn", async (req, res) => {
     return;
   }
   const param = req.body;
-  console.log("/api/member/mwagerjn", param);
   const UserID = Number(param.UserID);
   const Account = String(param.Account);
   const UpId = Number(param.UpId);
@@ -1492,7 +1487,7 @@ app.post("/member/mwagerjn", async (req, res) => {
 });
 app.get("/member/getWagerItems", async (req, res) => {
   let msg: IMsg = { ErrNo: 0};
-  const conn = await getConnection("AdminApi /member/getWagerItems");
+  const conn = await getConnection("AdminApi getWagerItems");
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
@@ -1501,7 +1496,6 @@ app.get("/member/getWagerItems", async (req, res) => {
   }
   const param = req.query;
   const gets: Gets = new Gets(conn);
-  // console.log("/api/member/getWagerItems", param);
   if (param.data === "") {
       param.date = JDate.DateStr;
   }
@@ -1603,7 +1597,7 @@ app.get("/getUsers", async (req, res) => {
 });
 app.get("/member/getPayClass", async (req, res) => {
   const msg: IMsg = { ErrNo: 0};
-  const conn = await getConnection("AdminApi /member/getPayClass");
+  const conn = await getConnection("AdminApi getPayClass");
   if (!conn) {
     msg.ErrNo = 9;
     msg.ErrCon = "get connection error!!";
