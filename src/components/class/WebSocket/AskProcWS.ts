@@ -33,10 +33,10 @@ export default class AskProcWS extends AWebSocket {
 			if (wsmsg.Ask) {
 				// const ask: AskTable = JSON.parse(data as string);
 				const ask = wsmsg.Ask;
-				console.log("OnMessage Ask:", new Date().toLocaleString(), ask);
+				console.log("OnMessage Ask:", new Date().toLocaleString(), JSON.stringify(ask));
 				const Askman = await this.ATAF.getATA(ask, wsmsg.SettleServiceID);
 				const msg = await Askman.doit();
-				console.log("After Askman doit:", new Date().toLocaleString(), msg);
+				console.log("After Askman doit:", new Date().toLocaleString(), JSON.stringify(msg));
 				if (msg.ErrNo === ErrCode.PASS ) {
 					const newWsmsg: WsMsg = { ...msg };
 					delete newWsmsg.ErrNo;
