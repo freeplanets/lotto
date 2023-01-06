@@ -100,7 +100,7 @@ const AuthChk = async (res: Response, auth: string, authkey = "") => {
     // console.log(DateFunc.toLocalString(info.iat ? info.iat * 1000 : info.iat));
     // console.log(DateFunc.toLocalString(info.exp ? info.exp * 1000 : info.exp));
     // if (authkey === db.AuthKey) {
-      console.log("do authkey:", authkey, db.AuthKey);
+      // console.log("do authkey:", authkey, db.AuthKey);
       // const jsign = jwt.sign(info, db.JWT_KEY, { expiresIn: db.AuthExpire });
       // res.setHeader("Authorization", jsign);
       // res.setHeader("Access-Control-Expose-Headers", "Authorization");
