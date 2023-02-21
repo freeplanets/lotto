@@ -74,8 +74,11 @@ export default class UserInfoCrypto {
     };
     filter.push(filter2);
     const jt: JTable<LedgerLever> = new JTable(this.conn, "LedgerLever");
-    const ans = await jt.Lists(filter, "", "SellTime desc");
+    let ans = await jt.Lists(filter, "", "SellTime desc");
     if (ans) {
+      if (ans.data && (ans.data as any[]).length < 10 ) {
+        ans = await jt.Lists(`${filter1.Key} = ${filter1.Val}`, "", "SellTime desc limit 0, 10");
+      }
       msg.data = ans.data;
     } else {
       msg.ErrNo = ErrCode.NO_DATA_FOUND;
