@@ -139,6 +139,7 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
       }
     }
     // let jt: JTable<IHasID> | MemberReport;
+    // console.log("getData param:", param);
     switch (param.TableName) {
       case "MemberReport":
         if (filters) {
@@ -154,6 +155,12 @@ export const getdata: IMyFunction<WebParams> = async (param: WebParams, conn: Po
       default:
         const jt: JTable<IHasID> = new JTable(conn, param.TableName);
         msg = await jt.Lists(filters, param.Fields, param.orderField);
+        if ( (msg.data as any[]).length < 10 && param.Limit) {
+          if (Array.isArray(filters) && filters.length > 0) {
+            const filter = filters.shift();
+            msg = await jt.Lists(filter, param.Fields, param.Limit);
+          }
+        }
         // console.log("getData msg", msg);
     }
   } else {

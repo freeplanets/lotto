@@ -494,6 +494,7 @@ export interface WebParams {
     Fields?: string | string[];
     order?: Order;
     orderField?: string;
+    Limit?: string;  // 顯示最新記錄筆數， 在order 之後加上 limit 0, n
     [key: string]: any;
 }
 export interface Items {
