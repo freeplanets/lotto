@@ -6,14 +6,10 @@ dotenv.config();
 
 export default class BTC {
 	// constructor(private sourceUrl =  "blockstream.info/api") {}
-	private sourceUrl =  "192.168.4.112:8332";
+	private sourceUrl =  `${process.env.HASHHOST}:8332`;
 	constructor(url?: string) {
 		if (url) {
 			this.sourceUrl = url;
-		} else {
-			if (process.env.HASHHOST) {
-				this.sourceUrl = `${process.env.HASHHOST}:8332`;
-			}
 		}
 		console.log("BTC source:", this.sourceUrl);
 	}
