@@ -1,10 +1,22 @@
+import dotenv from "dotenv";
 import http, { IncomingMessage } from "http";
 import StrFunc from "../../../components/class/Functions/MyStr";
 // import https from "https";
+dotenv.config();
 
 export default class BTC {
 	// constructor(private sourceUrl =  "blockstream.info/api") {}
-	constructor(private sourceUrl =  "192.168.4.112:8332") {}
+	private sourceUrl =  "192.168.4.112:8332";
+	constructor(url?: string) {
+		if (url) {
+			this.sourceUrl = url;
+		} else {
+			if (process.env.HASHHOST) {
+				this.sourceUrl = `${process.env.HASHHOST}:8332`;
+			}
+		}
+		console.log("BTC source:", this.sourceUrl);
+	}
 	public async getHeght() {
 		// const url = `${this.sourceUrl}/blocks/tip/height`;
 		// return this.get(url);
