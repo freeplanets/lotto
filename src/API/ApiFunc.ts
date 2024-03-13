@@ -417,7 +417,7 @@ export async function getBetHeaders(param: ICommonParams, conn: mariadb.PoolConn
         cond.push(` UserID in (${uids.join(",")}) `);
     }
     if (param.GameID) {
-        if (param.GameID > 0) {
+        if (param.GameID as number > 0) {
             cond.push(` b.GameID = ${param.GameID} `);
         }
     }

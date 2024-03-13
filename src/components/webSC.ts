@@ -14,7 +14,7 @@ dotenv.config();
 
 // const ATAF = new ATAFactor();
 // const wsHost =  process.env.WS_SERVER === "localhost:4001" ? `ws://${process.env.WS_SERVER}` : `wss://${process.env.WS_SERVER}`;
-const wsHost = `ws://${process.env.WS_SERVER}`;
+const wsHost = `ws://${process.env.WS_SERVER_LOCAL}`;
 // const chatHost = process.env.WS_CHATSERVER === "localhost:4002" ? `ws://${process.env.WS_CHATSERVER}` : `wss://${process.env.WS_CHATSERVER}`;
 
 // const sitename = process.env.SITE_NAME ? process.env.SITE_NAME : "Crypto";

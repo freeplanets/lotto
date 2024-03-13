@@ -47,6 +47,7 @@ const app = express();
 
     // define a route handler for the default home page
 const crosOption: cors.CorsOptions = {
+    // allowedHeaders: ['Content-Type', 'token', 'Authorization'],
 };
 // app.use(bodyParser.json({limit: "50mb"}));
 app.use(express.json({limit: "50mb"}));
